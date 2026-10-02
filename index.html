@@ -29,8 +29,8 @@ input,select{font:inherit;border:1px solid var(--ln);border-radius:12px;padding:
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .sec{display:none}.sec.on{display:block}canvas{max-height:240px}
 @media(max-width:380px){body{padding:12px 12px 170px}.card{padding:14px}.grid{grid-template-columns:1fr}}
-.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;font-size:12px;color:var(--mut);cursor:pointer}.pill{display:flex;align-items:center;gap:6px;background:var(--c);border-radius:20px;padding:5px 10px}.pill i{width:7px;height:7px;border-radius:50%;background:var(--mut)}.pill.ok i{background:var(--grn)}.pill.err i{background:var(--red)}.em{padding:20px 0;text-align:center}.auth{position:fixed;inset:0;background:var(--bg);z-index:20;display:none;overflow:auto;padding:24px 16px}</style></head><body>
-<div class="nav"><button class="g" onclick="mv(-1)">‹</button><b id="mes"></b><button class="g" id="nx" onclick="mv(1)">›</button><button class="g" id="th" onclick="theme()">☾</button></div>
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;font-size:12px;color:var(--mut);cursor:pointer}.pill{display:flex;align-items:center;gap:6px;background:var(--c);border-radius:20px;padding:5px 10px}.pill i{width:7px;height:7px;border-radius:50%;background:var(--mut)}.pill.ok i{background:var(--grn)}.pill.err i{background:var(--red)}.em{padding:20px 0;text-align:center}.auth{position:fixed;inset:0;background:var(--bg);z-index:20;display:none;overflow:auto;padding:24px 16px}.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.ch{text-align:center;font-size:11px;color:var(--mut)}.cd{aspect-ratio:1/1.05;border-radius:10px;background:var(--bg);padding:4px 2px;display:flex;flex-direction:column;align-items:center;cursor:pointer;overflow:hidden;line-height:1.25}.cd span{font-weight:600;font-size:12px}.cd em{font-style:normal;font-size:9.5px;white-space:nowrap}.cd.sel{outline:2px solid var(--ac)}.cd.fut{opacity:.35}.nav button:last-child{padding:10px 12px;font-size:13px}</style></head><body>
+<div class="nav"><button class="g" onclick="mv(-1)">‹</button><b id="mes"></b><button class="g" id="nx" onclick="mv(1)">›</button><button class="g" id="th" onclick="theme()">☾</button><button class="g" onclick="logout()" title="Sair da conta">Sair</button></div>
 
 <div id="auth" class="auth"><div style="max-width:380px;margin:8vh auto 0">
 <div class="big" style="font-size:30px">Meu Caixa</div><p class="mut" style="margin:6px 0 18px">Suas finanças, só suas.</p>
@@ -47,7 +47,7 @@ input,select{font:inherit;border:1px solid var(--ln);border-radius:12px;padding:
  <div class="card"><h3>LIMITES</h3><div id="lims"></div></div>
  <div class="card"><h3>GASTOS POR CATEGORIA</h3><canvas id="c1"></canvas></div>
  <div class="card"><h3>RECEITAS · GASTOS · INVESTIDO (6 MESES)</h3><canvas id="c2"></canvas></div>
- <div class="card"><h3>SALDO ACUMULADO NO MÊS</h3><canvas id="c3"></canvas></div>
+ <div class="card"><h3>CALENDÁRIO DE GASTOS</h3><div id="cal" class="cal"></div><div id="cald" style="margin-top:12px;font-size:14px"></div></div>
  <div class="card"><h3>FORMA DE PAGAMENTO</h3><canvas id="c4"></canvas></div>
  <div class="card"><h3>GASTO POR DIA DA SEMANA</h3><canvas id="c5"></canvas></div>
 </div>
@@ -90,11 +90,22 @@ async function sync(){if(!U||!API){ST.sheet=ST.ia='off';ST.msg=API?'':'Servidor 
  catch(e){ST.sheet='err';ST.ia='off';ST.msg=navigator.onLine?'Planilha: '+e.message:'Sem internet, os dados ficam salvos no aparelho e sincronizam depois.'}
  busy=0;pills()}
 function gen(){const t=today(),m=mk(t);S.rec.forEach(r=>{const k=r.id+m;if(S.gen[k])return;const d=m+'-'+String(Math.min(r.dia,28)).padStart(2,'0');if(d<=t){S.tx.push({id:'r'+r.id+m,data:d,tipo:r.tipo,valor:r.valor,cat:r.cat,pay:r.pay,desc:r.desc});S.gen[k]=1}})}
-function mv(n){const[y,m]=M.split('-').map(Number),k=new Date(y,m-1+n,1).toLocaleDateString('sv').slice(0,7);if(k>mk(today()))return;M=k;render()}
+function mv(n){const[y,m]=M.split('-').map(Number),k=new Date(y,m-1+n,1).toLocaleDateString('sv').slice(0,7);if(k>mk(today()))return;M=k;SEL='';render()}
 function tab(i){document.querySelectorAll('.sec').forEach((e,j)=>e.classList.toggle('on',i===j));document.querySelectorAll('.tabs button').forEach((e,j)=>e.classList.toggle('on',i===j))}
 const sum=a=>a.reduce((s,x)=>s+x.valor,0),grp=(a,f)=>a.reduce((o,x)=>{const k=f(x);o[k]=(o[k]||0)+x.valor;return o},{});
 const PAL=['#d4f25a','#7aa6ff','#e5604d','#f2b84b','#2f9e6e','#b48cf2','#5cc8c8','#ff9db1','#8a8a85','#a3b18a'];
 function ch(id,type,labels,sets,opt={}){const cv=$('#'+id),emp=!sets.some(d=>d.data.some(v=>v!==0));let e=cv.nextElementSibling;if(!e||!e.classList.contains('em')){e=document.createElement('div');e.className='mut em';e.textContent='Sem dados neste mês.';cv.after(e)}e.style.display=emp?'block':'none';cv.style.display=emp?'none':'block';if(emp){C[id]&&C[id].destroy();delete C[id];return}C[id]&&C[id].destroy();C[id]=new Chart($('#'+id),{type,data:{labels,datasets:sets},options:{responsive:true,plugins:{legend:{display:sets.length>1||type==='doughnut',position:'bottom',labels:{boxWidth:10,color:css('--mut')}}},cutout:type==='doughnut'?'68%':undefined,scales:type==='doughnut'?{}:{x:{grid:{display:false},ticks:{color:css('--mut')}},y:{grid:{color:css('--ln')},ticks:{color:css('--mut')}}},...opt}})}
+let SEL='';
+function cal(tx,y,m){const nd=new Date(y,m,0).getDate(),off=new Date(y,m-1,1).getDay(),by={};
+ tx.forEach(x=>{const b=by[x.data]=by[x.data]||{g:0,r:0,i:0};b[x.tipo==='gasto'?'g':x.tipo==='receita'?'r':'i']+=x.valor});
+ const mx=Math.max(1,...Object.values(by).map(b=>b.g)),k=v=>v>=1000?(v/1000).toFixed(1).replace('.',',')+'k':Math.round(v);
+ let h=['D','S','T','Q','Q','S','S'].map(d=>`<div class="ch">${d}</div>`).join('')+'<div></div>'.repeat(off);
+ for(let d=1;d<=nd;d++){const ds=M+'-'+String(d).padStart(2,'0'),b=by[ds]||{g:0,r:0,i:0};
+  h+=`<div class="cd${ds===SEL?' sel':''}${ds>today()?' fut':''}" style="${b.g?`background:rgba(229,96,77,${.1+.4*b.g/mx})`:''}" onclick="selDay('${ds}')"><span>${d}</span>${b.g?`<em class="neg">−${k(b.g)}</em>`:''}${b.r?`<em class="pos">+${k(b.r)}</em>`:''}${b.i?`<em class="mut">↗${k(b.i)}</em>`:''}</div>`}
+ $('#cal').innerHTML=h;
+ const l=tx.filter(x=>x.data===SEL);
+ $('#cald').innerHTML=SEL?`<b>${SEL.split('-').reverse().join('/')}</b>`+(l.map(x=>`<div class="row" style="margin-top:6px"><span>${x.desc||x.cat}</span><span class="${x.tipo==='receita'?'pos':''}">${x.tipo==='receita'?'+':x.tipo==='gasto'?'−':'↗ '}${brl(x.valor)}</span></div>`).join('')||'<div class="mut">Sem lançamentos neste dia.</div>'):'<span class="mut">Toque num dia para ver os lançamentos. Quanto mais vermelho, maior o gasto.</span>'}
+function selDay(d){SEL=SEL===d?'':d;render()}
 function render(){
  const ink=css('--ink'),[y,m]=M.split('-'),tx=S.tx.filter(x=>mk(x.data)===M),g=tx.filter(x=>x.tipo==='gasto'),r=tx.filter(x=>x.tipo==='receita'),iv=tx.filter(x=>x.tipo==='invest');
  $('#mes').textContent=new Date(y,m-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});$('#nx').disabled=M>=mk(today());
@@ -105,8 +116,7 @@ function render(){
  const ms=[...Array(6)].map((_,i)=>new Date(y,m-1-5+i,1).toLocaleDateString('sv').slice(0,7));
  const mt=t=>ms.map(k=>sum(S.tx.filter(x=>mk(x.data)===k&&x.tipo===t)));
  ch('c2','bar',ms.map(k=>k.slice(5)+'/'+k.slice(2,4)),[{label:'Receitas',data:mt('receita'),backgroundColor:'#d4f25a',borderRadius:8},{label:'Gastos',data:mt('gasto'),backgroundColor:ink,borderRadius:8},{label:'Investido',data:mt('invest'),backgroundColor:'#7aa6ff',borderRadius:8}]);
- const nd=new Date(y,m,0).getDate();let ac=0;const ln=[...Array(nd)].map((_,i)=>{const d=M+'-'+String(i+1).padStart(2,'0');tx.filter(x=>x.data===d).forEach(x=>ac+=x.tipo==='receita'?x.valor:-x.valor);return ac});
- ch('c3','line',ln.map((_,i)=>i+1),[{data:ln,borderColor:ink,tension:.3,pointRadius:0,fill:true,backgroundColor:'rgba(212,242,90,.3)'}]);
+ cal(tx,y,m);
  const bp=grp(g,x=>x.pay);ch('c4','doughnut',Object.keys(bp),[{data:Object.values(bp),backgroundColor:PAL,borderWidth:0}]);
  const dw=[0,0,0,0,0,0,0];g.forEach(x=>dw[new Date(x.data+'T12:00').getDay()]+=x.valor);
  ch('c5','bar',['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'],[{data:dw,backgroundColor:ink,borderRadius:8}]);
