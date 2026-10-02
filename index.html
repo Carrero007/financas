@@ -1241,6 +1241,287 @@
           border-width: 80px;
         }
       }
+
+      /* ===== Cifra: app ===== */
+      body {
+        padding: calc(14px + env(safe-area-inset-top)) 16px 190px;
+        max-width: 620px;
+      }
+      h3 {
+        font-size: 15px;
+        font-weight: 600;
+        letter-spacing: -0.2px;
+        text-transform: none;
+        color: var(--ink);
+        margin-bottom: 14px;
+      }
+      .brand {
+        margin: 0 0 4px;
+      }
+      .nav {
+        margin-bottom: 12px;
+      }
+      .nav b {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: 28px;
+        letter-spacing: -0.7px;
+      }
+      .nav button {
+        width: 40px;
+        height: 40px;
+        padding: 0;
+        display: grid;
+        place-items: center;
+      }
+      .nav button:last-child {
+        width: auto;
+        padding: 0 14px;
+        font-size: 13px;
+      }
+      .card {
+        background: var(--c);
+        border: 0;
+        border-radius: 26px;
+        padding: 22px;
+      }
+      #hi div {
+        font-size: 36px !important;
+        letter-spacing: -1px;
+        margin: 6px 0 14px !important;
+      }
+      #t0 > .card:first-child {
+        position: relative;
+        overflow: hidden;
+        background: #c9f13d;
+        color: #10110d;
+        padding: 24px;
+      }
+      #t0 > .card:first-child::after {
+        content: "";
+        position: absolute;
+        right: -4px;
+        top: -6px;
+        width: 160px;
+        height: 140px;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 130'%3E%3Cg transform='skewY(-8)'%3E%3Crect x='14' y='84' width='30' height='60' rx='9' fill='%2310110d' opacity='.1'/%3E%3Crect x='56' y='62' width='30' height='82' rx='9' fill='%2310110d' opacity='.1'/%3E%3Crect x='98' y='34' width='30' height='110' rx='9' fill='%2310110d' opacity='.1'/%3E%3C/g%3E%3C/svg%3E")
+          no-repeat;
+        pointer-events: none;
+        animation: up 0.9s 0.25s both;
+      }
+      #t0 > .card:first-child h3 {
+        color: rgba(16, 17, 13, 0.62);
+        font-weight: 500;
+      }
+      #t0 > .card:first-child .big {
+        position: relative;
+        z-index: 1;
+        color: #10110d;
+      }
+      #t0 > .card:first-child .stats {
+        position: relative;
+        z-index: 1;
+      }
+      #t0 > .card:first-child .mut {
+        color: rgba(16, 17, 13, 0.62);
+      }
+      #t0 > .card:first-child .stats div {
+        background: rgba(16, 17, 13, 0.09);
+        border: 0;
+      }
+      #t0 > .card:first-child .stats b {
+        color: #10110d;
+      }
+      #t0 > .card:first-child .stats b.pos {
+        color: #0a5a38;
+      }
+      #t0 > .card:first-child .stats b.neg {
+        color: #9b2a19;
+      }
+      .stats div {
+        background: var(--bg);
+        border: 0;
+        border-radius: 16px;
+        padding: 12px;
+      }
+      .stats b {
+        font-size: 15px;
+      }
+      .item {
+        padding: 14px 0;
+      }
+      .amt {
+        font-variant-numeric: tabular-nums;
+      }
+      .card input,
+      .card select {
+        border: 0;
+        border-bottom: 1px solid var(--ln);
+        border-radius: 0;
+        padding: 12px 2px;
+        background: transparent;
+      }
+      .card input:focus,
+      .card select:focus {
+        outline: none;
+        border-bottom-color: var(--ac);
+      }
+      [data-t="light"] .card input:focus,
+      [data-t="light"] .card select:focus {
+        border-bottom-color: var(--ink);
+      }
+      .grid {
+        gap: 6px 18px;
+      }
+      .bar {
+        height: 6px;
+        border-radius: 6px;
+      }
+      .pill {
+        font-size: 11.5px;
+      }
+      .tabs .on {
+        background: var(--ac);
+        color: #10110d;
+      }
+      .bub.u {
+        background: var(--ac);
+        color: #10110d;
+      }
+      .bub.b {
+        background: var(--c);
+      }
+      .cd.sel {
+        outline: 2px solid var(--ac);
+      }
+      .bd {
+        background: var(--red);
+      }
+      /* quiz */
+      #ob {
+        padding: 0;
+      }
+      .obw {
+        max-width: 440px;
+        min-height: 100%;
+        margin: 0 auto;
+        padding: max(7vh, 28px) 24px calc(28px + env(safe-area-inset-bottom));
+        display: flex;
+        flex-direction: column;
+      }
+      .obp {
+        display: flex;
+        gap: 5px;
+        margin-bottom: 30px;
+      }
+      .obp i {
+        position: relative;
+        flex: 1;
+        height: 3px;
+        border-radius: 3px;
+        background: var(--ln);
+        overflow: hidden;
+      }
+      .obp i.d::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: var(--ac);
+        transform-origin: left;
+      }
+      [data-t="light"] .obp i.d::after {
+        background: var(--ink);
+      }
+      .obp i.c::after {
+        animation: fillx 0.6s both;
+      }
+      @keyframes fillx {
+        from {
+          transform: scaleX(0);
+        }
+      }
+      .obn {
+        margin-bottom: 10px;
+        font-size: 13px;
+        color: var(--mut);
+      }
+      .obq {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: 38px;
+        line-height: 1.04;
+        letter-spacing: -1px;
+        animation: rv2 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+      @keyframes rv2 {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+      }
+      .obh {
+        margin: 8px 0 22px;
+        color: var(--mut);
+        animation: up 0.6s 0.08s both;
+      }
+      .f.ni input {
+        padding-left: 2px;
+      }
+      .obl {
+        display: block;
+        margin-top: 10px;
+        font-size: 12.5px;
+        color: var(--mut);
+      }
+      .f.ni input {
+        padding-top: 6px;
+      }
+      .obf {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: auto;
+        padding-top: 30px;
+      }
+      .obf .go {
+        flex: 1;
+      }
+      .obfb {
+        background: none;
+        color: var(--mut);
+        padding: 0 8px;
+        font-size: 14px;
+      }
+      .obck {
+        width: 84px;
+        height: 84px;
+        padding: 22px;
+        margin-bottom: 22px;
+        border-radius: 50%;
+        background: var(--ac);
+        stroke: #10110d;
+        fill: none;
+        stroke-width: 2.6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        animation: pp 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+      }
+      .obck path {
+        stroke-dasharray: 24;
+        stroke-dashoffset: 24;
+        animation: dr 0.5s 0.3s forwards;
+      }
+      @keyframes pp {
+        from {
+          opacity: 0;
+          transform: scale(0.4);
+        }
+      }
+      @keyframes dr {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
     </style>
   </head>
   <body>
@@ -1378,7 +1659,7 @@
                   <svg class="fi" viewBox="0 0 24 24">
                     <rect x="4" y="11" width="16" height="10" rx="3" />
                     <path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
-                    <input
+                  <input
                     id="apw2"
                     type="password"
                     placeholder="Repita a senha"
@@ -1439,7 +1720,7 @@
     <div id="ed" class="auth" style="z-index: 30">
       <div style="max-width: 380px; margin: 8vh auto 0">
         <div class="card">
-          <h3>EDITAR LANÇAMENTO</h3>
+          <h3>Editar lançamento</h3>
           <input id="ed1" maxlength="60" placeholder="Descrição" />
           <div class="grid">
             <input
@@ -1468,7 +1749,7 @@
     <div id="rcm" class="auth" style="z-index: 40">
       <div style="max-width: 380px; margin: 12vh auto 0">
         <div class="card">
-          <h3>CÓDIGO DE RECUPERAÇÃO</h3>
+          <h3>Código de recuperação</h3>
           <div
             id="rcc"
             style="
@@ -1502,7 +1783,7 @@
     <div class="pills" id="pills" onclick="sync()"></div>
     <div id="t0" class="sec on">
       <div class="card">
-        <h3>SALDO DO MÊS</h3>
+        <h3>Saldo do mês</h3>
         <div class="big" id="saldo"></div>
         <div class="stats">
           <div>
@@ -1513,15 +1794,15 @@
         </div>
       </div>
       <div class="card">
-        <h3>LIMITES</h3>
+        <h3>Limites</h3>
         <div id="lims"></div>
       </div>
       <div class="card" id="cmp" style="display: none">
-        <h3>VS MÊS ANTERIOR</h3>
+        <h3>Comparado ao mês anterior</h3>
         <div id="cmpb"></div>
       </div>
       <div class="card">
-        <h3>METAS</h3>
+        <h3>Metas</h3>
         <div id="mts"></div>
         <div class="grid">
           <input id="mtn" maxlength="40" placeholder="Nome da meta" /><input
@@ -1534,28 +1815,28 @@
         <button style="margin-top: 10px" onclick="addMeta()">Criar meta</button>
       </div>
       <div class="card" id="cart" style="display: none">
-        <h3>INVESTIDO POR ATIVO (TOTAL)</h3>
+        <h3>Investido por ativo (total)</h3>
         <div id="cartb"></div>
       </div>
       <div class="card">
-        <h3>GASTOS POR CATEGORIA</h3>
+        <h3>Gastos por categoria</h3>
         <canvas id="c1"></canvas>
       </div>
       <div class="card">
-        <h3>RECEITAS · GASTOS · INVESTIDO (6 MESES)</h3>
+        <h3>Receitas · gastos · investido (6 meses)</h3>
         <canvas id="c2"></canvas>
       </div>
       <div class="card">
-        <h3>CALENDÁRIO DE GASTOS</h3>
+        <h3>Calendário de gastos</h3>
         <div id="cal" class="cal"></div>
         <div id="cald" style="margin-top: 12px; font-size: 14px"></div>
       </div>
       <div class="card">
-        <h3>FORMA DE PAGAMENTO</h3>
+        <h3>Forma de pagamento</h3>
         <canvas id="c4"></canvas>
       </div>
       <div class="card">
-        <h3>GASTO POR DIA DA SEMANA</h3>
+        <h3>Gasto por dia da semana</h3>
         <canvas id="c5"></canvas>
       </div>
     </div>
@@ -1564,7 +1845,7 @@
 
     <div id="tc" class="sec">
       <div class="card">
-        <h3>PATRIMÔNIO</h3>
+        <h3>Patrimônio</h3>
         <div class="big" id="pat"></div>
         <div class="stats">
           <div><span class="mut">Contas</span><b id="pc"></b></div>
@@ -1573,11 +1854,11 @@
         </div>
       </div>
       <div class="card">
-        <h3>PREVISÃO DO MÊS</h3>
+        <h3>Previsão do mês</h3>
         <div id="prev"></div>
       </div>
       <div class="card">
-        <h3>MINHAS CONTAS</h3>
+        <h3>Minhas contas</h3>
         <div id="cts"></div>
         <div class="grid">
           <input id="cn" maxlength="30" placeholder="Nome da conta" /><input
@@ -1590,7 +1871,7 @@
         <button style="margin-top: 10px" onclick="addConta()">
           Adicionar conta
         </button>
-        <h3 style="margin: 18px 0 8px">TRANSFERIR ENTRE CONTAS</h3>
+        <h3 style="margin: 18px 0 8px">Transferir entre contas</h3>
         <div class="grid">
           <select id="to"></select
           ><select id="td"></select
@@ -1603,7 +1884,7 @@
         </div>
       </div>
       <div class="card">
-        <h3>CARTÕES E FATURAS</h3>
+        <h3>Cartões e faturas</h3>
         <div id="cards"></div>
         <div class="grid">
           <input id="kn" maxlength="30" placeholder="Nome do cartão" /><input
@@ -1626,21 +1907,21 @@
         </button>
       </div>
       <div class="card">
-        <h3>PARCELAMENTOS ATIVOS</h3>
+        <h3>Parcelamentos ativos</h3>
         <div id="pars"></div>
       </div>
     </div>
     <div id="ta" class="sec">
       <div class="card">
-        <h3>ALERTAS DE LIMITES</h3>
+        <h3>Alertas de limites</h3>
         <div id="alr"></div>
       </div>
       <div class="card">
-        <h3>O QUE DESCOBRI SOBRE SEU DINHEIRO</h3>
+        <h3>O que descobri sobre seu dinheiro</h3>
         <div id="ins"></div>
       </div>
       <div class="card">
-        <h3>ASSINATURAS E RECORRÊNCIAS DETECTADAS</h3>
+        <h3>Assinaturas e recorrências detectadas</h3>
         <div id="subs"></div>
       </div>
     </div>
@@ -1679,7 +1960,7 @@
       </div>
       <div id="sr" style="display: none">
         <div class="card">
-          <h3>RELATÓRIO DA IA</h3>
+          <h3>Relatório da IA</h3>
           <p class="mut" id="relq" style="margin-bottom: 12px"></p>
           <button id="relb" onclick="gerar()">Gerar relatório do mês</button>
         </div>
@@ -1688,7 +1969,7 @@
     </div>
     <div id="t2" class="sec">
       <div class="card">
-        <h3>GASTOS FIXOS / RECORRENTES</h3>
+        <h3>Gastos fixos / recorrentes</h3>
         <div id="recs"></div>
         <div class="grid">
           <input id="rd" placeholder="Descrição" /><input
@@ -1710,11 +1991,11 @@
         </button>
       </div>
       <div class="card">
-        <h3>LIMITE MENSAL POR CATEGORIA (R$)</h3>
+        <h3>Limite mensal por categoria (R$)</h3>
         <div id="limf"></div>
       </div>
       <div class="card">
-        <h3>DADOS E SEGURANÇA</h3>
+        <h3>Dados e segurança</h3>
         <div class="row" style="justify-content: flex-start; flex-wrap: wrap">
           <button class="g" onclick="csv()">Exportar CSV</button
           ><button class="g" onclick="novoCodigo()">
@@ -1723,7 +2004,7 @@
         </div>
       </div>
       <div class="card">
-        <h3>CONTA</h3>
+        <h3>Conta</h3>
         <input id="nm" maxlength="60" placeholder="Seu nome" />
         <input
           id="em"
@@ -2142,7 +2423,7 @@
           hi.k = k;
           e.innerHTML = k
             ? `<div style="font-size:22px;font-weight:700;margin:4px 0 12px">Olá, ${esc(first(k))}</div>`
-            : `<div class="card"><h3>BEM-VINDO</h3><div class="row"><input id="nm0" maxlength="60" placeholder="Como podemos te chamar?"><button onclick="saveNome($('#nm0').value)">OK</button></div></div>`;
+            : `<div class="card"><h3>Bem-vindo</h3><div class="row"><input id="nm0" maxlength="60" placeholder="Como podemos te chamar?"><button onclick="saveNome($('#nm0').value)">OK</button></div></div>`;
         }
         const n = $("#nm");
         if (n && document.activeElement !== n) n.value = k;
@@ -3743,36 +4024,78 @@
           skip: () => !!U.nome,
         },
         {
-          q: "Qual seu e-mail? Ele serve para recuperar a conta.",
+          q: "Qual seu e-mail?",
+          h: "Serve para recuperar a conta.",
           f: [["email", "email", "voce@email.com"]],
           skip: () => !!ST.email,
         },
         {
-          q: "Quanto você recebe por mês, e em que dia?",
+          q: "Quanto você recebe por mês?",
+          h: "E em que dia cai na conta.",
           f: [
             ["renda", "number", "Renda (R$)"],
             ["dia", "number", "Dia do mês"],
           ],
         },
         {
-          q: "Qual conta você mais usa, e quanto tem nela hoje?",
+          q: "Qual conta você mais usa?",
+          h: "Informe o saldo de hoje.",
           f: [
-            ["conta", "text", "Ex: Nubank"],
-            ["saldo", "number", "Saldo atual"],
+            ["conta", "text", "Nome da conta (ex: Nubank)"],
+            ["saldo", "number", "Saldo atual (R$)"],
+          ],
+        },
+        {
+          q: "Você usa cartão de crédito?",
+          h: "Assim eu acompanho fatura e limite.",
+          f: [
+            ["cartao", "text", "Nome do cartão"],
+            ["climite", "number", "Limite (R$)"],
+            ["cfecha", "number", "Dia do fechamento"],
+            ["cvence", "number", "Dia do vencimento"],
+          ],
+        },
+        {
+          q: "Quanto custa sua moradia por mês?",
+          h: "Aluguel ou financiamento.",
+          f: [
+            ["mor", "number", "Valor (R$)"],
+            ["mordia", "number", "Dia do vencimento"],
+          ],
+        },
+        {
+          q: "Tem outro gasto fixo importante?",
+          h: "Escola, plano de saúde, internet…",
+          f: [
+            ["fx", "text", "Descrição"],
+            ["fxv", "number", "Valor (R$)"],
+            ["fxd", "number", "Dia do vencimento"],
+          ],
+        },
+        {
+          q: "Quanto quer investir por mês?",
+          h: "Eu lanço como investimento todo mês.",
+          f: [
+            ["invm", "number", "Valor (R$)"],
+            ["invd", "number", "Dia do mês"],
           ],
         },
         {
           q: "Quanto quer gastar por mês, no máximo?",
+          h: "Divido esse teto entre as categorias.",
           f: [["teto", "number", "Teto mensal (R$)"]],
         },
         {
-          q: "Tem uma meta em mente? (pode pular)",
+          q: "Tem uma meta em mente?",
+          h: "Reserva de emergência, viagem, carro…",
           f: [
-            ["meta", "text", "Ex: Reserva de emergência"],
-            ["alvo", "number", "Valor alvo"],
+            ["meta", "text", "Nome da meta"],
+            ["alvo", "number", "Valor alvo (R$)"],
+            ["guard", "number", "Já guardado (R$)"],
           ],
         },
       ];
+      let OBL = [];
       function obShow() {
         let e = $("#ob");
         if (!e) {
@@ -3782,28 +4105,35 @@
           e.style.zIndex = 35;
           document.body.append(e);
         }
+        OBL = OB.filter((s) => !(s.skip && s.skip()));
         e.style.display = "block";
         OBI = 0;
         OBD = {};
         obStep();
       }
       function obStep() {
-        while (OB[OBI] && OB[OBI].skip && OB[OBI].skip()) OBI++;
-        if (OBI >= OB.length) return obEnd();
-        const s = OB[OBI];
+        if (OBI >= OBL.length) return obEnd();
+        const s = OBL[OBI];
         $("#ob").innerHTML =
-          `<div style="max-width:380px;margin:12vh auto 0"><div class="mut">${OBI + 1} / ${OB.length}</div><div class="bar" style="margin-top:8px"><i style="width:${((OBI + 1) / OB.length) * 100}%;background:var(--ac)"></i></div><div class="obq">${s.q}</div>${s.f.map((f) => `<input id="ob_${f[0]}" type="${f[1]}" ${f[1] === "number" ? 'inputmode="decimal"' : ""} placeholder="${f[2]}" style="margin-bottom:8px">`).join("")}<div class="row" style="margin-top:12px"><button class="g" onclick="OBI++;obStep()">Pular</button><button onclick="obNext()">Continuar</button></div></div>`;
+          `<div class="obw"><div class="obp">${OBL.map((_, k) => `<i class="${k < OBI ? "d" : k === OBI ? "d c" : ""}"></i>`).join("")}</div><div class="obn">Passo ${OBI + 1} de ${OBL.length}</div><h2 class="obq">${s.q}</h2><p class="obh">${s.h || "&nbsp;"}</p>${s.f.map((f, k) => `<div class="f ni fld" style="--d:${0.08 + k * 0.06}s"><label class="obl">${f[2]}</label><input id="ob_${f[0]}" type="${f[1]}" ${f[1] === "number" ? 'inputmode="decimal"' : ""} value="${esc(OBD[f[0]] || "")}" onkeydown="if(event.key==='Enter')obNext()"></div>`).join("")}<div class="obf">${OBI ? '<button class="obfb" onclick="obBack()">Voltar</button>' : ""}<button class="obfb" onclick="OBI++;obStep()">Pular</button><button class="go" onclick="obNext()"><span>${OBI === OBL.length - 1 ? "Concluir" : "Continuar"}</span></button></div></div>`;
         const i = $("#ob_" + s.f[0][0]);
         i && i.focus();
       }
+      function obBack() {
+        if (OBI > 0) {
+          OBI--;
+          obStep();
+        }
+      }
       function obNext() {
-        OB[OBI].f.forEach((f) => (OBD[f[0]] = $("#ob_" + f[0]).value.trim()));
+        OBL[OBI].f.forEach((f) => (OBD[f[0]] = $("#ob_" + f[0]).value.trim()));
         OBI++;
         obStep();
       }
       function obEnd() {
         const d = OBD,
-          n = (k) => +String(d[k] || "").replace(",", ".") || 0;
+          n = (k) => +String(d[k] || "").replace(",", ".") || 0,
+          dd = (k, v) => Math.min(28, Math.max(1, n(k) || v));
         if (d.nome) saveNome(d.nome);
         if (d.email && EMR.test(d.email)) saveEmail(d.email);
         if (n("renda") > 0)
@@ -3811,17 +4141,66 @@
             id: uid(),
             desc: "Salário",
             valor: n("renda"),
-            dia: Math.min(28, n("dia") || 5),
+            dia: dd("dia", 5),
             cat: "Salário",
             pay: "Pix",
             tipo: "receita",
           });
-        if (d.conta)
+        let cid = "";
+        if (d.conta) {
+          cid = uid();
           S.contas.push({
-            id: uid(),
+            id: cid,
             nome: d.conta.slice(0, 30),
             saldo0: n("saldo"),
             ts: Date.now(),
+          });
+        }
+        if (
+          d.cartao &&
+          n("cfecha") >= 1 &&
+          n("cfecha") <= 31 &&
+          n("cvence") >= 1 &&
+          n("cvence") <= 31
+        )
+          S.cartoes.push({
+            id: uid(),
+            nome: d.cartao.slice(0, 30),
+            limite: n("climite"),
+            fecha: n("cfecha"),
+            vence: n("cvence"),
+            conta: cid,
+            ts: Date.now(),
+          });
+        if (n("mor") > 0)
+          S.rec.push({
+            id: uid(),
+            desc: "Moradia",
+            valor: n("mor"),
+            dia: dd("mordia", 5),
+            cat: "Moradia",
+            pay: "Pix",
+            tipo: "gasto",
+          });
+        if (d.fx && n("fxv") > 0)
+          S.rec.push({
+            id: uid(),
+            desc: d.fx.slice(0, 40),
+            valor: n("fxv"),
+            dia: dd("fxd", 5),
+            cat: "Outros",
+            pay: "Pix",
+            tipo: "gasto",
+          });
+        if (n("invm") > 0)
+          S.rec.push({
+            id: uid(),
+            desc: "Investimento mensal",
+            valor: n("invm"),
+            dia: dd("invd", 5),
+            cat: "Investimento",
+            pay: "Pix",
+            tipo: "invest",
           });
         if (n("teto") > 0) {
           const P = {
@@ -3843,14 +4222,15 @@
             id: uid(),
             nome: d.meta.slice(0, 40),
             alvo: n("alvo"),
-            guardado: 0,
+            guardado: n("guard"),
             ts: Date.now(),
           });
         S.onb = 1;
         gen();
-        $("#ob").style.display = "none";
         persist();
-        say("Tudo pronto. Limites divididos por categoria; ajuste em Ajustes.");
+        $("#ob").innerHTML =
+          `<div class="obw" style="justify-content:center;align-items:center;text-align:center"><svg class="obck" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg><h2 class="obq">Tudo pronto${U.nome ? ", " + esc(first(U.nome)) : ""}.</h2><p class="obh">Montei suas contas, limites e metas. Ajuste tudo em Ajustes quando quiser.</p></div>`;
+        setTimeout(() => ($("#ob").style.display = "none"), 2000);
       }
       function attShow() {
         $("#att").innerHTML = PEND
