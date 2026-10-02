@@ -1522,18 +1522,255 @@
           stroke-dashoffset: 0;
         }
       }
+
+      /* ===== Cifra: estrutura do app ===== */
+      body {
+        padding-top: 0;
+      }
+      .top {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 -16px 10px;
+        padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+        background: color-mix(in srgb, var(--bg) 88%, transparent);
+        -webkit-backdrop-filter: blur(14px);
+        backdrop-filter: blur(14px);
+      }
+      .top .logo {
+        width: 36px;
+        height: 36px;
+        border-radius: 11px;
+        flex: none;
+      }
+      .mo {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+      }
+      .mo b {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 16px;
+        font-weight: 600;
+        text-transform: capitalize;
+        letter-spacing: -0.2px;
+      }
+      .mo button {
+        width: 34px;
+        height: 34px;
+        padding: 0;
+        display: grid;
+        place-items: center;
+        flex: none;
+        font-size: 18px;
+      }
+      .ib {
+        width: 38px;
+        height: 38px;
+        padding: 0;
+        display: grid;
+        place-items: center;
+        flex: none;
+      }
+      .ib svg {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .pgh {
+        margin: 4px 0 16px;
+      }
+      .pgh h2 {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: 34px;
+        letter-spacing: -1px;
+        line-height: 1.05;
+      }
+      .pgh p {
+        margin-top: 4px;
+        font-size: 14px;
+        color: var(--mut);
+      }
+      .dock .tabs {
+        gap: 2px;
+        margin-top: 6px;
+      }
+      .dock .tabs button {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 3px;
+        padding: 8px 2px 7px;
+        border-radius: 16px;
+        font-size: 10.5px;
+        font-weight: 500;
+      }
+      .dock .tabs svg {
+        width: 21px;
+        height: 21px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.9;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .dock .tabs .bd {
+        position: absolute;
+        top: 2px;
+        left: 54%;
+        margin: 0;
+      }
+      .item.row {
+        align-items: center;
+        gap: 12px;
+      }
+      .it {
+        flex: 1;
+        min-width: 0;
+      }
+      .av {
+        width: 38px;
+        height: 38px;
+        flex: none;
+        border-radius: 12px;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+      }
+      .dh {
+        display: flex;
+        justify-content: space-between;
+        padding: 18px 0 4px;
+        font-size: 13px;
+        font-weight: 600;
+        text-transform: capitalize;
+      }
+      .dh:first-child {
+        padding-top: 0;
+      }
+      .sup {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        border: 1px dashed var(--ac) !important;
+      }
+      .sup b {
+        display: block;
+        margin-bottom: 2px;
+      }
+      .sup button {
+        flex: none;
+        background: var(--ac);
+        color: #10110d;
+        font-weight: 600;
+      }
+      #tc > .pgh + .card {
+        background: var(--ink);
+        color: var(--bg);
+      }
+      #tc > .pgh + .card h3,
+      #tc > .pgh + .card .mut {
+        color: color-mix(in srgb, var(--bg) 62%, transparent);
+      }
+      #tc > .pgh + .card .big {
+        color: var(--bg);
+      }
+      #tc > .pgh + .card .stats div {
+        background: color-mix(in srgb, var(--bg) 12%, transparent);
+      }
+      #tc > .pgh + .card .stats b {
+        color: var(--bg);
+      }
+      [data-t="dark"] #tc > .pgh + .card .stats b.neg {
+        color: #c0392b;
+      }
+      /* quiz: navegação */
+      .obt {
+        display: flex;
+        justify-content: space-between;
+        margin: -8px -8px 18px;
+      }
+      .obt .obfb {
+        padding: 8px;
+        font-size: 14px;
+      }
+      .obt .obfb:disabled {
+        opacity: 0;
+      }
+      .obp button {
+        flex: 1;
+        padding: 8px 0;
+        background: none;
+        border-radius: 0;
+      }
+      .obp button i {
+        display: block;
+        position: relative;
+        height: 3px;
+        border-radius: 3px;
+        background: var(--ln);
+        overflow: hidden;
+      }
+      .obp button.d i::after {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: var(--ac);
+        transform-origin: left;
+      }
+      [data-t="light"] .obp button.d i::after {
+        background: var(--ink);
+      }
+      .obp button.c i::after {
+        animation: fillx 0.6s both;
+      }
+      .obp i {
+        all: unset;
+      }
     </style>
   </head>
   <body>
-    <div class="brand">
-      <img class="logo" src="icons/icon-192x192.png" alt="" /><span>Cifra</span>
-    </div>
-    <div class="nav">
-      <button class="g" onclick="mv(-1)">‹</button><b id="mes"></b
-      ><button class="g" id="nx" onclick="mv(1)">›</button
-      ><button class="g" id="th" onclick="theme()">☾</button
-      ><button class="g" onclick="logout()" title="Sair da conta">Sair</button>
-    </div>
+    <header class="top">
+      <img class="logo" src="icons/icon-192x192.png" alt="Cifra" />
+      <div class="mo">
+        <button class="g" onclick="mv(-1)" aria-label="Mês anterior">‹</button
+        ><b id="mes"></b
+        ><button class="g" id="nx" onclick="mv(1)" aria-label="Próximo mês">
+          ›
+        </button>
+      </div>
+      <button class="g ib" id="th" onclick="theme()" aria-label="Alternar tema">
+        ☾
+      </button>
+      <button
+        class="g ib"
+        onclick="logout()"
+        title="Sair da conta"
+        aria-label="Sair da conta"
+      >
+        <svg viewBox="0 0 24 24">
+          <path
+            d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4M16 17l5-5-5-5M21 12H9"
+          />
+        </svg>
+      </button>
+    </header>
 
     <div id="auth" class="auth">
       <div class="shell">
@@ -1780,6 +2017,7 @@
       </div>
     </div>
     <div id="hi"></div>
+    <div id="setup"></div>
     <div class="pills" id="pills" onclick="sync()"></div>
     <div id="t0" class="sec on">
       <div class="card">
@@ -1841,9 +2079,19 @@
       </div>
     </div>
 
-    <div id="t1" class="sec"><div class="card" id="list"></div></div>
+    <div id="t1" class="sec">
+      <div class="pgh">
+        <h2>Extrato</h2>
+        <p>Tudo que entrou e saiu neste mês.</p>
+      </div>
+      <div class="card" id="list"></div>
+    </div>
 
     <div id="tc" class="sec">
+      <div class="pgh">
+        <h2>Contas</h2>
+        <p>Saldos, cartões e parcelas.</p>
+      </div>
       <div class="card">
         <h3>Patrimônio</h3>
         <div class="big" id="pat"></div>
@@ -1912,6 +2160,10 @@
       </div>
     </div>
     <div id="ta" class="sec">
+      <div class="pgh">
+        <h2>Alertas</h2>
+        <p>Limites e descobertas sobre seus gastos.</p>
+      </div>
       <div class="card">
         <h3>Alertas de limites</h3>
         <div id="alr"></div>
@@ -1926,6 +2178,10 @@
       </div>
     </div>
     <div id="tb" class="sec">
+      <div class="pgh">
+        <h2>Assistente</h2>
+        <p>Pergunte, peça relatórios, tire dúvidas.</p>
+      </div>
       <div class="tabs" style="margin: 0 0 12px">
         <button id="s1" class="on" onclick="sub(0)">Chat</button
         ><button id="s2" onclick="sub(1)">Relatório</button>
@@ -1968,6 +2224,10 @@
       </div>
     </div>
     <div id="t2" class="sec">
+      <div class="pgh">
+        <h2>Ajustes</h2>
+        <p>Fixos, limites, dados e conta.</p>
+      </div>
       <div class="card">
         <h3>Gastos fixos / recorrentes</h3>
         <div id="recs"></div>
@@ -2063,12 +2323,42 @@
         /><button onclick="send()">↑</button>
       </div>
       <div class="tabs">
-        <button class="on" onclick="tab(0)">Início</button
-        ><button onclick="tab(1)">Extrato</button
-        ><button onclick="tab(2)">Contas</button
-        ><button onclick="tab(3)">Alertas<b id="bd" class="bd"></b></button
-        ><button onclick="tab(4)">IA</button
-        ><button onclick="tab(5)">Ajustes</button>
+        <button class="on" onclick="tab(0)">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"
+            /></svg>
+          <span>Início</span></button
+        ><button onclick="tab(1)">
+          <svg viewBox="0 0 24 24">
+            <path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z" />
+            <path d="M9 8h6M9 12h6" /></svg>
+          <span>Extrato</span></button
+        ><button onclick="tab(2)">
+          <svg viewBox="0 0 24 24">
+            <rect x="3" y="6" width="18" height="13" rx="3" />
+            <path d="M3 10h18M7 15h3" /></svg>
+          <span>Contas</span></button
+        ><button onclick="tab(3)">
+          <svg viewBox="0 0 24 24">
+            <path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z" />
+            <path d="M10 21h4" /></svg>
+          <span>Alertas</span><b id="bd" class="bd"></b></button
+        ><button onclick="tab(4)">
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"
+            />
+            <path d="M19 17l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z" /></svg>
+          <span>IA</span></button
+        ><button onclick="tab(5)">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="3" />
+            <path
+              d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"
+            /></svg>
+          <span>Ajustes</span>
+        </button>
       </div>
     </div>
 
@@ -3559,6 +3849,7 @@
       }
       function render() {
         hi();
+        setupCard();
         alrRender();
         contasRender();
         insRender();
@@ -3639,14 +3930,7 @@
           ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"],
           [{ data: dw, backgroundColor: ink, borderRadius: 8 }],
         );
-        $("#list").innerHTML =
-          [...tx]
-            .sort((a, b) => b.data.localeCompare(a.data))
-            .map(
-              (x) =>
-                `<div class="item row"><div><b>${esc(x.desc || x.cat)}</b><div class="mut">${x.data.split("-").reverse().slice(0, 2).join("/")} · ${esc(x.cat)} · ${esc(x.pay)}</div></div><div class="amt ${x.tipo === "receita" ? "pos" : x.tipo === "gasto" ? "" : "mut"}">${x.tipo === "receita" ? "+" : x.tipo === "gasto" ? "−" : "↗ "}${brl(x.valor)}<button class="g" onclick="edOpen('${x.id}')">✎</button><button class="g" onclick="del('${x.id}')">✕</button></div></div>`,
-            )
-            .join("") || '<span class="mut">Nada neste mês.</span>';
+        $("#list").innerHTML = listHtml(tx);
         $("#recs").innerHTML = S.rec
           .map(
             (x) =>
@@ -4095,7 +4379,8 @@
           ],
         },
       ];
-      let OBL = [];
+      let OBL = [],
+        OBR = 0;
       function obShow() {
         let e = $("#ob");
         if (!e) {
@@ -4108,27 +4393,76 @@
         OBL = OB.filter((s) => !(s.skip && s.skip()));
         e.style.display = "block";
         OBI = 0;
+        OBR = 0;
         OBD = {};
         obStep();
       }
+      function obSave() {
+        const s = OBL[OBI];
+        s &&
+          s.f.forEach((f) => {
+            const e = $("#ob_" + f[0]);
+            if (e) OBD[f[0]] = e.value.trim();
+          });
+      }
+      const obSeg = () =>
+        `<div class="obp">${OBL.map((_, k) => `<button aria-label="Ir para a pergunta ${k + 1}" onclick="obJump(${k})" class="${k < OBI || OBI >= OBL.length ? "d" : k === OBI ? "d c" : ""}"><i></i></button>`).join("")}</div>`;
       function obStep() {
-        if (OBI >= OBL.length) return obEnd();
+        if (OBI >= OBL.length) return obReview();
         const s = OBL[OBI];
         $("#ob").innerHTML =
-          `<div class="obw"><div class="obp">${OBL.map((_, k) => `<i class="${k < OBI ? "d" : k === OBI ? "d c" : ""}"></i>`).join("")}</div><div class="obn">Passo ${OBI + 1} de ${OBL.length}</div><h2 class="obq">${s.q}</h2><p class="obh">${s.h || "&nbsp;"}</p>${s.f.map((f, k) => `<div class="f ni fld" style="--d:${0.08 + k * 0.06}s"><label class="obl">${f[2]}</label><input id="ob_${f[0]}" type="${f[1]}" ${f[1] === "number" ? 'inputmode="decimal"' : ""} value="${esc(OBD[f[0]] || "")}" onkeydown="if(event.key==='Enter')obNext()"></div>`).join("")}<div class="obf">${OBI ? '<button class="obfb" onclick="obBack()">Voltar</button>' : ""}<button class="obfb" onclick="OBI++;obStep()">Pular</button><button class="go" onclick="obNext()"><span>${OBI === OBL.length - 1 ? "Concluir" : "Continuar"}</span></button></div></div>`;
+          `<div class="obw"><div class="obt"><button class="obfb" onclick="obBack()" ${OBI ? "" : "disabled"}>‹ Voltar</button><button class="obfb" onclick="obClose()">Fechar</button></div>${obSeg()}<div class="obn">Pergunta ${OBI + 1} de ${OBL.length}</div><h2 class="obq">${s.q}</h2><p class="obh">${s.h || "&nbsp;"}</p>${s.f.map((f, k) => `<div class="f ni fld" style="--d:${0.08 + k * 0.06}s"><label class="obl">${f[2]}</label><input id="ob_${f[0]}" type="${f[1]}" ${f[1] === "number" ? 'inputmode="decimal"' : ""} value="${esc(OBD[f[0]] || "")}" onkeydown="if(event.key==='Enter')obNext()"></div>`).join("")}<div class="obf"><button class="obfb" onclick="obSkip()">Pular</button><button class="go" onclick="obNext()"><span>${OBR ? "Salvar" : OBI === OBL.length - 1 ? "Revisar" : "Continuar"}</span></button></div></div>`;
         const i = $("#ob_" + s.f[0][0]);
         i && i.focus();
       }
+      function obReview() {
+        const rows = OBL.map((s, k) => {
+          const v = s.f
+            .map((f) =>
+              OBD[f[0]]
+                ? `${f[2].replace(/\s*\(.*\)/, "")}: ${esc(OBD[f[0]])}`
+                : "",
+            )
+            .filter(Boolean)
+            .join(" · ");
+          return `<div class="item row"><div class="it"><b>${s.q}</b><div class="mut">${v || "Pulado"}</div></div><button class="g" onclick="OBR=1;OBI=${k};obStep()">Editar</button></div>`;
+        }).join("");
+        $("#ob").innerHTML =
+          `<div class="obw"><div class="obt"><button class="obfb" onclick="OBR=0;OBI=OBL.length-1;obStep()">‹ Voltar</button><button class="obfb" onclick="obClose()">Fechar</button></div>${obSeg()}<h2 class="obq">Confira suas respostas</h2><p class="obh">Toque em Editar para mudar qualquer uma.</p>${rows}<div class="obf"><button class="go" onclick="obEnd()"><span>Concluir</span></button></div></div>`;
+      }
+      function obJump(k) {
+        obSave();
+        OBR = 0;
+        OBI = k;
+        obStep();
+      }
       function obBack() {
+        obSave();
         if (OBI > 0) {
+          OBR = 0;
           OBI--;
           obStep();
         }
       }
-      function obNext() {
-        OBL[OBI].f.forEach((f) => (OBD[f[0]] = $("#ob_" + f[0]).value.trim()));
-        OBI++;
+      function obSkip() {
+        OBR ? ((OBR = 0), (OBI = OBL.length)) : OBI++;
         obStep();
+      }
+      function obNext() {
+        obSave();
+        OBR ? ((OBR = 0), (OBI = OBL.length)) : OBI++;
+        obStep();
+      }
+      function obClose() {
+        obSave();
+        if (
+          Object.values(OBD).some(Boolean) &&
+          !confirm("Sair sem concluir? As respostas serão descartadas.")
+        )
+          return;
+        S.onb = 1;
+        persist();
+        $("#ob").style.display = "none";
       }
       function obEnd() {
         const d = OBD,
@@ -4437,6 +4771,58 @@
           EMR.test(e.target.value.trim()),
         ),
       );
+      function listHtml(tx) {
+        if (!tx.length)
+          return '<div class="em mut">Nada neste mês. Escreva um gasto na barra de baixo, por texto, voz ou foto.</div>';
+        const t = today(),
+          y = new Date(Date.now() - 864e5).toLocaleDateString("sv"),
+          by = {};
+        [...tx]
+          .sort(
+            (a, b) => b.data.localeCompare(a.data) || (b.ts || 0) - (a.ts || 0),
+          )
+          .forEach((x) => (by[x.data] = by[x.data] || []).push(x));
+        return Object.keys(by)
+          .sort()
+          .reverse()
+          .map((d) => {
+            const rows = by[d],
+              tot = sum(rows.filter((x) => x.tipo === "gasto")),
+              lb =
+                d === t
+                  ? "Hoje"
+                  : d === y
+                    ? "Ontem"
+                    : new Date(d + "T12:00").toLocaleDateString("pt-BR", {
+                        weekday: "short",
+                        day: "2-digit",
+                        month: "2-digit",
+                      });
+            return (
+              `<div class="dh"><span>${lb}</span>${tot ? `<span class="mut">−${brl(tot)}</span>` : ""}</div>` +
+              rows
+                .map((x) => {
+                  const col =
+                      PAL[Math.max(0, CATS.indexOf(x.cat)) % PAL.length],
+                    sg =
+                      x.tipo === "receita"
+                        ? "+"
+                        : x.tipo === "gasto"
+                          ? "−"
+                          : "↗ ";
+                  return `<div class="item row"><div class="av" style="background:${col}26;color:${col}">${esc((x.cat || "?").charAt(0))}</div><div class="it"><b>${esc(x.desc || x.cat)}</b><div class="mut">${esc(x.cat)} · ${esc(x.pay)}</div></div><div class="amt ${x.tipo === "receita" ? "pos" : x.tipo === "gasto" ? "" : "mut"}">${sg}${brl(x.valor)}<button class="g" aria-label="Editar" onclick="edOpen('${x.id}')">✎</button><button class="g" aria-label="Apagar" onclick="del('${x.id}')">✕</button></div></div>`;
+                })
+                .join("")
+            );
+          })
+          .join("");
+      }
+      function setupCard() {
+        $("#setup").innerHTML =
+          !S.contas.length && !S.rec.length && !S.cartoes.length
+            ? '<div class="card sup"><div><b>Configure a Cifra</b><div class="mut">Responda algumas perguntas e eu monto contas, limites e metas.</div></div><button onclick="obShow()">Começar</button></div>'
+            : "";
+      }
       const _am2 = authMode;
       authMode = function (m) {
         _am2(m);
