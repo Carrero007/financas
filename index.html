@@ -87,11 +87,11 @@ button,.cd{transition:transform .12s,background .2s,color .2s,opacity .2s}button
 const $=s=>document.querySelector(s),brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const CATS=['Moradia','Alimentação','Mercado','Transporte','Lazer','Saúde','Educação','Assinaturas','Compras','Outros'],RCATS=['Salário','Renda extra'],PAYS=['Pix','Débito','Crédito','Dinheiro'],TIPOS=['gasto','receita','invest'];
 const today=()=>new Date().toLocaleDateString('sv'),uid=()=>Math.random().toString(36).slice(2,9),mk=d=>d.slice(0,7);
-let U=JSON.parse(localStorage.u||'null'),API='https://script.google.com/macros/s/AKfycbylYZg-xcVL59L4WDyhguYyBHgr_9Vl-w7W25VHq5TJ2kzUxwpjpPIQQaeh1_Ipj78/exec',S={tx:[],rec:[],lim:{},gen:{},del:[]},M=mk(today()),C={},T;
+let U=JSON.parse(localStorage.u||'null'),API='https://script.google.com/macros/s/AKfycbylYZg-xcVL59L4WDyhguYyBHgr_9Vl-w7W25VHq5TJ2kzUxwpjpPIQQaeh1_Ipj78/exec',S={tx:[],rec:[],lim:{},gen:{},del:[],rep:[],cv:[]},ON=0,M=mk(today()),C={},T;
 if(API.startsWith('COLE'))API=JSON.parse(localStorage.cf||'{}').url||'';
 const SK=()=>'g_'+U.uid,store=()=>U&&(localStorage[SK()]=JSON.stringify(S));
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
-function theme(t){const d=document.documentElement;t=typeof t==='string'?t:(d.dataset.t==='dark'?'light':'dark');d.dataset.t=t;localStorage.th=t;$('#th').textContent=t==='dark'?'☀':'☾';document.querySelector('meta[name=theme-color]').content=css('--bg');if(S.tx)render()}
+function theme(t){const d=document.documentElement;t=typeof t==='string'?t:(d.dataset.t==='dark'?'light':'dark');d.dataset.t=t;localStorage.th=t;$('#th').textContent=t==='dark'?'☀':'☾';document.querySelector('meta[name=theme-color]').content=css('--bg');if(ON)render()}
 const persist=()=>{store();render();clearTimeout(T);T=setTimeout(sync,800)};
 const api=b=>fetch(API,{method:'POST',body:JSON.stringify({...b,uid:U.uid,tok:U.tok})}).then(r=>r.json()).then(j=>{if(j.error==='sessao'){localStorage.removeItem('u');U=null;showAuth('Sessão expirada, entre novamente.')}if(j.error)throw new Error(j.error);return j});
 let ST={sheet:'off',ia:'off',model:'',msg:''},busy=0;
@@ -124,8 +124,8 @@ function sub(n){SUB=n;$('#sc').style.display=n?'none':'block';$('#sr').style.dis
 const fmt=t=>t?new Date(t).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'',safe=t=>String(t||'').replace(/[^\x20-\x7E\u00A0-\u00FF]/g,'');
 function anim(el,to){const from=el._v==null?to:el._v;el._v=to;if(from===to||matchMedia('(prefers-reduced-motion:reduce)').matches){el.textContent=brl(to);return}const t0=performance.now();(function f(t){const p=Math.min(1,(t-t0)/450);el.textContent=brl(from+(to-from)*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)})(t0)}
 function curCv(){let c=S.cv.find(x=>x.id===CVID);if(!c){c={id:uid(),ts:Date.now(),tt:'',m:[]};S.cv.unshift(c);CVID=c.id;while(S.cv.length>10){S.cv.sort((a,b)=>b.ts-a.ts);S.del.push(S.cv.pop().id)}}return c}
-function chRender(sc){const e=$('#msgs'),c=S.cv.find(x=>x.id===CVID),m=c?c.m:[],pv=chRender.k===CVID?chRender.n:m.length,sel=$('#cvs');
- sel.innerHTML='<option value="">Nova conversa</option>'+[...S.cv].sort((a,b)=>b.ts-a.ts).map(x=>`<option value="${x.id}">${esc(x.tt||'Conversa')} · ${new Date(x.ts).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</option>`).join('');sel.value=CVID;
+function chRender(sc){const e=$('#msgs'),c=(S.cv||[]).find(x=>x.id===CVID),m=c?c.m:[],pv=chRender.k===CVID?chRender.n:m.length,sel=$('#cvs');
+ sel.innerHTML='<option value="">Nova conversa</option>'+[...(S.cv||[])].sort((a,b)=>b.ts-a.ts).map(x=>`<option value="${x.id}">${esc(x.tt||'Conversa')} · ${new Date(x.ts).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</option>`).join('');sel.value=CVID;
  e.innerHTML=(m.length||TYP||ERR?'':'<div class="card mut" style="text-align:center">Pergunte sobre seus gastos, economia, dívidas ou investimentos.<br>Respondo só sobre finanças.</div>')
   +m.map((x,i)=>`<div class="bub ${x.r}${i>=pv?' pop':''}">${md(x.t)}<span class="tm">${fmt(x.ts)}</span></div>`).join('')
   +(TYP?'<div class="bub b pop"><span class="dots"><i></i><i></i><i></i></span></div>':'')+(ERR?`<div class="bub b err">${esc(ERR)}</div>`:'');
@@ -137,7 +137,7 @@ async function chatSend(t){const c=curCv();if(!c.tt)c.tt=t.slice(0,32);c.m.push(
 function delCv(){if(!CVID||!confirm('Excluir esta conversa?'))return;S.del.push(CVID);S.cv=S.cv.filter(x=>x.id!==CVID);CVID='';persist()}
 function delRep(id){if(!confirm('Excluir este relatório?'))return;S.del.push(id);S.rep=S.rep.filter(x=>x.id!==id);persist()}
 function relInfo(em){const n=ST.rel;$('#relq').textContent=em||(n==null?'Até 3 relatórios por dia.':`Restam ${n} de 3 relatórios hoje.`);$('#relb').disabled=n===0}
-function relRender(){if(!U)return;$('#relo').innerHTML=[...S.rep].sort((a,b)=>b.ts-a.ts).map((r,i)=>`<details class="card rp" ${(OP[r.id]??(i===0))?'open':''} ontoggle="OP['${r.id}']=this.open"><summary>Relatório · ${r.mes} <span class="mut">${new Date(r.ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span></summary><div style="line-height:1.5;margin:12px 0">${md(r.t)}</div><div class="row" style="justify-content:flex-start"><button onclick="pdf('${r.id}')">Baixar PDF</button><button class="g" onclick="delRep('${r.id}')">Excluir</button></div></details>`).join('');relInfo()}
+function relRender(){if(!U)return;$('#relo').innerHTML=[...(S.rep||[])].sort((a,b)=>b.ts-a.ts).map((r,i)=>`<details class="card rp" ${(OP[r.id]??(i===0))?'open':''} ontoggle="OP['${r.id}']=this.open"><summary>Relatório · ${r.mes} <span class="mut">${new Date(r.ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span></summary><div style="line-height:1.5;margin:12px 0">${md(r.t)}</div><div class="row" style="justify-content:flex-start"><button onclick="pdf('${r.id}')">Baixar PDF</button><button class="g" onclick="delRep('${r.id}')">Excluir</button></div></details>`).join('');relInfo()}
 async function gerar(){if(!U||!API||!navigator.onLine)return relInfo('⚠ Precisa de internet e conexão com o servidor.');const b=$('#relb');b.disabled=true;b.textContent='Gerando…';let em='';
  try{const a=await api({action:'report',resumo:resumo()});ST.rel=a.restantes;S.rep.unshift({id:uid(),mes:M,ts:Date.now(),t:a.text});while(S.rep.length>15)S.del.push(S.rep.pop().id);persist()}catch(e){em='⚠ '+e.message}
  b.textContent='Gerar relatório do mês';b.disabled=false;relInfo(em)}
@@ -205,7 +205,7 @@ async function auth(){const cpf=$('#acpf').value,senha=$('#apw').value;aerr();
   U={uid:r.uid,tok:r.tok,nome:r.nome||''};localStorage.u=JSON.stringify(U);$('#apw').value=$('#apw2').value='';start()}
  catch(e){aerr(e.message==='Failed to fetch'?'Sem conexão com o servidor.':e.message)}$('#abtn').disabled=0}
 function start(){let l=localStorage[SK()];if(!l&&localStorage.g){l=localStorage.g;localStorage.removeItem('g')}
- S=JSON.parse(l||'null')||{tx:[],rec:[],lim:{},gen:{},del:[]};S.del=S.del||[];S.rep=S.rep||[];S.cv=S.cv||[];CVID='';M=mk(today());$('#auth').style.display='none';gen();store();render();relRender();chRender();pills();sync()}
+ S=JSON.parse(l||'null')||{tx:[],rec:[],lim:{},gen:{},del:[]};S.del=S.del||[];S.rep=S.rep||[];S.cv=S.cv||[];CVID='';M=mk(today());ON=1;$('#auth').style.display='none';gen();store();render();relRender();chRender();pills();sync()}
 const say=t=>{const e=$('#say');e.textContent=t;e.classList.remove('f');void e.offsetWidth;e.classList.add('f')},num=x=>+x.replace(/\.(?=\d{3}\b)/g,'').replace(',','.');
 function local(t){const inv=/invest/i.test(t),rec=/recebi|sal[aá]rio|ganhei/i.test(t),pay=PAYS.find(p=>t.toLowerCase().includes(p.toLowerCase()))||'Pix';
  return t.split(/[;\n]+/).map(s=>s.trim()).filter(Boolean).map(s=>{const n=[...s.matchAll(/(?<![A-Za-z\d])(\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)(?![A-Za-z\d])/g)];
