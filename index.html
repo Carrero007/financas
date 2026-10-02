@@ -93,10 +93,10 @@ const SK=()=>'g_'+U.uid,store=()=>U&&(localStorage[SK()]=JSON.stringify(S));
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 function theme(t){const d=document.documentElement;t=typeof t==='string'?t:(d.dataset.t==='dark'?'light':'dark');d.dataset.t=t;localStorage.th=t;$('#th').textContent=t==='dark'?'☀':'☾';document.querySelector('meta[name=theme-color]').content=css('--bg');if(ON)render()}
 const persist=()=>{store();render();clearTimeout(T);T=setTimeout(sync,800)};
-const api=b=>fetch(API,{method:'POST',body:JSON.stringify({...b,uid:U.uid,tok:U.tok})}).then(r=>r.json()).then(j=>{if(j.error==='sessao'){localStorage.removeItem('u');U=null;showAuth('Sessão expirada, entre novamente.')}if(j.error)throw new Error(j.error);return j});
+const api=b=>{const c=new AbortController(),tm=setTimeout(()=>c.abort(),b.action==='report'?60000:30000);return fetch(API,{method:'POST',signal:c.signal,body:JSON.stringify({...b,uid:U.uid,tok:U.tok})}).then(r=>r.json()).then(j=>{if(j.error==='sessao'){localStorage.removeItem('u');U=null;showAuth('Sessão expirada, entre novamente.')}if(j.error)throw new Error(j.error);return j}).catch(e=>{throw e.name==='AbortError'?new Error('o servidor demorou demais para responder'):e}).finally(()=>clearTimeout(tm))};
 let ST={sheet:'off',ia:'off',model:'',msg:''},busy=0;
 function pills(){const on=navigator.onLine,p=(k,t)=>`<span class="pill ${k}"><i></i>${t}</span>`;
- $('#pills').innerHTML=p(on?'ok':'err',on?'Online':'Offline')+p(ST.sheet,'Planilha · '+({ok:'sincronizada',err:'erro',off:'desconectada'})[ST.sheet])+p(ST.ia,'IA · '+({ok:ST.model,err:'indisponível',off:'desconectada'})[ST.ia])+(ST.msg?`<div class="mut" style="flex-basis:100%">${ST.msg}</div>`:'')}
+ $('#pills').innerHTML=p(on?'ok':'err',on?'Online':'Offline')+p(ST.sheet,'Planilha · '+({ok:'sincronizada',err:'erro',off:busy?'conectando…':'desconectada'})[ST.sheet])+p(ST.ia,'IA · '+({ok:ST.model,err:'indisponível',off:busy?'conectando…':'desconectada'})[ST.ia])+(ST.msg?`<div class="mut" style="flex-basis:100%">${ST.msg}</div>`:'')}
 function merge(R){const dl=new Set([...(S.del||[]),...(R.del||[])]);S.del=[...dl];
  const un=(a,b)=>{const m={};[...(b||[]),...(a||[])].forEach(x=>m[x.id]=x);return Object.values(m).filter(x=>!dl.has(x.id))};
  const unc=(a,b)=>{const m={};[...(b||[]),...(a||[])].forEach(x=>{if(!m[x.id]||(x.ts||0)>=(m[x.id].ts||0))m[x.id]=x});return Object.values(m).filter(x=>!dl.has(x.id))};S.rep=un(S.rep,R.rep);S.cv=unc(S.cv,R.cv);S.tx=un(S.tx,R.tx);S.rec=un(S.rec,R.rec);S.gen={...R.gen,...S.gen};S.lim={...R.lim,...S.lim}}
@@ -150,7 +150,8 @@ function pdf(id){const r=S.rep.find(x=>x.id===id);if(!r)return;if(!window.jspdf)
   d.splitTextToSize(l||' ',W).forEach(t=>{if(y>790){d.addPage();y=60}d.text(t,50,y);y+=b?18:15})});
  d.save(`relatorio-${r.mes}.pdf`)}
 function alerts(){const[y,m]=M.split('-').map(Number),g=S.tx.filter(x=>x.tipo==='gasto'&&mk(x.data)===M),bc=grp(g,x=>x.cat),cur=M===mk(today()),nd=new Date(y,m,0).getDate(),dia=cur?+today().slice(8):nd,L=[];
- Object.keys(S.lim).filter(k=>S.lim[k]>0).forEach(k=>{const v=bc[k]||0,lm=S.lim[k],p=v/lm*100,pr=v/dia*nd;
+ const fx=x=>x.id[0]==='r'&&S.gen&&S.gen[x.id.slice(1)],hoje=+today().slice(8),proj=(k,v)=>{const gk=g.filter(x=>x.cat===k),vt=gk.filter(x=>!fx(x)),vv=sum(vt),fut=cur?sum(S.rec.filter(r=>r.tipo==='gasto'&&r.cat===k&&Math.min(r.dia,28)>hoje)):0;return v-vv+fut+(dia>=7&&vt.length>=3?vv/dia*nd:vv)};
+ Object.keys(S.lim).filter(k=>S.lim[k]>0).forEach(k=>{const v=bc[k]||0,lm=S.lim[k],p=v/lm*100,pr=proj(k,v);
   if(p>=100)L.push({n:2,p,t:`Limite estourado em ${k}: ${brl(v)} de ${brl(lm)} (${brl(v-lm)} acima).`});
   else if(p>=80)L.push({n:1,p,t:`${k} está em ${Math.round(p)}% do limite. Restam ${brl(lm-v)}.`});
   else if(cur&&v>0&&pr>lm)L.push({n:1,p,t:`No ritmo atual, ${k} deve fechar o mês em ${brl(pr)}, acima do limite de ${brl(lm)}.`})});
