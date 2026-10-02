@@ -35,11 +35,12 @@ input,select{font:inherit;border:1px solid var(--ln);border-radius:12px;padding:
 <div id="auth" class="auth"><div style="max-width:380px;margin:8vh auto 0">
 <div class="big" style="font-size:30px">Meu Caixa</div><p class="mut" style="margin:6px 0 18px">Suas finanças, só suas.</p>
 <div class="tabs" style="margin:0 0 12px"><button id="m1" class="on" onclick="authMode('login')">Entrar</button><button id="m2" onclick="authMode('signup')">Criar conta</button></div>
-<div class="card"><input id="acpf" inputmode="numeric" placeholder="CPF" oninput="this.value=mask(this.value)" autocomplete="username">
+<div class="card"><div id="a0" style="display:none"><input id="anome" maxlength="60" placeholder="Seu nome (como quer ser chamado)" style="margin-bottom:8px" autocomplete="name"></div><input id="acpf" inputmode="numeric" placeholder="CPF" oninput="this.value=mask(this.value)" autocomplete="username">
 <input id="apw" type="password" placeholder="Senha (mín. 8 caracteres)" style="margin-top:8px" autocomplete="current-password">
 <div id="a2" style="display:none"><input id="apw2" type="password" placeholder="Repita a senha" style="margin-top:8px" autocomplete="new-password"><input id="ainv" placeholder="Código de convite (se houver)" style="margin-top:8px"></div>
 <div id="aerr" class="neg" style="font-size:13px;min-height:18px;margin:10px 0 4px"></div><button id="abtn" style="width:100%" onclick="auth()">Entrar</button></div>
 <p class="mut" style="font-size:12px;text-align:center">Seu CPF é guardado apenas de forma criptografada (hash).</p></div></div>
+<div id="hi"></div>
 <div class="pills" id="pills" onclick="sync()"></div>
 <div id="t0" class="sec on">
  <div class="card"><h3>SALDO DO MÊS</h3><div class="big" id="saldo"></div>
@@ -60,7 +61,7 @@ input,select{font:inherit;border:1px solid var(--ln);border-radius:12px;padding:
   <input id="rdia" type="number" placeholder="Dia do mês"><select id="rc"></select><select id="rt"><option value="gasto">Gasto</option><option value="receita">Receita</option></select><select id="rp"></select></div>
   <button style="margin-top:10px" onclick="addRec()">Adicionar fixo</button></div>
  <div class="card"><h3>LIMITE MENSAL POR CATEGORIA (R$)</h3><div id="limf"></div></div>
- <div class="card"><h3>CONTA</h3><button class="g" onclick="logout()">Sair da conta</button></div>
+ <div class="card"><h3>CONTA</h3><input id="nm" maxlength="60" placeholder="Seu nome"><div class="row" style="margin-top:10px"><button onclick="saveNome($('#nm').value)">Salvar nome</button><button class="g" onclick="logout()">Sair da conta</button></div></div>
 </div>
 
 <div class="dock"><div id="say"></div>
@@ -85,7 +86,7 @@ function merge(R){const dl=new Set([...(S.del||[]),...(R.del||[])]);S.del=[...dl
  const un=(a,b)=>{const m={};[...(b||[]),...(a||[])].forEach(x=>m[x.id]=x);return Object.values(m).filter(x=>!dl.has(x.id))};
  S.tx=un(S.tx,R.tx);S.rec=un(S.rec,R.rec);S.gen={...R.gen,...S.gen};S.lim={...R.lim,...S.lim}}
 async function sync(){if(!U||!API){ST.sheet=ST.ia='off';ST.msg=API?'':'Servidor não configurado.';return pills()}if(busy)return;busy=1;ST.msg='Sincronizando…';pills();
- try{const p=await api({action:'ping'});ST.ia=p.ia?'ok':'err';ST.model=p.model;ST.msg=p.ia?'':'IA: '+p.iaerr;
+ try{const p=await api({action:'ping'});ST.ia=p.ia?'ok':'err';if(p.nome&&p.nome!==U.nome){U.nome=p.nome;localStorage.u=JSON.stringify(U);hi()}ST.model=p.model;ST.msg=p.ia?'':'IA: '+p.iaerr;
   const r=await api({action:'load'});if(r.data)merge(r.data);gen();store();render();await api({action:'save',data:S});ST.sheet='ok'}
  catch(e){ST.sheet='err';ST.ia='off';ST.msg=navigator.onLine?'Planilha: '+e.message:'Sem internet, os dados ficam salvos no aparelho e sincronizam depois.'}
  busy=0;pills()}
@@ -95,6 +96,10 @@ function tab(i){document.querySelectorAll('.sec').forEach((e,j)=>e.classList.tog
 const sum=a=>a.reduce((s,x)=>s+x.valor,0),grp=(a,f)=>a.reduce((o,x)=>{const k=f(x);o[k]=(o[k]||0)+x.valor;return o},{});
 const PAL=['#d4f25a','#7aa6ff','#e5604d','#f2b84b','#2f9e6e','#b48cf2','#5cc8c8','#ff9db1','#8a8a85','#a3b18a'];
 function ch(id,type,labels,sets,opt={}){const cv=$('#'+id),emp=!sets.some(d=>d.data.some(v=>v!==0));let e=cv.nextElementSibling;if(!e||!e.classList.contains('em')){e=document.createElement('div');e.className='mut em';e.textContent='Sem dados neste mês.';cv.after(e)}e.style.display=emp?'block':'none';cv.style.display=emp?'none':'block';if(emp){C[id]&&C[id].destroy();delete C[id];return}C[id]&&C[id].destroy();C[id]=new Chart($('#'+id),{type,data:{labels,datasets:sets},options:{responsive:true,plugins:{legend:{display:sets.length>1||type==='doughnut',position:'bottom',labels:{boxWidth:10,color:css('--mut')}}},cutout:type==='doughnut'?'68%':undefined,scales:type==='doughnut'?{}:{x:{grid:{display:false},ticks:{color:css('--mut')}},y:{grid:{color:css('--ln')},ticks:{color:css('--mut')}}},...opt}})}
+const esc=t=>String(t).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'})[c]),first=n=>{const f=(n||'').trim().split(/\s+/)[0]||'';return f.charAt(0).toUpperCase()+f.slice(1).toLowerCase()};
+function hi(){const e=$('#hi');if(!U)return;const k=U.nome||'';if(hi.k!==k||!e.innerHTML){hi.k=k;e.innerHTML=k?`<div style="font-size:22px;font-weight:700;margin:4px 0 12px">Olá, ${esc(first(k))}</div>`:`<div class="card"><h3>BEM-VINDO</h3><div class="row"><input id="nm0" maxlength="60" placeholder="Como podemos te chamar?"><button onclick="saveNome($('#nm0').value)">OK</button></div></div>`}
+ const n=$('#nm');if(n&&document.activeElement!==n)n.value=k}
+function saveNome(v){v=(v||'').trim().slice(0,60);if(!v)return;U.nome=v;localStorage.u=JSON.stringify(U);hi();if(API&&navigator.onLine)api({action:'nome',nome:v}).catch(()=>{})}
 let SEL='';
 function cal(tx,y,m){const nd=new Date(y,m,0).getDate(),off=new Date(y,m-1,1).getDay(),by={};
  tx.forEach(x=>{const b=by[x.data]=by[x.data]||{g:0,r:0,i:0};b[x.tipo==='gasto'?'g':x.tipo==='receita'?'r':'i']+=x.valor});
@@ -106,7 +111,7 @@ function cal(tx,y,m){const nd=new Date(y,m,0).getDate(),off=new Date(y,m-1,1).ge
  const l=tx.filter(x=>x.data===SEL);
  $('#cald').innerHTML=SEL?`<b>${SEL.split('-').reverse().join('/')}</b>`+(l.map(x=>`<div class="row" style="margin-top:6px"><span>${x.desc||x.cat}</span><span class="${x.tipo==='receita'?'pos':''}">${x.tipo==='receita'?'+':x.tipo==='gasto'?'−':'↗ '}${brl(x.valor)}</span></div>`).join('')||'<div class="mut">Sem lançamentos neste dia.</div>'):'<span class="mut">Toque num dia para ver os lançamentos. Quanto mais vermelho, maior o gasto.</span>'}
 function selDay(d){SEL=SEL===d?'':d;render()}
-function render(){
+function render(){hi();
  const ink=css('--ink'),[y,m]=M.split('-'),tx=S.tx.filter(x=>mk(x.data)===M),g=tx.filter(x=>x.tipo==='gasto'),r=tx.filter(x=>x.tipo==='receita'),iv=tx.filter(x=>x.tipo==='invest');
  $('#mes').textContent=new Date(y,m-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});$('#nx').disabled=M>=mk(today());
  const sd=sum(r)-sum(g)-sum(iv);$('#saldo').textContent=brl(sd);$('#saldo').className='big '+(sd<0?'neg':'');$('#rec').textContent=brl(sum(r));$('#gas').textContent=brl(sum(g));$('#inv').textContent=brl(sum(iv));
@@ -131,14 +136,14 @@ async function logout(){if(ST.sheet!=='ok'&&!confirm('A última sincronização 
 const mask=v=>v.replace(/\D/g,'').slice(0,11).replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');
 const cpfOk=c=>{c=c.replace(/\D/g,'');if(c.length!==11||/^(\d)\1+$/.test(c))return 0;for(let t=9;t<11;t++){let q=0;for(let i=0;i<t;i++)q+=c[i]*(t+1-i);if((q*10%11)%10!=c[t])return 0}return 1};
 let mode='login';const aerr=t=>$('#aerr').textContent=t||'';
-function authMode(m){mode=m;$('#a2').style.display=m==='signup'?'block':'none';$('#m1').classList.toggle('on',m==='login');$('#m2').classList.toggle('on',m==='signup');$('#abtn').textContent=m==='login'?'Entrar':'Criar conta';aerr()}
+function authMode(m){mode=m;$('#a0').style.display=$('#a2').style.display=m==='signup'?'block':'none';$('#m1').classList.toggle('on',m==='login');$('#m2').classList.toggle('on',m==='signup');$('#abtn').textContent=m==='login'?'Entrar':'Criar conta';aerr()}
 function showAuth(t){$('#auth').style.display='block';aerr(t)}
 async function auth(){const cpf=$('#acpf').value,senha=$('#apw').value;aerr();
  if(!cpfOk(cpf))return aerr('CPF inválido.');if(senha.length<8)return aerr('A senha precisa de 8 caracteres ou mais.');
- if(mode==='signup'&&senha!==$('#apw2').value)return aerr('As senhas não coincidem.');if(!API)return aerr('Servidor não configurado.');
+ if(mode==='signup'&&!$('#anome').value.trim())return aerr('Informe seu nome.');if(mode==='signup'&&senha!==$('#apw2').value)return aerr('As senhas não coincidem.');if(!API)return aerr('Servidor não configurado.');
  $('#abtn').disabled=1;
- try{const r=await fetch(API,{method:'POST',body:JSON.stringify({action:mode,cpf:cpf.replace(/\D/g,''),senha,convite:$('#ainv').value})}).then(r=>r.json());if(r.error)throw new Error(r.error);
-  U={uid:r.uid,tok:r.tok};localStorage.u=JSON.stringify(U);$('#apw').value=$('#apw2').value='';start()}
+ try{const r=await fetch(API,{method:'POST',body:JSON.stringify({action:mode,cpf:cpf.replace(/\D/g,''),senha,convite:$('#ainv').value,nome:$('#anome').value})}).then(r=>r.json());if(r.error)throw new Error(r.error);
+  U={uid:r.uid,tok:r.tok,nome:r.nome||''};localStorage.u=JSON.stringify(U);$('#apw').value=$('#apw2').value='';start()}
  catch(e){aerr(e.message==='Failed to fetch'?'Sem conexão com o servidor.':e.message)}$('#abtn').disabled=0}
 function start(){let l=localStorage[SK()];if(!l&&localStorage.g){l=localStorage.g;localStorage.removeItem('g')}
  S=JSON.parse(l||'null')||{tx:[],rec:[],lim:{},gen:{},del:[]};S.del=S.del||[];M=mk(today());$('#auth').style.display='none';gen();store();render();pills();sync()}
@@ -149,7 +154,7 @@ function local(t){const inv=/invest/i.test(t),rec=/recebi|sal[aá]rio|ganhei/i.t
 async function send(){const t=$('#in').value.trim();if(!t)return;$('#in').value='';say('Pensando…');let r,fb='';
  try{if(!U||!API)throw new Error('sem conexão com o servidor');const g=grp(S.tx.filter(x=>x.tipo==='gasto'&&mk(x.data)===M),x=>x.cat);
   const sys=`Você é o assistente financeiro do app Meu Caixa. Hoje é ${today()}. Categorias de gasto: ${CATS}. Receitas: ${RCATS}. Pagamentos: ${PAYS}. Responda SOMENTE JSON. Se o usuário registra movimentos (pode ser vários numa mensagem): {"acao":"lancar","itens":[{"tipo":"gasto"|"receita"|"invest","valor":número,"cat":"...","pay":"...","desc":"curta","data":"YYYY-MM-DD"}]}. Compra de ativos/aplicações (ações, FIIs, tesouro, cripto) é tipo "invest" com cat "Investimento"; números em tickers como ITSA4 ou KNSC11 NÃO são valores; o valor é o que vem depois de "->" ou ":" . Nunca use datas futuras. pay padrão Pix. Se for pergunta ou pedido de dica: {"acao":"pergunta","resposta":"resposta curta em pt-BR"}. Dados de ${M}: receitas ${sum(S.tx.filter(x=>x.tipo==='receita'&&mk(x.data)===M))}, gastos por categoria ${JSON.stringify(g)}, limites ${JSON.stringify(S.lim)}, últimos lançamentos ${JSON.stringify(S.tx.slice(-15))}.`;
-  r=JSON.parse((await api({action:'ai',system:sys,user:t})).text)}catch(e){fb=e.message;ST.ia='err';ST.msg='IA: '+e.message;pills();r={acao:'lancar',itens:local(t)}}
+  const a=await api({action:'ai',system:sys,user:t});if(a.model){ST.model=a.model;ST.ia='ok';pills()}r=JSON.parse(a.text)}catch(e){fb=e.message;ST.ia='err';ST.msg='IA: '+e.message;pills();r={acao:'lancar',itens:local(t)}}
  if(r.acao==='pergunta')return say(r.resposta);
  const it=(r.itens||[]).filter(x=>x&&+x.valor>0);if(!it.length)return say('Não entendi os valores. '+(fb?'IA indisponível: '+fb:''));
  it.forEach(x=>S.tx.push({id:uid(),data:(x.data&&x.data<=today())?x.data:today(),tipo:TIPOS.includes(x.tipo)?x.tipo:'gasto',valor:+x.valor,cat:x.cat||'Outros',pay:x.pay||'Pix',desc:x.desc||x.cat}));
