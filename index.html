@@ -21,7 +21,7 @@ input,select{font:inherit;border:1px solid var(--ln);border-radius:12px;padding:
 .dock{position:fixed;left:0;right:0;bottom:0;background:var(--dock);backdrop-filter:blur(14px);padding:10px 16px calc(10px + env(safe-area-inset-bottom));max-width:640px;margin:auto}
 .chat{display:flex;gap:8px}.chat input{border-radius:18px;padding:13px 16px;font-size:16px}.chat button{background:var(--ac);color:#141414;font-weight:700;border-radius:18px;padding:0 20px}
 .tabs{display:flex;gap:6px;margin-top:8px}.tabs button{flex:1;background:none;color:var(--mut);padding:9px 4px}.tabs .on{background:var(--c);color:var(--ink);font-weight:600}
-#say{font-size:13px;margin-bottom:8px;min-height:18px;max-height:44px;overflow:auto}
+#say{font-size:13px;margin-bottom:8px;min-height:18px;max-height:64px;overflow:auto}
 .item{padding:11px 0;border-bottom:1px solid var(--ln);align-items:flex-start}.item:last-child{border:0}
 .item>div:first-child{min-width:0}.item b{font-weight:600;word-break:break-word;display:block}
 .amt{white-space:nowrap;text-align:right;display:flex;align-items:center;gap:8px;font-weight:600}.amt button{padding:5px 10px}
@@ -29,9 +29,10 @@ input,select{font:inherit;border:1px solid var(--ln);border-radius:12px;padding:
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .sec{display:none}.sec.on{display:block}canvas{max-height:240px}
 @media(max-width:380px){body{padding:12px 12px 170px}.card{padding:14px}.grid{grid-template-columns:1fr}}
-</style></head><body>
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;font-size:12px;color:var(--mut);cursor:pointer}.pill{display:flex;align-items:center;gap:6px;background:var(--c);border-radius:20px;padding:5px 10px}.pill i{width:7px;height:7px;border-radius:50%;background:var(--mut)}.pill.ok i{background:var(--grn)}.pill.err i{background:var(--red)}.em{padding:20px 0;text-align:center}</style></head><body>
 <div class="nav"><button class="g" onclick="mv(-1)">‹</button><b id="mes"></b><button class="g" id="nx" onclick="mv(1)">›</button><button class="g" id="th" onclick="theme()">☾</button></div>
 
+<div class="pills" id="pills" onclick="sync()"></div>
 <div id="t0" class="sec on">
  <div class="card"><h3>SALDO DO MÊS</h3><div class="big" id="saldo"></div>
   <div class="stats"><div><span class="mut">Receitas</span><b class="pos" id="rec"></b></div><div><span class="mut">Gastos</span><b class="neg" id="gas"></b></div><div><span class="mut">Investido</span><b id="inv"></b></div></div></div>
@@ -64,19 +65,28 @@ input,select{font:inherit;border:1px solid var(--ln);border-radius:12px;padding:
 const $=s=>document.querySelector(s),brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const CATS=['Moradia','Alimentação','Mercado','Transporte','Lazer','Saúde','Educação','Assinaturas','Compras','Outros'],RCATS=['Salário','Renda extra'],PAYS=['Pix','Débito','Crédito','Dinheiro'],TIPOS=['gasto','receita','invest'];
 const today=()=>new Date().toLocaleDateString('sv'),uid=()=>Math.random().toString(36).slice(2,9),mk=d=>d.slice(0,7);
-let S=JSON.parse(localStorage.g||'null')||{tx:[],rec:[],lim:{},gen:{},ts:0},CF=JSON.parse(localStorage.cf||'{}'),M=mk(today()),C={},T;
+let S=JSON.parse(localStorage.g||'null')||{tx:[],rec:[],lim:{},gen:{},del:[],ts:0},CF=JSON.parse(localStorage.cf||'{}'),M=mk(today()),C={},T;
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 function theme(t){const d=document.documentElement;t=typeof t==='string'?t:(d.dataset.t==='dark'?'light':'dark');d.dataset.t=t;localStorage.th=t;$('#th').textContent=t==='dark'?'☀':'☾';document.querySelector('meta[name=theme-color]').content=css('--bg');if(S.tx)render()}
-const persist=()=>{S.ts=Date.now();localStorage.g=JSON.stringify(S);render();clearTimeout(T);T=setTimeout(push,800)};
+const persist=()=>{localStorage.g=JSON.stringify(S);render();clearTimeout(T);T=setTimeout(sync,800)};
 const api=b=>fetch(CF.url,{method:'POST',body:JSON.stringify({...b,token:CF.token})}).then(r=>r.json()).then(j=>{if(j.error)throw new Error(j.error==='token'?'token incorreto':j.error);return j});
-const push=()=>CF.url&&api({action:'save',data:S}).catch(()=>{});
-async function pull(){if(!CF.url)return;try{const r=await api({action:'load'});if(r.data&&r.data.ts>S.ts){S=r.data;localStorage.g=JSON.stringify(S);gen();render()}}catch(e){}}
-function gen(){const t=today(),m=mk(t);S.rec.forEach(r=>{const k=r.id+m;if(S.gen[k])return;const d=m+'-'+String(Math.min(r.dia,28)).padStart(2,'0');if(d<=t){S.tx.push({id:uid(),data:d,tipo:r.tipo,valor:r.valor,cat:r.cat,pay:r.pay,desc:r.desc});S.gen[k]=1}})}
+let ST={sheet:'off',ia:'off',model:'',msg:''},busy=0;
+function pills(){const on=navigator.onLine,p=(k,t)=>`<span class="pill ${k}"><i></i>${t}</span>`;
+ $('#pills').innerHTML=p(on?'ok':'err',on?'Online':'Offline')+p(ST.sheet,'Planilha · '+({ok:'sincronizada',err:'erro',off:'desconectada'})[ST.sheet])+p(ST.ia,'IA · '+({ok:ST.model,err:'indisponível',off:'desconectada'})[ST.ia])+(ST.msg?`<div class="mut" style="flex-basis:100%">${ST.msg}</div>`:'')}
+function merge(R){const dl=new Set([...(S.del||[]),...(R.del||[])]);S.del=[...dl];
+ const un=(a,b)=>{const m={};[...(b||[]),...(a||[])].forEach(x=>m[x.id]=x);return Object.values(m).filter(x=>!dl.has(x.id))};
+ S.tx=un(S.tx,R.tx);S.rec=un(S.rec,R.rec);S.gen={...R.gen,...S.gen};S.lim={...R.lim,...S.lim}}
+async function sync(){if(!CF.url){ST.sheet=ST.ia='off';ST.msg='Configure a conexão em Ajustes.';return pills()}if(busy)return;busy=1;ST.msg='Sincronizando…';pills();
+ try{const p=await api({action:'ping'});ST.ia=p.ia?'ok':'err';ST.model=p.model;ST.msg=p.ia?'':'IA: '+p.iaerr;
+  const r=await api({action:'load'});if(r.data)merge(r.data);gen();localStorage.g=JSON.stringify(S);render();await api({action:'save',data:S});ST.sheet='ok'}
+ catch(e){ST.sheet='err';ST.ia='off';ST.msg=navigator.onLine?'Planilha: '+e.message:'Sem internet, os dados ficam salvos no aparelho e sincronizam depois.'}
+ busy=0;pills()}
+function gen(){const t=today(),m=mk(t);S.rec.forEach(r=>{const k=r.id+m;if(S.gen[k])return;const d=m+'-'+String(Math.min(r.dia,28)).padStart(2,'0');if(d<=t){S.tx.push({id:'r'+r.id+m,data:d,tipo:r.tipo,valor:r.valor,cat:r.cat,pay:r.pay,desc:r.desc});S.gen[k]=1}})}
 function mv(n){const[y,m]=M.split('-').map(Number),k=new Date(y,m-1+n,1).toLocaleDateString('sv').slice(0,7);if(k>mk(today()))return;M=k;render()}
 function tab(i){document.querySelectorAll('.sec').forEach((e,j)=>e.classList.toggle('on',i===j));document.querySelectorAll('.tabs button').forEach((e,j)=>e.classList.toggle('on',i===j))}
 const sum=a=>a.reduce((s,x)=>s+x.valor,0),grp=(a,f)=>a.reduce((o,x)=>{const k=f(x);o[k]=(o[k]||0)+x.valor;return o},{});
 const PAL=['#d4f25a','#7aa6ff','#e5604d','#f2b84b','#2f9e6e','#b48cf2','#5cc8c8','#ff9db1','#8a8a85','#a3b18a'];
-function ch(id,type,labels,sets,opt={}){C[id]&&C[id].destroy();C[id]=new Chart($('#'+id),{type,data:{labels,datasets:sets},options:{responsive:true,plugins:{legend:{display:sets.length>1||type==='doughnut',position:'bottom',labels:{boxWidth:10,color:css('--mut')}}},cutout:type==='doughnut'?'68%':undefined,scales:type==='doughnut'?{}:{x:{grid:{display:false},ticks:{color:css('--mut')}},y:{grid:{color:css('--ln')},ticks:{color:css('--mut')}}},...opt}})}
+function ch(id,type,labels,sets,opt={}){const cv=$('#'+id),emp=!sets.some(d=>d.data.some(v=>v!==0));let e=cv.nextElementSibling;if(!e||!e.classList.contains('em')){e=document.createElement('div');e.className='mut em';e.textContent='Sem dados neste mês.';cv.after(e)}e.style.display=emp?'block':'none';cv.style.display=emp?'none':'block';if(emp){C[id]&&C[id].destroy();delete C[id];return}C[id]&&C[id].destroy();C[id]=new Chart($('#'+id),{type,data:{labels,datasets:sets},options:{responsive:true,plugins:{legend:{display:sets.length>1||type==='doughnut',position:'bottom',labels:{boxWidth:10,color:css('--mut')}}},cutout:type==='doughnut'?'68%':undefined,scales:type==='doughnut'?{}:{x:{grid:{display:false},ticks:{color:css('--mut')}},y:{grid:{color:css('--ln')},ticks:{color:css('--mut')}}},...opt}})}
 function render(){
  const ink=css('--ink'),[y,m]=M.split('-'),tx=S.tx.filter(x=>mk(x.data)===M),g=tx.filter(x=>x.tipo==='gasto'),r=tx.filter(x=>x.tipo==='receita'),iv=tx.filter(x=>x.tipo==='invest');
  $('#mes').textContent=new Date(y,m-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});$('#nx').disabled=M>=mk(today());
@@ -97,9 +107,9 @@ function render(){
  $('#limf').innerHTML=CATS.map(c=>`<div class="row" style="margin-bottom:6px"><span>${c}</span><input type="number" inputmode="decimal" style="width:120px" value="${S.lim[c]||''}" onchange="S.lim['${c}']=+this.value;persist()"></div>`).join('');
  $('#url').value=CF.url||'';$('#tok').value=CF.token||'';
 }
-const del=id=>{S.tx=S.tx.filter(x=>x.id!==id);persist()},delRec=id=>{S.rec=S.rec.filter(x=>x.id!==id);persist()};
+const del=id=>{S.del=[...(S.del||[]),id];S.tx=S.tx.filter(x=>x.id!==id);persist()},delRec=id=>{S.del=[...(S.del||[]),id];S.rec=S.rec.filter(x=>x.id!==id);persist()};
 function addRec(){const v=+$('#rv').value;if(!$('#rd').value||!v)return;S.rec.push({id:uid(),desc:$('#rd').value,valor:v,dia:+$('#rdia').value||1,cat:$('#rc').value,pay:$('#rp').value,tipo:$('#rt').value});gen();persist();['rd','rv','rdia'].forEach(i=>$('#'+i).value='')}
-function cfg(){CF={url:$('#url').value.trim(),token:$('#tok').value.trim()};localStorage.cf=JSON.stringify(CF);push();pull();say('Conexão salva.')}
+function cfg(){CF={url:$('#url').value.trim(),token:$('#tok').value.trim()};localStorage.cf=JSON.stringify(CF);sync();say('Conexão salva.')}
 const say=t=>$('#say').textContent=t,num=x=>+x.replace(/\.(?=\d{3}\b)/g,'').replace(',','.');
 function local(t){const inv=/invest/i.test(t),rec=/recebi|sal[aá]rio|ganhei/i.test(t),pay=PAYS.find(p=>t.toLowerCase().includes(p.toLowerCase()))||'Pix';
  return t.split(/[;\n]+/).map(s=>s.trim()).filter(Boolean).map(s=>{const n=[...s.matchAll(/(?<![A-Za-z\d])(\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)(?![A-Za-z\d])/g)];
@@ -107,12 +117,12 @@ function local(t){const inv=/invest/i.test(t),rec=/recebi|sal[aá]rio|ganhei/i.t
 async function send(){const t=$('#in').value.trim();if(!t)return;$('#in').value='';say('Pensando…');let r,fb='';
  try{if(!CF.url)throw new Error('sem conexão com a planilha, veja Ajustes');const g=grp(S.tx.filter(x=>x.tipo==='gasto'&&mk(x.data)===M),x=>x.cat);
   const sys=`Você é o assistente financeiro do app Meu Caixa. Hoje é ${today()}. Categorias de gasto: ${CATS}. Receitas: ${RCATS}. Pagamentos: ${PAYS}. Responda SOMENTE JSON. Se o usuário registra movimentos (pode ser vários numa mensagem): {"acao":"lancar","itens":[{"tipo":"gasto"|"receita"|"invest","valor":número,"cat":"...","pay":"...","desc":"curta","data":"YYYY-MM-DD"}]}. Compra de ativos/aplicações (ações, FIIs, tesouro, cripto) é tipo "invest" com cat "Investimento"; números em tickers como ITSA4 ou KNSC11 NÃO são valores; o valor é o que vem depois de "->" ou ":" . Nunca use datas futuras. pay padrão Pix. Se for pergunta ou pedido de dica: {"acao":"pergunta","resposta":"resposta curta em pt-BR"}. Dados de ${M}: receitas ${sum(S.tx.filter(x=>x.tipo==='receita'&&mk(x.data)===M))}, gastos por categoria ${JSON.stringify(g)}, limites ${JSON.stringify(S.lim)}, últimos lançamentos ${JSON.stringify(S.tx.slice(-15))}.`;
-  r=JSON.parse((await api({action:'ai',system:sys,user:t})).text)}catch(e){fb=e.message;r={acao:'lancar',itens:local(t)}}
+  r=JSON.parse((await api({action:'ai',system:sys,user:t})).text)}catch(e){fb=e.message;ST.ia='err';ST.msg='IA: '+e.message;pills();r={acao:'lancar',itens:local(t)}}
  if(r.acao==='pergunta')return say(r.resposta);
  const it=(r.itens||[]).filter(x=>x&&+x.valor>0);if(!it.length)return say('Não entendi os valores. '+(fb?'IA indisponível: '+fb:''));
  it.forEach(x=>S.tx.push({id:uid(),data:(x.data&&x.data<=today())?x.data:today(),tipo:TIPOS.includes(x.tipo)?x.tipo:'gasto',valor:+x.valor,cat:x.cat||'Outros',pay:x.pay||'Pix',desc:x.desc||x.cat}));
  persist();say(`${it.length} lançamento(s) anotado(s) · ${brl(sum(it.map(x=>({valor:+x.valor}))))}`+(fb?` · ⚠ modo sem IA (${fb})`:''))}
 $('#rc').innerHTML=[...CATS,...RCATS].map(c=>`<option>${c}</option>`).join('');$('#rp').innerHTML=PAYS.map(c=>`<option>${c}</option>`).join('');
 theme(localStorage.th||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'));
-gen();persist();pull();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
+gen();localStorage.g=JSON.stringify(S);render();pills();sync();addEventListener('online',()=>{pills();sync()});addEventListener('offline',pills);document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
 </script></body></html>
