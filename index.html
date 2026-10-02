@@ -38,7 +38,7 @@ input,select{font:inherit;border:1px solid var(--ln);border-radius:12px;padding:
 button,.cd{transition:transform .12s,background .2s,color .2s,opacity .2s}button:active:not(:disabled),.cd:active{transform:scale(.95)}.card{transition:background .25s}
 .rp summary{cursor:pointer;font-weight:600;list-style:none}.rp summary::-webkit-details-marker{display:none}.rp[open]>div{animation:up .25s both}
 @media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-</style></head><body>
+.bub p,.rp p{margin:0 0 6px}.bub p:last-of-type{margin-bottom:0}ul.md{margin:4px 0 8px;padding-left:20px}ul.md li{margin:3px 0}</style></head><body>
 <div class="nav"><button class="g" onclick="mv(-1)">‹</button><b id="mes"></b><button class="g" id="nx" onclick="mv(1)">›</button><button class="g" id="th" onclick="theme()">☾</button><button class="g" onclick="logout()" title="Sair da conta">Sair</button></div>
 
 <div id="auth" class="auth"><div style="max-width:380px;margin:8vh auto 0">
@@ -108,7 +108,7 @@ async function sync(){if(!U||!API){ST.sheet=ST.ia='off';ST.msg=API?'':'Servidor 
 function gen(){const t=today(),m=mk(t);S.rec.forEach(r=>{const k=r.id+m;if(S.gen[k])return;const d=m+'-'+String(Math.min(r.dia,28)).padStart(2,'0');if(d<=t){S.tx.push({id:'r'+r.id+m,data:d,tipo:r.tipo,valor:r.valor,cat:r.cat,pay:r.pay,desc:r.desc});S.gen[k]=1}})}
 function mv(n){const[y,m]=M.split('-').map(Number),k=new Date(y,m-1+n,1).toLocaleDateString('sv').slice(0,7);if(k>mk(today()))return;M=k;SEL='';render()}
 let CUR=0,SUB=0,CVID='',TYP=0,ERR='',OP={};
-function tab(i){document.querySelectorAll('.sec').forEach((e,j)=>e.classList.toggle('on',i===j));document.querySelectorAll('.dock .tabs button').forEach((e,j)=>e.classList.toggle('on',i===j));CUR=i;if(i===3)chRender();dockMode()}
+function tab(i){document.querySelectorAll('.sec').forEach((e,j)=>e.classList.toggle('on',i===j));document.querySelectorAll('.dock .tabs button').forEach((e,j)=>e.classList.toggle('on',i===j));CUR=i;say('');if(i===3)chRender();dockMode()}
 const sum=a=>a.reduce((s,x)=>s+x.valor,0),grp=(a,f)=>a.reduce((o,x)=>{const k=f(x);o[k]=(o[k]||0)+x.valor;return o},{});
 const PAL=['#d4f25a','#7aa6ff','#e5604d','#f2b84b','#2f9e6e','#b48cf2','#5cc8c8','#ff9db1','#8a8a85','#a3b18a'];
 function ch(id,type,labels,sets,opt={}){const cv=$('#'+id),emp=!sets.some(d=>d.data.some(v=>v!==0));let e=cv.nextElementSibling;if(!e||!e.classList.contains('em')){e=document.createElement('div');e.className='mut em';e.textContent='Sem dados neste mês.';cv.after(e)}e.style.display=emp?'block':'none';cv.style.display=emp?'none':'block';if(emp){C[id]&&C[id].destroy();delete C[id];return}C[id]&&C[id].destroy();C[id]=new Chart($('#'+id),{type,data:{labels,datasets:sets},options:{responsive:true,plugins:{legend:{display:sets.length>1||type==='doughnut',position:'bottom',labels:{boxWidth:10,color:css('--mut')}}},cutout:type==='doughnut'?'68%':undefined,scales:type==='doughnut'?{}:{x:{grid:{display:false},ticks:{color:css('--mut')}},y:{grid:{color:css('--ln')},ticks:{color:css('--mut')}}},...opt}})}
@@ -118,7 +118,11 @@ function hi(){const e=$('#hi');if(!U)return;const k=U.nome||'';if(hi.k!==k||!e.i
 function saveNome(v){v=(v||'').trim().slice(0,60);if(!v)return;U.nome=v;localStorage.u=JSON.stringify(U);hi();if(API&&navigator.onLine)api({action:'nome',nome:v}).catch(()=>{})}
 function resumo(){const[y,m]=M.split('-').map(Number),ms=[0,1,2].map(i=>{const k=new Date(y,m-1-i,1).toLocaleDateString('sv').slice(0,7),t=S.tx.filter(x=>mk(x.data)===k),gt=t.filter(x=>x.tipo==='gasto');return{mes:k,receitas:sum(t.filter(x=>x.tipo==='receita')),gastos:sum(gt),investido:sum(t.filter(x=>x.tipo==='invest')),gastos_por_categoria:grp(gt,x=>x.cat),gastos_por_pagamento:grp(gt,x=>x.pay)}});
  return JSON.stringify({mes_atual:M,hoje:today(),limites:S.lim,meses:ms,ultimos_lancamentos:S.tx.slice(-10).map(x=>[x.data,x.tipo,x.valor,x.cat,x.desc])})}
-const md=t=>esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/^- /gm,'• ').replace(/\n/g,'<br>');
+const md=t=>{t=String(t||'');if(!t.includes('\n')&&(t.match(/\d{1,2}[).]\s/g)||[]).length>=3)t=t.replace(/;?\s+(?=\d{1,2}[).]\s)/g,'\n');
+ let h='',ul=0;const cl=()=>{if(ul){h+='</ul>';ul=0}};
+ esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').split('\n').forEach(l=>{const m=l.match(/^\s*(?:([-*•])|(\d{1,2}[.)]))\s+(.*)$/);
+  if(m){if(!ul){h+='<ul class="md">';ul=1}h+=m[2]?`<li style="list-style:none;margin-left:-4px"><b>${m[2]}</b> ${m[3]}</li>`:`<li>${m[3]}</li>`}
+  else{cl();if(l.trim())h+=`<p>${l.replace(/^#+\s*(.*)$/,'<b>$1</b>')}</p>`}});cl();return h};
 function dockMode(){const c=CUR===3;$('#in').placeholder=c?'Pergunte sobre finanças…':'Ex: gastei 35 no iFood no crédito';$('.chat').style.display=(c&&SUB===1)?'none':'flex'}
 function sub(n){SUB=n;$('#sc').style.display=n?'none':'block';$('#sr').style.display=n?'block':'none';$('#s1').classList.toggle('on',!n);$('#s2').classList.toggle('on',!!n);dockMode()}
 const fmt=t=>t?new Date(t).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'',safe=t=>String(t||'').replace(/[^\x20-\x7E\u00A0-\u00FF]/g,'');
