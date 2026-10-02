@@ -29,9 +29,17 @@ input,select{font:inherit;border:1px solid var(--ln);border-radius:12px;padding:
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .sec{display:none}.sec.on{display:block}canvas{max-height:240px}
 @media(max-width:380px){body{padding:12px 12px 170px}.card{padding:14px}.grid{grid-template-columns:1fr}}
-.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;font-size:12px;color:var(--mut);cursor:pointer}.pill{display:flex;align-items:center;gap:6px;background:var(--c);border-radius:20px;padding:5px 10px}.pill i{width:7px;height:7px;border-radius:50%;background:var(--mut)}.pill.ok i{background:var(--grn)}.pill.err i{background:var(--red)}.em{padding:20px 0;text-align:center}</style></head><body>
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;font-size:12px;color:var(--mut);cursor:pointer}.pill{display:flex;align-items:center;gap:6px;background:var(--c);border-radius:20px;padding:5px 10px}.pill i{width:7px;height:7px;border-radius:50%;background:var(--mut)}.pill.ok i{background:var(--grn)}.pill.err i{background:var(--red)}.em{padding:20px 0;text-align:center}.auth{position:fixed;inset:0;background:var(--bg);z-index:20;display:none;overflow:auto;padding:24px 16px}</style></head><body>
 <div class="nav"><button class="g" onclick="mv(-1)">‹</button><b id="mes"></b><button class="g" id="nx" onclick="mv(1)">›</button><button class="g" id="th" onclick="theme()">☾</button></div>
 
+<div id="auth" class="auth"><div style="max-width:380px;margin:8vh auto 0">
+<div class="big" style="font-size:30px">Meu Caixa</div><p class="mut" style="margin:6px 0 18px">Suas finanças, só suas.</p>
+<div class="tabs" style="margin:0 0 12px"><button id="m1" class="on" onclick="authMode('login')">Entrar</button><button id="m2" onclick="authMode('signup')">Criar conta</button></div>
+<div class="card"><input id="acpf" inputmode="numeric" placeholder="CPF" oninput="this.value=mask(this.value)" autocomplete="username">
+<input id="apw" type="password" placeholder="Senha (mín. 8 caracteres)" style="margin-top:8px" autocomplete="current-password">
+<div id="a2" style="display:none"><input id="apw2" type="password" placeholder="Repita a senha" style="margin-top:8px" autocomplete="new-password"><input id="ainv" placeholder="Código de convite (se houver)" style="margin-top:8px"></div>
+<div id="aerr" class="neg" style="font-size:13px;min-height:18px;margin:10px 0 4px"></div><button id="abtn" style="width:100%" onclick="auth()">Entrar</button></div>
+<p class="mut" style="font-size:12px;text-align:center">Seu CPF é guardado apenas de forma criptografada (hash).</p></div></div>
 <div class="pills" id="pills" onclick="sync()"></div>
 <div id="t0" class="sec on">
  <div class="card"><h3>SALDO DO MÊS</h3><div class="big" id="saldo"></div>
@@ -52,9 +60,7 @@ input,select{font:inherit;border:1px solid var(--ln);border-radius:12px;padding:
   <input id="rdia" type="number" placeholder="Dia do mês"><select id="rc"></select><select id="rt"><option value="gasto">Gasto</option><option value="receita">Receita</option></select><select id="rp"></select></div>
   <button style="margin-top:10px" onclick="addRec()">Adicionar fixo</button></div>
  <div class="card"><h3>LIMITE MENSAL POR CATEGORIA (R$)</h3><div id="limf"></div></div>
- <div class="card"><h3>CONEXÃO COM A PLANILHA</h3>
-  <input id="url" placeholder="URL do Apps Script (termina em /exec)"><input id="tok" placeholder="Token" style="margin-top:8px">
-  <button style="margin-top:10px" onclick="cfg()">Salvar e sincronizar</button></div>
+ <div class="card"><h3>CONTA</h3><button class="g" onclick="logout()">Sair da conta</button></div>
 </div>
 
 <div class="dock"><div id="say"></div>
@@ -65,20 +71,22 @@ input,select{font:inherit;border:1px solid var(--ln);border-radius:12px;padding:
 const $=s=>document.querySelector(s),brl=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
 const CATS=['Moradia','Alimentação','Mercado','Transporte','Lazer','Saúde','Educação','Assinaturas','Compras','Outros'],RCATS=['Salário','Renda extra'],PAYS=['Pix','Débito','Crédito','Dinheiro'],TIPOS=['gasto','receita','invest'];
 const today=()=>new Date().toLocaleDateString('sv'),uid=()=>Math.random().toString(36).slice(2,9),mk=d=>d.slice(0,7);
-let S=JSON.parse(localStorage.g||'null')||{tx:[],rec:[],lim:{},gen:{},del:[],ts:0},CF=JSON.parse(localStorage.cf||'{}'),M=mk(today()),C={},T;
+let U=JSON.parse(localStorage.u||'null'),API='https://script.google.com/macros/s/AKfycbylYZg-xcVL59L4WDyhguYyBHgr_9Vl-w7W25VHq5TJ2kzUxwpjpPIQQaeh1_Ipj78/exec',S={tx:[],rec:[],lim:{},gen:{},del:[]},M=mk(today()),C={},T;
+if(API.startsWith('COLE'))API=JSON.parse(localStorage.cf||'{}').url||'';
+const SK=()=>'g_'+U.uid,store=()=>U&&(localStorage[SK()]=JSON.stringify(S));
 const css=v=>getComputedStyle(document.documentElement).getPropertyValue(v).trim();
 function theme(t){const d=document.documentElement;t=typeof t==='string'?t:(d.dataset.t==='dark'?'light':'dark');d.dataset.t=t;localStorage.th=t;$('#th').textContent=t==='dark'?'☀':'☾';document.querySelector('meta[name=theme-color]').content=css('--bg');if(S.tx)render()}
-const persist=()=>{localStorage.g=JSON.stringify(S);render();clearTimeout(T);T=setTimeout(sync,800)};
-const api=b=>fetch(CF.url,{method:'POST',body:JSON.stringify({...b,token:CF.token})}).then(r=>r.json()).then(j=>{if(j.error)throw new Error(j.error==='token'?'token incorreto':j.error);return j});
+const persist=()=>{store();render();clearTimeout(T);T=setTimeout(sync,800)};
+const api=b=>fetch(API,{method:'POST',body:JSON.stringify({...b,uid:U.uid,tok:U.tok})}).then(r=>r.json()).then(j=>{if(j.error==='sessao'){localStorage.removeItem('u');U=null;showAuth('Sessão expirada, entre novamente.')}if(j.error)throw new Error(j.error);return j});
 let ST={sheet:'off',ia:'off',model:'',msg:''},busy=0;
 function pills(){const on=navigator.onLine,p=(k,t)=>`<span class="pill ${k}"><i></i>${t}</span>`;
  $('#pills').innerHTML=p(on?'ok':'err',on?'Online':'Offline')+p(ST.sheet,'Planilha · '+({ok:'sincronizada',err:'erro',off:'desconectada'})[ST.sheet])+p(ST.ia,'IA · '+({ok:ST.model,err:'indisponível',off:'desconectada'})[ST.ia])+(ST.msg?`<div class="mut" style="flex-basis:100%">${ST.msg}</div>`:'')}
 function merge(R){const dl=new Set([...(S.del||[]),...(R.del||[])]);S.del=[...dl];
  const un=(a,b)=>{const m={};[...(b||[]),...(a||[])].forEach(x=>m[x.id]=x);return Object.values(m).filter(x=>!dl.has(x.id))};
  S.tx=un(S.tx,R.tx);S.rec=un(S.rec,R.rec);S.gen={...R.gen,...S.gen};S.lim={...R.lim,...S.lim}}
-async function sync(){if(!CF.url){ST.sheet=ST.ia='off';ST.msg='Configure a conexão em Ajustes.';return pills()}if(busy)return;busy=1;ST.msg='Sincronizando…';pills();
+async function sync(){if(!U||!API){ST.sheet=ST.ia='off';ST.msg=API?'':'Servidor não configurado.';return pills()}if(busy)return;busy=1;ST.msg='Sincronizando…';pills();
  try{const p=await api({action:'ping'});ST.ia=p.ia?'ok':'err';ST.model=p.model;ST.msg=p.ia?'':'IA: '+p.iaerr;
-  const r=await api({action:'load'});if(r.data)merge(r.data);gen();localStorage.g=JSON.stringify(S);render();await api({action:'save',data:S});ST.sheet='ok'}
+  const r=await api({action:'load'});if(r.data)merge(r.data);gen();store();render();await api({action:'save',data:S});ST.sheet='ok'}
  catch(e){ST.sheet='err';ST.ia='off';ST.msg=navigator.onLine?'Planilha: '+e.message:'Sem internet, os dados ficam salvos no aparelho e sincronizam depois.'}
  busy=0;pills()}
 function gen(){const t=today(),m=mk(t);S.rec.forEach(r=>{const k=r.id+m;if(S.gen[k])return;const d=m+'-'+String(Math.min(r.dia,28)).padStart(2,'0');if(d<=t){S.tx.push({id:'r'+r.id+m,data:d,tipo:r.tipo,valor:r.valor,cat:r.cat,pay:r.pay,desc:r.desc});S.gen[k]=1}})}
@@ -105,17 +113,31 @@ function render(){
  $('#list').innerHTML=[...tx].sort((a,b)=>b.data.localeCompare(a.data)).map(x=>`<div class="item row"><div><b>${x.desc||x.cat}</b><div class="mut">${x.data.split('-').reverse().slice(0,2).join('/')} · ${x.cat} · ${x.pay}</div></div><div class="amt ${x.tipo==='receita'?'pos':x.tipo==='gasto'?'':'mut'}">${x.tipo==='receita'?'+':x.tipo==='gasto'?'−':'↗ '}${brl(x.valor)}<button class="g" onclick="del('${x.id}')">✕</button></div></div>`).join('')||'<span class="mut">Nada neste mês.</span>';
  $('#recs').innerHTML=S.rec.map(x=>`<div class="item row"><div><b>${x.desc}</b><div class="mut">dia ${x.dia} · ${x.tipo==='receita'?'+':''}${brl(x.valor)}</div></div><button class="g" onclick="delRec('${x.id}')">✕</button></div>`).join('');
  $('#limf').innerHTML=CATS.map(c=>`<div class="row" style="margin-bottom:6px"><span>${c}</span><input type="number" inputmode="decimal" style="width:120px" value="${S.lim[c]||''}" onchange="S.lim['${c}']=+this.value;persist()"></div>`).join('');
- $('#url').value=CF.url||'';$('#tok').value=CF.token||'';
+ 
 }
 const del=id=>{S.del=[...(S.del||[]),id];S.tx=S.tx.filter(x=>x.id!==id);persist()},delRec=id=>{S.del=[...(S.del||[]),id];S.rec=S.rec.filter(x=>x.id!==id);persist()};
 function addRec(){const v=+$('#rv').value;if(!$('#rd').value||!v)return;S.rec.push({id:uid(),desc:$('#rd').value,valor:v,dia:+$('#rdia').value||1,cat:$('#rc').value,pay:$('#rp').value,tipo:$('#rt').value});gen();persist();['rd','rv','rdia'].forEach(i=>$('#'+i).value='')}
-function cfg(){CF={url:$('#url').value.trim(),token:$('#tok').value.trim()};localStorage.cf=JSON.stringify(CF);sync();say('Conexão salva.')}
+async function logout(){if(ST.sheet!=='ok'&&!confirm('A última sincronização falhou; o que não foi sincronizado será perdido. Sair mesmo?'))return;localStorage.removeItem(SK());localStorage.removeItem('u');location.reload()}
+const mask=v=>v.replace(/\D/g,'').slice(0,11).replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d)/,'$1.$2').replace(/(\d{3})(\d{1,2})$/,'$1-$2');
+const cpfOk=c=>{c=c.replace(/\D/g,'');if(c.length!==11||/^(\d)\1+$/.test(c))return 0;for(let t=9;t<11;t++){let q=0;for(let i=0;i<t;i++)q+=c[i]*(t+1-i);if((q*10%11)%10!=c[t])return 0}return 1};
+let mode='login';const aerr=t=>$('#aerr').textContent=t||'';
+function authMode(m){mode=m;$('#a2').style.display=m==='signup'?'block':'none';$('#m1').classList.toggle('on',m==='login');$('#m2').classList.toggle('on',m==='signup');$('#abtn').textContent=m==='login'?'Entrar':'Criar conta';aerr()}
+function showAuth(t){$('#auth').style.display='block';aerr(t)}
+async function auth(){const cpf=$('#acpf').value,senha=$('#apw').value;aerr();
+ if(!cpfOk(cpf))return aerr('CPF inválido.');if(senha.length<8)return aerr('A senha precisa de 8 caracteres ou mais.');
+ if(mode==='signup'&&senha!==$('#apw2').value)return aerr('As senhas não coincidem.');if(!API)return aerr('Servidor não configurado.');
+ $('#abtn').disabled=1;
+ try{const r=await fetch(API,{method:'POST',body:JSON.stringify({action:mode,cpf:cpf.replace(/\D/g,''),senha,convite:$('#ainv').value})}).then(r=>r.json());if(r.error)throw new Error(r.error);
+  U={uid:r.uid,tok:r.tok};localStorage.u=JSON.stringify(U);$('#apw').value=$('#apw2').value='';start()}
+ catch(e){aerr(e.message==='Failed to fetch'?'Sem conexão com o servidor.':e.message)}$('#abtn').disabled=0}
+function start(){let l=localStorage[SK()];if(!l&&localStorage.g){l=localStorage.g;localStorage.removeItem('g')}
+ S=JSON.parse(l||'null')||{tx:[],rec:[],lim:{},gen:{},del:[]};S.del=S.del||[];M=mk(today());$('#auth').style.display='none';gen();store();render();pills();sync()}
 const say=t=>$('#say').textContent=t,num=x=>+x.replace(/\.(?=\d{3}\b)/g,'').replace(',','.');
 function local(t){const inv=/invest/i.test(t),rec=/recebi|sal[aá]rio|ganhei/i.test(t),pay=PAYS.find(p=>t.toLowerCase().includes(p.toLowerCase()))||'Pix';
  return t.split(/[;\n]+/).map(s=>s.trim()).filter(Boolean).map(s=>{const n=[...s.matchAll(/(?<![A-Za-z\d])(\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)(?![A-Za-z\d])/g)];
   return n.length&&{tipo:inv?'invest':rec?'receita':'gasto',valor:num(n[n.length-1][1]),cat:inv?'Investimento':rec?'Renda extra':'Outros',pay,desc:s.slice(0,60),data:today()}}).filter(Boolean)}
 async function send(){const t=$('#in').value.trim();if(!t)return;$('#in').value='';say('Pensando…');let r,fb='';
- try{if(!CF.url)throw new Error('sem conexão com a planilha, veja Ajustes');const g=grp(S.tx.filter(x=>x.tipo==='gasto'&&mk(x.data)===M),x=>x.cat);
+ try{if(!U||!API)throw new Error('sem conexão com o servidor');const g=grp(S.tx.filter(x=>x.tipo==='gasto'&&mk(x.data)===M),x=>x.cat);
   const sys=`Você é o assistente financeiro do app Meu Caixa. Hoje é ${today()}. Categorias de gasto: ${CATS}. Receitas: ${RCATS}. Pagamentos: ${PAYS}. Responda SOMENTE JSON. Se o usuário registra movimentos (pode ser vários numa mensagem): {"acao":"lancar","itens":[{"tipo":"gasto"|"receita"|"invest","valor":número,"cat":"...","pay":"...","desc":"curta","data":"YYYY-MM-DD"}]}. Compra de ativos/aplicações (ações, FIIs, tesouro, cripto) é tipo "invest" com cat "Investimento"; números em tickers como ITSA4 ou KNSC11 NÃO são valores; o valor é o que vem depois de "->" ou ":" . Nunca use datas futuras. pay padrão Pix. Se for pergunta ou pedido de dica: {"acao":"pergunta","resposta":"resposta curta em pt-BR"}. Dados de ${M}: receitas ${sum(S.tx.filter(x=>x.tipo==='receita'&&mk(x.data)===M))}, gastos por categoria ${JSON.stringify(g)}, limites ${JSON.stringify(S.lim)}, últimos lançamentos ${JSON.stringify(S.tx.slice(-15))}.`;
   r=JSON.parse((await api({action:'ai',system:sys,user:t})).text)}catch(e){fb=e.message;ST.ia='err';ST.msg='IA: '+e.message;pills();r={acao:'lancar',itens:local(t)}}
  if(r.acao==='pergunta')return say(r.resposta);
@@ -124,5 +146,5 @@ async function send(){const t=$('#in').value.trim();if(!t)return;$('#in').value=
  persist();say(`${it.length} lançamento(s) anotado(s) · ${brl(sum(it.map(x=>({valor:+x.valor}))))}`+(fb?` · ⚠ modo sem IA (${fb})`:''))}
 $('#rc').innerHTML=[...CATS,...RCATS].map(c=>`<option>${c}</option>`).join('');$('#rp').innerHTML=PAYS.map(c=>`<option>${c}</option>`).join('');
 theme(localStorage.th||(matchMedia('(prefers-color-scheme:dark)').matches?'dark':'light'));
-gen();localStorage.g=JSON.stringify(S);render();pills();sync();addEventListener('online',()=>{pills();sync()});addEventListener('offline',pills);document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
+addEventListener('online',()=>{pills();sync()});addEventListener('offline',pills);document.addEventListener('visibilitychange',()=>{if(!document.hidden)sync()});if(U)start();else showAuth();if('serviceWorker'in navigator)navigator.serviceWorker.register('sw.js');
 </script></body></html>
