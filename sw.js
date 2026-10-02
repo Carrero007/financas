@@ -1,8 +1,9 @@
-const V = "caixa-v14",
+const V = "cifra-v15",
   A = [
     "./",
     "index.html",
     "manifest.json",
+    "icons/icon-192x192.png",
     "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js",
   ];
 self.addEventListener("install", (e) =>

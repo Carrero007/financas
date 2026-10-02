@@ -7,8 +7,16 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <link rel="manifest" href="manifest.json" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <link rel="icon" href="icons/icon-192x192.png" />
     <meta name="theme-color" content="#f6f5f1" />
-    <title>Meu Caixa</title>
+    <title>Cifra</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
     <script
       defer
@@ -533,9 +541,712 @@
       .dock .tabs button {
         font-size: 12px;
       }
+      /* ===== Cifra: tema ===== */
+      :root {
+        --bg: #f3f1ea;
+        --c: #faf9f5;
+        --ln: #e3e0d5;
+        --ink: #161614;
+        --mut: #85827a;
+        --ac: #d4f25a;
+        --serif: "Instrument Serif", Georgia, serif;
+      }
+      [data-t="dark"] {
+        --bg: #0a0a09;
+        --c: #131311;
+        --ln: #242421;
+        --ink: #efede6;
+        --mut: #8b887f;
+        --dock: rgba(19, 19, 17, 0.9);
+      }
+      body {
+        font-family:
+          Inter,
+          -apple-system,
+          system-ui,
+          sans-serif;
+        letter-spacing: -0.005em;
+      }
+      .card {
+        border-radius: 18px;
+        border: 1px solid var(--ln);
+        padding: 20px;
+      }
+      h3 {
+        font-size: 10.5px;
+        letter-spacing: 1.6px;
+        text-transform: uppercase;
+        font-weight: 500;
+      }
+      .big,
+      #pat,
+      #saldo {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: clamp(44px, 13vw, 64px);
+        letter-spacing: -2px;
+        line-height: 1;
+      }
+      .obq {
+        font-family: var(--serif);
+        font-size: 34px;
+        line-height: 1.1;
+        margin: 18px 0 22px;
+      }
+      #hi div {
+        font-family: var(--serif) !important;
+        font-weight: 400 !important;
+        font-size: 30px !important;
+        letter-spacing: -0.5px;
+      }
+      .stats div {
+        background: none;
+        border: 1px solid var(--ln);
+        border-radius: 12px;
+      }
+      input,
+      select {
+        border-radius: 10px;
+        padding: 12px;
+        background: transparent;
+      }
+      input:focus,
+      select:focus {
+        outline: none;
+        border-color: var(--ac);
+      }
+      button {
+        border-radius: 999px;
+        font-weight: 500;
+      }
+      button.g {
+        background: transparent;
+        border: 1px solid var(--ln);
+      }
+      .bar {
+        height: 3px;
+        background: var(--ln);
+      }
+      .dock {
+        left: 12px;
+        right: 12px;
+        bottom: calc(10px + env(safe-area-inset-bottom));
+        padding: 10px;
+        border-radius: 26px;
+        border: 1px solid var(--ln);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+      }
+      .chat input {
+        border-radius: 999px;
+        min-width: 0;
+        flex: 1;
+      }
+      .chat button:last-child {
+        width: 46px;
+        padding: 0;
+        border-radius: 999px;
+      }
+      .chat button.ic {
+        width: 44px;
+        height: 46px;
+        padding: 0;
+        display: grid;
+        place-items: center;
+        flex: none;
+        background: transparent;
+        border: 1px solid var(--ln);
+        color: var(--ink);
+        font-weight: 400;
+      }
+      .ic svg {
+        width: 19px;
+        height: 19px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .chat button.ic.rec {
+        background: var(--red);
+        border-color: var(--red);
+        color: #fff;
+        animation: pulse 1s infinite;
+      }
+      @keyframes pulse {
+        50% {
+          opacity: 0.55;
+        }
+      }
+      #att:not(:empty) {
+        margin-bottom: 6px;
+      }
+      .tabs .on {
+        background: var(--ink);
+        color: var(--bg);
+        border-radius: 999px;
+      }
+      .pill {
+        border: 1px solid var(--ln);
+        background: transparent;
+      }
+      .cd {
+        border-radius: 8px;
+      }
+      .logo {
+        width: 34px;
+        height: 34px;
+        border-radius: 10px;
+        display: block;
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin: 2px 0 14px;
+        font-family: var(--serif);
+        font-size: 26px;
+      }
+      body {
+        padding-bottom: 190px;
+      }
+
+      /* ===== Cifra: login ===== */
+      #auth {
+        padding: 0;
+        background: var(--bg);
+        overflow: auto;
+      }
+      .shell {
+        min-height: 100%;
+        display: flex;
+        flex-direction: column;
+      }
+      .hero {
+        position: relative;
+        overflow: hidden;
+        flex: none;
+        height: max(300px, 44vh);
+        padding: 22px 24px;
+        background: #c9f13d;
+        color: #10110d;
+      }
+      .mk {
+        width: 46px;
+        height: 46px;
+        border-radius: 13px;
+        display: block;
+        animation: up 0.6s 0.1s both;
+      }
+      .hl {
+        position: relative;
+        z-index: 1;
+        margin-top: 26px;
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: clamp(40px, 12.5vw, 54px);
+        line-height: 0.98;
+        letter-spacing: -1.5px;
+      }
+      .hl span {
+        display: block;
+        overflow: hidden;
+        padding-bottom: 0.1em;
+      }
+      .hl b {
+        display: block;
+        font-weight: 400;
+        animation: rv 0.9s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+      .hl span:nth-child(1) b {
+        animation-delay: 0.4s;
+      }
+      .hl span:nth-child(2) b {
+        animation-delay: 0.52s;
+      }
+      @keyframes rv {
+        from {
+          transform: translateY(110%);
+        }
+      }
+      .bars {
+        position: absolute;
+        right: 7%;
+        bottom: 0;
+        height: 62%;
+        display: flex;
+        align-items: flex-end;
+        gap: clamp(8px, 2.6vw, 14px);
+        transform: skewY(-8deg);
+        transform-origin: right bottom;
+      }
+      .bars i {
+        display: block;
+        width: clamp(30px, 9.5vw, 48px);
+        background: #10110d;
+        border-radius: 12px 12px 0 0;
+        transform-origin: bottom;
+        animation: gr 1s cubic-bezier(0.2, 1, 0.3, 1) both;
+      }
+      .bars i:nth-child(1) {
+        height: 42%;
+        animation-delay: 0.15s;
+      }
+      .bars i:nth-child(2) {
+        height: 68%;
+        animation-delay: 0.28s;
+      }
+      .bars i:nth-child(3) {
+        height: 100%;
+        animation-delay: 0.41s;
+      }
+      @keyframes gr {
+        from {
+          transform: scaleY(0);
+        }
+      }
+      .sheet {
+        position: relative;
+        flex: 1;
+        margin-top: -28px;
+        padding: 26px 24px calc(28px + env(safe-area-inset-bottom));
+        background: var(--bg);
+        border-radius: 28px 28px 0 0;
+        animation: rise 0.9s 0.6s cubic-bezier(0.2, 0.9, 0.2, 1) both;
+      }
+      @keyframes rise {
+        from {
+          transform: translateY(48px);
+          opacity: 0;
+        }
+      }
+      .in {
+        width: 100%;
+        max-width: 400px;
+        margin: 0 auto;
+      }
+      .seg {
+        position: relative;
+        display: flex;
+        gap: 24px;
+        margin-bottom: 24px;
+        border-bottom: 1px solid var(--ln);
+      }
+      .seg button {
+        padding: 0 0 12px;
+        background: none;
+        border-radius: 0;
+        color: var(--mut);
+        font-size: 15px;
+        font-weight: 600;
+        transition: color 0.25s;
+      }
+      .seg button.on {
+        color: var(--ink);
+      }
+      .seg .ind {
+        position: absolute;
+        left: 0;
+        bottom: -1px;
+        height: 2px;
+        width: 0;
+        background: var(--ac);
+        transition:
+          transform 0.4s cubic-bezier(0.3, 1.2, 0.5, 1),
+          width 0.4s,
+          opacity 0.3s;
+      }
+      [data-t="light"] .seg .ind {
+        background: var(--ink);
+      }
+      .seg[data-m="reset"] .ind {
+        opacity: 0;
+      }
+      #atitle {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: 34px;
+        line-height: 1.05;
+        letter-spacing: -0.8px;
+      }
+      #asub {
+        margin: 6px 0 20px;
+        color: var(--mut);
+        font-size: 14px;
+      }
+      #acard.sw {
+        animation: swp 0.4s both;
+      }
+      @keyframes swp {
+        from {
+          opacity: 0.4;
+          transform: translateY(6px);
+        }
+      }
+      #acard.shk {
+        animation: shk 0.45s both;
+      }
+      @keyframes shk {
+        20% {
+          transform: translateX(-8px);
+        }
+        40% {
+          transform: translateX(7px);
+        }
+        60% {
+          transform: translateX(-5px);
+        }
+        80% {
+          transform: translateX(3px);
+        }
+      }
+      .f {
+        position: relative;
+        margin-bottom: 4px;
+        border-bottom: 1px solid var(--ln);
+      }
+      .fld {
+        animation: up 0.5s var(--d, 0s) both;
+      }
+      .f input {
+        border: 0;
+        border-radius: 0;
+        background: transparent;
+        padding: 18px 38px 14px 30px;
+        font-size: 17px;
+      }
+      .f input:focus {
+        outline: none;
+        border: 0;
+        box-shadow: none;
+        background: transparent;
+      }
+      .f input::placeholder {
+        color: var(--mut);
+        opacity: 0.8;
+      }
+      .f::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: -1px;
+        height: 2px;
+        background: var(--ac);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.35s cubic-bezier(0.3, 0.9, 0.3, 1);
+      }
+      [data-t="light"] .f::after {
+        background: var(--ink);
+      }
+      .f:focus-within::after {
+        transform: scaleX(1);
+      }
+      .f .fi {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        width: 18px;
+        height: 18px;
+        margin-top: -9px;
+        stroke: var(--mut);
+        fill: none;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        transition: stroke 0.2s;
+        pointer-events: none;
+      }
+      .f:focus-within .fi {
+        stroke: var(--ink);
+      }
+      .eye {
+        position: absolute;
+        right: -8px;
+        top: 50%;
+        margin-top: -18px;
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        background: none;
+        color: var(--mut);
+        display: grid;
+        place-items: center;
+      }
+      .eye svg {
+        width: 19px;
+        height: 19px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .eye .sl {
+        opacity: 0;
+        stroke-dasharray: 24;
+        stroke-dashoffset: 24;
+        transition: all 0.3s;
+      }
+      .eye.on .sl {
+        opacity: 1;
+        stroke-dashoffset: 0;
+      }
+      .ck {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        width: 20px;
+        height: 20px;
+        margin-top: -10px;
+        stroke: var(--grn);
+        fill: none;
+        stroke-width: 2.4;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-dasharray: 24;
+        stroke-dashoffset: 24;
+        transition: stroke-dashoffset 0.35s;
+      }
+      .f.ok .ck {
+        stroke-dashoffset: 0;
+      }
+      .aerr {
+        min-height: 20px;
+        margin: 10px 0 6px;
+        font-size: 13px;
+        color: var(--red);
+      }
+      .go {
+        position: relative;
+        width: 100%;
+        height: 56px;
+        padding: 0;
+        border-radius: 999px;
+        background: var(--ac);
+        color: #10110d;
+        font-size: 16px;
+        font-weight: 700;
+        transition:
+          transform 0.15s,
+          filter 0.2s;
+      }
+      .go:hover:not(:disabled) {
+        filter: brightness(1.07);
+      }
+      .go:disabled {
+        cursor: progress;
+      }
+      .go:disabled span {
+        opacity: 0;
+      }
+      .go:disabled::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 20px;
+        height: 20px;
+        margin: -10px 0 0 -10px;
+        border-radius: 50%;
+        border: 2.5px solid rgba(16, 17, 13, 0.25);
+        border-top-color: #10110d;
+        animation: spin 0.7s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .lk {
+        margin: 8px 0 6px;
+        font-size: 13px;
+      }
+      .lk.c {
+        text-align: center;
+        margin: 18px 0 0;
+      }
+      .lk a {
+        color: var(--mut);
+        text-decoration: none;
+        border-bottom: 1px solid var(--ln);
+        transition:
+          color 0.2s,
+          border-color 0.2s;
+      }
+      .lk a:hover {
+        color: var(--ink);
+        border-color: var(--ac);
+      }
+      .sec2 {
+        display: flex;
+        gap: 7px;
+        align-items: center;
+        margin-top: 26px;
+        font-size: 12px;
+        color: var(--mut);
+      }
+      .sec2 svg {
+        flex: none;
+        width: 14px;
+        height: 14px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      @media (min-width: 860px) {
+        .shell {
+          flex-direction: row;
+          min-height: 100vh;
+        }
+        .hero {
+          flex: 1.05;
+          height: auto;
+          min-height: 100vh;
+          padding: 40px 48px;
+        }
+        .mk {
+          width: 56px;
+          height: 56px;
+          border-radius: 16px;
+        }
+        .hl {
+          margin-top: 48px;
+          font-size: clamp(64px, 7vw, 108px);
+          letter-spacing: -3px;
+        }
+        .bars {
+          height: 58%;
+          right: 8%;
+        }
+        .bars i {
+          width: clamp(52px, 6vw, 92px);
+        }
+        .sheet {
+          flex: 1;
+          margin: 0;
+          border-radius: 0;
+          display: flex;
+          align-items: center;
+          padding: 48px 6vw;
+          animation: up 0.8s 0.5s both;
+        }
+      }
+
+      /* login: refinamento */
+      .hero {
+        height: max(320px, 44vh);
+      }
+      .top {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .wm2 {
+        font-family: var(--serif);
+        font-size: 30px;
+        letter-spacing: -0.8px;
+        animation: up 0.6s 0.2s both;
+      }
+      .ring {
+        position: absolute;
+        left: -90px;
+        bottom: -140px;
+        width: 330px;
+        height: 330px;
+        border-radius: 50%;
+        border: 44px solid rgba(16, 17, 13, 0.06);
+        pointer-events: none;
+      }
+      .hs {
+        position: relative;
+        z-index: 1;
+        margin-top: 14px;
+        max-width: 210px;
+        font-size: 14px;
+        line-height: 1.4;
+        color: rgba(16, 17, 13, 0.74);
+        animation: up 0.6s 0.8s both;
+      }
+      .bars {
+        gap: clamp(8px, 2.6vw, 14px);
+      }
+      .bars i {
+        border-radius: 14px;
+        background: linear-gradient(90deg, #10110d, #262a1b);
+        animation-timing-function: cubic-bezier(0.3, 1.4, 0.5, 1);
+      }
+      .sheet {
+        box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.07);
+      }
+      [data-t="light"] .sheet {
+        box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.06);
+      }
+      .str {
+        display: flex;
+        gap: 4px;
+        margin: 2px 0 8px;
+      }
+      .str i {
+        flex: 1;
+        height: 3px;
+        border-radius: 3px;
+        background: var(--ln);
+        transition: background 0.3s;
+      }
+      .str[data-s="1"] i:nth-child(1) {
+        background: var(--red);
+      }
+      .str[data-s="2"] i:nth-child(-n + 2) {
+        background: #f2b84b;
+      }
+      .str[data-s="3"] i {
+        background: var(--grn);
+      }
+      .go:active:not(:disabled) {
+        transform: scale(0.98);
+      }
+      .go:focus-visible,
+      .seg button:focus-visible,
+      .lk a:focus-visible,
+      .eye:focus-visible {
+        outline: 2px solid var(--ac);
+        outline-offset: 3px;
+      }
+      [data-t="light"] .go:focus-visible,
+      [data-t="light"] .seg button:focus-visible,
+      [data-t="light"] .lk a:focus-visible {
+        outline-color: var(--ink);
+      }
+      @media (min-width: 860px) {
+        .hero {
+          height: auto;
+        }
+        .wm2 {
+          font-size: 36px;
+        }
+        .hs {
+          max-width: 340px;
+          font-size: 18px;
+          margin-top: 22px;
+        }
+        .ring {
+          left: -160px;
+          bottom: -240px;
+          width: 560px;
+          height: 560px;
+          border-width: 80px;
+        }
+      }
     </style>
   </head>
   <body>
+    <div class="brand">
+      <img class="logo" src="icons/icon-192x192.png" alt="" /><span>Cifra</span>
+    </div>
     <div class="nav">
       <button class="g" onclick="mv(-1)">‹</button><b id="mes"></b
       ><button class="g" id="nx" onclick="mv(1)">›</button
@@ -544,79 +1255,185 @@
     </div>
 
     <div id="auth" class="auth">
-      <div style="max-width: 380px; margin: 8vh auto 0">
-        <div class="big" style="font-size: 30px">Meu Caixa</div>
-        <p class="mut" style="margin: 6px 0 18px">Suas finanças, só suas.</p>
-        <div class="tabs" style="margin: 0 0 12px">
-          <button id="m1" class="on" onclick="authMode('login')">Entrar</button
-          ><button id="m2" onclick="authMode('signup')">Criar conta</button>
-        </div>
-        <div class="card">
-          <div id="a0" style="display: none">
-            <input
-              id="anome"
-              maxlength="60"
-              placeholder="Seu nome (como quer ser chamado)"
-              style="margin-bottom: 8px"
-              autocomplete="name"
-            />
-          </div>
-          <input
-            id="acpf"
-            inputmode="numeric"
-            placeholder="CPF"
-            oninput="this.value = mask(this.value)"
-            autocomplete="username"
-          />
-          <div id="a3" style="display: none">
-            <input
-              id="arc"
-              placeholder="Código de recuperação"
-              style="margin-top: 8px"
-              autocomplete="off"
-            />
-          </div>
-          <input
-            id="apw"
-            type="password"
-            placeholder="Senha (mín. 8 caracteres)"
-            style="margin-top: 8px"
-            autocomplete="current-password"
-          />
-          <div id="a2" style="display: none">
-            <input
-              id="apw2"
-              type="password"
-              placeholder="Repita a senha"
-              style="margin-top: 8px"
-              autocomplete="new-password"
-            /><input
-              id="ainv"
-              placeholder="Código de convite (se houver)"
-              style="margin-top: 8px"
-            />
-          </div>
-          <div
-            id="aerr"
-            class="neg"
-            style="font-size: 13px; min-height: 18px; margin: 10px 0 4px"
-          ></div>
-          <button id="abtn" style="width: 100%" onclick="auth()">Entrar</button>
-          <p style="text-align: center; margin: 12px 0 0; font-size: 13px">
-            <a
-              href="#"
-              class="mut"
-              onclick="
-                authMode('reset');
-                return false;
-              "
-              >Esqueci minha senha</a
+      <div class="shell">
+        <div class="hero">
+          <div class="ring"></div>
+          <div class="top">
+            <img class="mk" src="icons/icon-192x192.png" alt="" /><span
+              class="wm2"
+              >Cifra</span
             >
+          </div>
+          <h2 class="hl">
+            <span><b>Quanto sobrou</b></span
+            ><span><b>este mês?</b></span>
+          </h2>
+          <p class="hs">
+            Registre por texto, voz ou foto. A Cifra faz a conta.
           </p>
+          <div class="bars" aria-hidden="true"><i></i><i></i><i></i></div>
         </div>
-        <p class="mut" style="font-size: 12px; text-align: center">
-          Seu CPF é guardado apenas de forma criptografada (hash).
-        </p>
+        <div class="sheet">
+          <div class="in">
+            <div class="seg" id="seg" data-m="login">
+              <button id="m1" class="on" onclick="authMode('login')">
+                Entrar</button
+              ><button id="m2" onclick="authMode('signup')">Criar conta</button
+              ><i class="ind"></i>
+            </div>
+            <h1 id="atitle">Entre na sua conta</h1>
+            <p id="asub">Use seu CPF e sua senha.</p>
+            <div id="acard">
+              <div id="a0" style="display: none">
+                <div class="f fld" style="--d: 0.02s">
+                  <svg class="fi" viewBox="0 0 24 24">
+                    <path d="M20 21a8 8 0 0 0-16 0" />
+                    <circle cx="12" cy="7" r="4" /></svg>
+                  <input
+                    id="anome"
+                    type="text"
+                    placeholder="Seu nome (como quer ser chamado)"
+                    maxlength="60"
+                    autocomplete="name"
+                  />
+                </div>
+                <div class="f fld" style="--d: 0.06s">
+                  <svg class="fi" viewBox="0 0 24 24">
+                    <rect x="3" y="5" width="18" height="14" rx="3" />
+                    <path d="M3 8l9 6 9-6" /></svg>
+                  <input
+                    id="aemail"
+                    type="email"
+                    placeholder="Seu e-mail (para recuperar a conta)"
+                    maxlength="80"
+                    autocomplete="email"
+                  />
+                </div>
+              </div>
+              <div class="f fld" style="--d: 0.08s">
+                <svg class="fi" viewBox="0 0 24 24">
+                  <rect x="3" y="5" width="18" height="14" rx="3" />
+                  <path d="M7 10h4M7 14h6M15 10h2" /></svg>
+                <input
+                  id="acpf"
+                  inputmode="numeric"
+                  placeholder="CPF"
+                  oninput="this.value = mask(this.value)"
+                  autocomplete="username"
+                /><svg class="ck" viewBox="0 0 24 24">
+                  <path d="M5 12.5l4.5 4.5L19 7.5" />
+                </svg>
+              </div>
+              <div id="a3" style="display: none">
+                <div class="f fld" style="--d: 0.04s">
+                  <svg class="fi" viewBox="0 0 24 24">
+                    <circle cx="8" cy="15" r="4" />
+                    <path d="M11 12l9-9M16 7l3 3" /></svg>
+                  <input
+                    id="arc"
+                    type="text"
+                    placeholder="Código de recuperação"
+                    autocomplete="off"
+                  />
+                </div>
+                <p class="lk">
+                  <a
+                    href="#"
+                    onclick="
+                      pedirReset();
+                      return false;
+                    "
+                    >Enviar código por e-mail</a
+                  >
+                </p>
+              </div>
+              <div class="f fld" style="--d: 0.12s">
+                <svg class="fi" viewBox="0 0 24 24">
+                  <rect x="4" y="11" width="16" height="10" rx="3" />
+                  <path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+                <input
+                  id="apw"
+                  type="password"
+                  placeholder="Senha (mín. 8 caracteres)"
+                  autocomplete="current-password"
+                /><button
+                  type="button"
+                  class="eye"
+                  tabindex="-1"
+                  aria-label="Mostrar senha"
+                  onclick="eye(this)"
+                >
+                  <svg viewBox="0 0 24 24">
+                    <path
+                      d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"
+                    />
+                    <circle cx="12" cy="12" r="3" />
+                    <path class="sl" d="M4 4l16 16" />
+                  </svg>
+                </button>
+              </div>
+              <div id="a2" style="display: none">
+                <div class="str" id="str" data-s="0"><i></i><i></i><i></i></div>
+                <div class="f fld" style="--d: 0.04s">
+                  <svg class="fi" viewBox="0 0 24 24">
+                    <rect x="4" y="11" width="16" height="10" rx="3" />
+                    <path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+                    <input
+                    id="apw2"
+                    type="password"
+                    placeholder="Repita a senha"
+                    autocomplete="new-password"
+                  /><button
+                    type="button"
+                    class="eye"
+                    tabindex="-1"
+                    aria-label="Mostrar senha"
+                    onclick="eye(this)"
+                  >
+                    <svg viewBox="0 0 24 24">
+                      <path
+                        d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"
+                      />
+                      <circle cx="12" cy="12" r="3" />
+                      <path class="sl" d="M4 4l16 16" />
+                    </svg>
+                  </button>
+                </div>
+                <div class="f fld" style="--d: 0.08s">
+                  <svg class="fi" viewBox="0 0 24 24">
+                    <path
+                      d="M20 12v8H4v-8M2 7h20v5H2zM12 22V7M12 7H8a2.5 2.5 0 1 1 0-5c3 0 4 5 4 5zM12 7h4a2.5 2.5 0 1 0 0-5c-3 0-4 5-4 5z"
+                    /></svg>
+                  <input
+                    id="ainv"
+                    type="text"
+                    placeholder="Código de convite (se houver)"
+                  />
+                </div>
+              </div>
+              <div id="aerr" class="aerr"></div>
+              <button id="abtn" class="go" onclick="auth()">
+                <span>Entrar</span>
+              </button>
+              <p class="lk c">
+                <a
+                  href="#"
+                  onclick="
+                    authMode('reset');
+                    return false;
+                  "
+                  >Esqueci minha senha</a
+                >
+              </p>
+            </div>
+            <p class="sec2">
+              <svg viewBox="0 0 24 24">
+                <rect x="4" y="11" width="16" height="10" rx="3" />
+                <path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+              Seu CPF é guardado só de forma criptografada (hash).
+            </p>
+          </div>
+        </div>
       </div>
     </div>
     <div id="ed" class="auth" style="z-index: 30">
@@ -908,6 +1725,21 @@
       <div class="card">
         <h3>CONTA</h3>
         <input id="nm" maxlength="60" placeholder="Seu nome" />
+        <input
+          id="em"
+          type="email"
+          maxlength="80"
+          placeholder="E-mail de recuperação"
+          style="margin-top: 10px"
+        />
+        <div
+          class="row"
+          style="margin-top: 10px; justify-content: flex-start; flex-wrap: wrap"
+        >
+          <button class="g" onclick="saveEmail($('#em').value)">
+            Salvar e-mail</button
+          ><button class="g" onclick="obShow()">Refazer configuração</button>
+        </div>
         <div class="row" style="margin-top: 10px">
           <button onclick="saveNome($('#nm').value)">Salvar nome</button
           ><button class="g" onclick="logout()">Sair da conta</button>
@@ -916,8 +1748,33 @@
     </div>
 
     <div class="dock">
+      <div id="att"></div>
       <div id="say"></div>
+      <input
+        id="fi"
+        type="file"
+        accept="image/*,.pdf,.txt,.csv,text/plain,text/csv"
+        hidden
+        onchange="pick(this.files[0])"
+      />
       <div class="chat">
+        <button
+          class="g ic"
+          id="clip"
+          title="Anexar foto ou arquivo"
+          onclick="$('#fi').click()"
+        >
+          <svg viewBox="0 0 24 24">
+            <path
+              d="M21 11.5l-8.6 8.6a5 5 0 0 1-7-7l8.6-8.6a3.4 3.4 0 0 1 5 5l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4l8-8"
+            />
+          </svg></button
+        ><button class="g ic" id="mic" title="Falar" onclick="mic()">
+          <svg viewBox="0 0 24 24">
+            <rect x="9" y="3" width="6" height="12" rx="3" />
+            <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
+          </svg>
+        </button>
         <input
           id="in"
           placeholder="Ex: gastei 35 no iFood no crédito"
@@ -957,7 +1814,8 @@
         uid = () => Math.random().toString(36).slice(2, 9),
         mk = (d) => d.slice(0, 7);
       let U = JSON.parse(localStorage.u || "null"),
-        API = "https://script.google.com/macros/s/AKfycbylYZg-xcVL59L4WDyhguYyBHgr_9Vl-w7W25VHq5TJ2kzUxwpjpPIQQaeh1_Ipj78/exec",
+        API =
+          "https://script.google.com/macros/s/AKfycbylYZg-xcVL59L4WDyhguYyBHgr_9Vl-w7W25VHq5TJ2kzUxwpjpPIQQaeh1_Ipj78/exec",
         S = {
           tx: [],
           rec: [],
@@ -1080,6 +1938,7 @@
         S.rec = un(S.rec, R.rec);
         S.gen = { ...R.gen, ...S.gen };
         S.lim = { ...R.lim, ...S.lim };
+        S.onb = S.onb || R.onb;
       }
       async function sync() {
         if (!U || !API) {
@@ -1104,10 +1963,14 @@
             hi();
           }
           ST.model = p.model;
+          ST.email = p.email || "";
+          if ($("#em") && !$("#em").value) $("#em").value = ST.email;
           ST.msg = p.ia ? "" : "IA: " + p.iaerr;
           const r = await api({ action: "load" });
           if (r.data) merge(r.data);
           gen();
+          if (!S.onb && !S.tx.length && !S.contas.length && !S.rec.length)
+            obShow();
           store();
           render();
           await api({ action: "save", data: S });
@@ -1873,7 +2736,7 @@
             { type: "text/csv;charset=utf-8" },
           ),
         );
-        a.download = `meu-caixa-${today()}.csv`;
+        a.download = `cifra-${today()}.csv`;
         a.click();
       }
       let EDID = "";
@@ -2173,7 +3036,11 @@
       async function chatSend(t) {
         const c = curCv();
         if (!c.tt) c.tt = t.slice(0, 32);
-        c.m.push({ r: "u", t, ts: Date.now() });
+        c.m.push({
+          r: "u",
+          t: (PEND ? "📎 " + PEND.name + (t ? " · " : "") : "") + t,
+          ts: Date.now(),
+        });
         c.ts = Date.now();
         TYP = 1;
         ERR = "";
@@ -2183,11 +3050,7 @@
             throw new Error(
               "O chat precisa de internet e de conexão com o servidor.",
             );
-          const a = await api({
-            action: "chat",
-            msgs: c.m.slice(-7).map((x) => ({ r: x.r, t: x.t })),
-            resumo: resumo(),
-          });
+          const a = await chatCall(c);
           c.m.push({ r: "b", t: a.text, ts: Date.now() });
         } catch (e) {
           ERR = "⚠ " + e.message;
@@ -2262,7 +3125,7 @@
         let y = 60;
         d.setFont("helvetica", "bold");
         d.setFontSize(18);
-        d.text("Meu Caixa - Relatorio financeiro", 50, y);
+        d.text("Cifra - Relatorio financeiro", 50, y);
         y += 22;
         d.setFont("helvetica", "normal");
         d.setFontSize(10);
@@ -2604,6 +3467,8 @@
           return aerr("A senha precisa de 8 caracteres ou mais.");
         if (mode === "signup" && !$("#anome").value.trim())
           return aerr("Informe seu nome.");
+        if (mode === "signup" && !EMR.test($("#aemail").value.trim()))
+          return aerr("Informe um e-mail válido.");
         if (mode === "reset" && !$("#arc").value.trim())
           return aerr("Informe o código de recuperação.");
         if (mode !== "login" && senha !== $("#apw2").value)
@@ -2619,6 +3484,7 @@
               senha,
               convite: $("#ainv").value,
               nome: $("#anome").value,
+              email: $("#aemail").value.trim(),
               codigo: $("#arc").value,
             }),
           }).then((r) => r.json());
@@ -2713,7 +3579,7 @@
       }
       async function send() {
         const t = $("#in").value.trim();
-        if (!t) return;
+        if (!t && !PEND) return;
         $("#in").value = "";
         if (CUR === 4) return chatSend(t);
         say("Pensando…");
@@ -2729,8 +3595,8 @@
               .sort((a, b) => (b.ts || 0) - (a.ts || 0))
               .slice(0, 25)
               .map((x) => [x.id, x.data, x.tipo, x.valor, x.cat, x.desc]);
-          const sys = `Você é o assistente financeiro do app Meu Caixa. Hoje é ${today()}. Categorias de gasto: ${CATS}. Receitas: ${RCATS}. Pagamentos: ${PAYS}. Responda SOMENTE JSON. Se o usuário registra movimentos (pode ser vários numa mensagem): {"acao":"lancar","itens":[{"tipo":"gasto"|"receita"|"invest","valor":número,"cat":"...","pay":"...","desc":"curta","data":"YYYY-MM-DD"}]}. Compra de ativos/aplicações (ações, FIIs, tesouro, cripto) é tipo "invest" com cat "Investimento"; números em tickers como ITSA4 ou KNSC11 NÃO são valores; o valor é o que vem depois de "->" ou ":" . Nunca use datas futuras. pay padrão Pix. Contas: ${(S.contas || []).map((c) => c.nome).join(", ") || "nenhuma"}. Cartões: ${(S.cartoes || []).map((c) => c.nome).join(", ") || "nenhum"}. Se citar conta ou cartão, use os campos \"conta\"/\"cartao\" com o nome exato. Compra parcelada (ex.: \"em 3x\"): inclua \"parcelas\":N, coloque em valor o TOTAL da compra e pay \"Crédito\". Transferência entre contas: tipo \"transf\" com \"conta\" (origem) e \"destino\". Em investimentos inclua \"ativo\" (ticker, se houver). Corrigir/atualizar/alterar/trocar/apagar/remover um lançamento JÁ EXISTENTE NUNCA cria lançamento novo: responda {\"acao\":\"editar\",\"id\":\"ID\",\"campos\":{apenas os campos que mudam: valor,cat,pay,desc,data,tipo}} ou {\"acao\":\"apagar\",\"id\":\"ID\"}, escolhendo o id mais provável entre os lançamentos recentes (o que combina com o que o usuário citou; \"o último\" = o primeiro da lista). Se não der para saber qual, responda como pergunta pedindo que especifique. Se for pergunta ou pedido de dica: {"acao":"pergunta","resposta":"resposta curta em pt-BR"}. Dados de ${M}: receitas ${sum(S.tx.filter((x) => x.tipo === "receita" && mk(x.data) === M))}, gastos por categoria ${JSON.stringify(g)}, limites ${JSON.stringify(S.lim)}, lançamentos recentes [id,data,tipo,valor,cat,desc]: ${JSON.stringify(rec)}.`;
-          const a = await api({ action: "ai", system: sys, user: t });
+          const sys = `Você é o assistente financeiro do app Cifra. Hoje é ${today()}. Categorias de gasto: ${CATS}. Receitas: ${RCATS}. Pagamentos: ${PAYS}. Responda SOMENTE JSON. Se o usuário registra movimentos (pode ser vários numa mensagem): {"acao":"lancar","itens":[{"tipo":"gasto"|"receita"|"invest","valor":número,"cat":"...","pay":"...","desc":"curta","data":"YYYY-MM-DD"}]}. Compra de ativos/aplicações (ações, FIIs, tesouro, cripto) é tipo "invest" com cat "Investimento"; números em tickers como ITSA4 ou KNSC11 NÃO são valores; o valor é o que vem depois de "->" ou ":" . Nunca use datas futuras. pay padrão Pix. Contas: ${(S.contas || []).map((c) => c.nome).join(", ") || "nenhuma"}. Cartões: ${(S.cartoes || []).map((c) => c.nome).join(", ") || "nenhum"}. Se citar conta ou cartão, use os campos \"conta\"/\"cartao\" com o nome exato. Compra parcelada (ex.: \"em 3x\"): inclua \"parcelas\":N, coloque em valor o TOTAL da compra e pay \"Crédito\". Transferência entre contas: tipo \"transf\" com \"conta\" (origem) e \"destino\". Em investimentos inclua \"ativo\" (ticker, se houver). Corrigir/atualizar/alterar/trocar/apagar/remover um lançamento JÁ EXISTENTE NUNCA cria lançamento novo: responda {\"acao\":\"editar\",\"id\":\"ID\",\"campos\":{apenas os campos que mudam: valor,cat,pay,desc,data,tipo}} ou {\"acao\":\"apagar\",\"id\":\"ID\"}, escolhendo o id mais provável entre os lançamentos recentes (o que combina com o que o usuário citou; \"o último\" = o primeiro da lista). Se não der para saber qual, responda como pergunta pedindo que especifique. Se for pergunta ou pedido de dica: {"acao":"pergunta","resposta":"resposta curta em pt-BR"}. Dados de ${M}: receitas ${sum(S.tx.filter((x) => x.tipo === "receita" && mk(x.data) === M))}, gastos por categoria ${JSON.stringify(g)}, limites ${JSON.stringify(S.lim)}, lançamentos recentes [id,data,tipo,valor,cat,desc]: ${JSON.stringify(rec)}.`;
+          const a = await aiCall(sys, t);
           if (a.model) {
             ST.model = a.model;
             ST.ia = "ok";
@@ -2823,16 +3689,412 @@
             (fb ? ` · ⚠ modo sem IA (${fb})` : ""),
         );
       }
+      /* ===== Cifra: e-mail, onboarding, voz e anexos ===== */
+      const EMR = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+      let PEND = null,
+        REC = null,
+        OBI = 0,
+        OBD = {};
+      const _am = authMode;
+      authMode = function (m) {
+        _am(m);
+        if (m === "reset")
+          $("#arc").placeholder = "Código do e-mail ou de recuperação";
+      };
+      async function pedirReset() {
+        const cpf = $("#acpf").value;
+        if (!cpfOk(cpf)) return aerr("Digite seu CPF primeiro.");
+        try {
+          const r = await fetch(API, {
+            method: "POST",
+            body: JSON.stringify({
+              action: "pedirreset",
+              cpf: cpf.replace(/\D/g, ""),
+            }),
+          }).then((r) => r.json());
+          if (r.error) throw new Error(r.error);
+          aerr("");
+          $("#arc").value = "";
+          $("#arc").placeholder = r.email
+            ? "Código enviado para " + r.email
+            : "Se houver e-mail cadastrado, o código foi enviado";
+        } catch (e) {
+          aerr(
+            e.message === "Failed to fetch"
+              ? "Sem conexão com o servidor."
+              : e.message,
+          );
+        }
+      }
+      function saveEmail(v) {
+        v = (v || "").trim().toLowerCase();
+        if (!EMR.test(v)) return say("E-mail inválido.");
+        api({ action: "email", email: v })
+          .then(() => {
+            ST.email = v;
+            say("E-mail salvo.");
+          })
+          .catch((e) => say("⚠ " + e.message));
+      }
+      const OB = [
+        {
+          q: "Como você quer ser chamado?",
+          f: [["nome", "text", "Seu nome"]],
+          skip: () => !!U.nome,
+        },
+        {
+          q: "Qual seu e-mail? Ele serve para recuperar a conta.",
+          f: [["email", "email", "voce@email.com"]],
+          skip: () => !!ST.email,
+        },
+        {
+          q: "Quanto você recebe por mês, e em que dia?",
+          f: [
+            ["renda", "number", "Renda (R$)"],
+            ["dia", "number", "Dia do mês"],
+          ],
+        },
+        {
+          q: "Qual conta você mais usa, e quanto tem nela hoje?",
+          f: [
+            ["conta", "text", "Ex: Nubank"],
+            ["saldo", "number", "Saldo atual"],
+          ],
+        },
+        {
+          q: "Quanto quer gastar por mês, no máximo?",
+          f: [["teto", "number", "Teto mensal (R$)"]],
+        },
+        {
+          q: "Tem uma meta em mente? (pode pular)",
+          f: [
+            ["meta", "text", "Ex: Reserva de emergência"],
+            ["alvo", "number", "Valor alvo"],
+          ],
+        },
+      ];
+      function obShow() {
+        let e = $("#ob");
+        if (!e) {
+          e = document.createElement("div");
+          e.id = "ob";
+          e.className = "auth";
+          e.style.zIndex = 35;
+          document.body.append(e);
+        }
+        e.style.display = "block";
+        OBI = 0;
+        OBD = {};
+        obStep();
+      }
+      function obStep() {
+        while (OB[OBI] && OB[OBI].skip && OB[OBI].skip()) OBI++;
+        if (OBI >= OB.length) return obEnd();
+        const s = OB[OBI];
+        $("#ob").innerHTML =
+          `<div style="max-width:380px;margin:12vh auto 0"><div class="mut">${OBI + 1} / ${OB.length}</div><div class="bar" style="margin-top:8px"><i style="width:${((OBI + 1) / OB.length) * 100}%;background:var(--ac)"></i></div><div class="obq">${s.q}</div>${s.f.map((f) => `<input id="ob_${f[0]}" type="${f[1]}" ${f[1] === "number" ? 'inputmode="decimal"' : ""} placeholder="${f[2]}" style="margin-bottom:8px">`).join("")}<div class="row" style="margin-top:12px"><button class="g" onclick="OBI++;obStep()">Pular</button><button onclick="obNext()">Continuar</button></div></div>`;
+        const i = $("#ob_" + s.f[0][0]);
+        i && i.focus();
+      }
+      function obNext() {
+        OB[OBI].f.forEach((f) => (OBD[f[0]] = $("#ob_" + f[0]).value.trim()));
+        OBI++;
+        obStep();
+      }
+      function obEnd() {
+        const d = OBD,
+          n = (k) => +String(d[k] || "").replace(",", ".") || 0;
+        if (d.nome) saveNome(d.nome);
+        if (d.email && EMR.test(d.email)) saveEmail(d.email);
+        if (n("renda") > 0)
+          S.rec.push({
+            id: uid(),
+            desc: "Salário",
+            valor: n("renda"),
+            dia: Math.min(28, n("dia") || 5),
+            cat: "Salário",
+            pay: "Pix",
+            tipo: "receita",
+          });
+        if (d.conta)
+          S.contas.push({
+            id: uid(),
+            nome: d.conta.slice(0, 30),
+            saldo0: n("saldo"),
+            ts: Date.now(),
+          });
+        if (n("teto") > 0) {
+          const P = {
+            Moradia: 0.3,
+            Alimentação: 0.15,
+            Mercado: 0.15,
+            Transporte: 0.1,
+            Lazer: 0.1,
+            Saúde: 0.05,
+            Compras: 0.05,
+            Outros: 0.1,
+          };
+          Object.keys(P).forEach(
+            (k) => (S.lim[k] = Math.round(n("teto") * P[k])),
+          );
+        }
+        if (d.meta && n("alvo") > 0)
+          S.metas.push({
+            id: uid(),
+            nome: d.meta.slice(0, 40),
+            alvo: n("alvo"),
+            guardado: 0,
+            ts: Date.now(),
+          });
+        S.onb = 1;
+        gen();
+        $("#ob").style.display = "none";
+        persist();
+        say("Tudo pronto. Limites divididos por categoria; ajuste em Ajustes.");
+      }
+      function attShow() {
+        $("#att").innerHTML = PEND
+          ? `<span class="pill"><i></i>${esc(PEND.name)} <a href="#" class="mut" onclick="clearPend();return false">✕</a></span>`
+          : "";
+      }
+      function clearPend() {
+        PEND = null;
+        attShow();
+      }
+      function img2(f) {
+        return new Promise((ok, no) => {
+          const u = URL.createObjectURL(f),
+            i = new Image();
+          i.onload = () => {
+            const k = Math.min(1, 1280 / Math.max(i.width, i.height)),
+              c = document.createElement("canvas");
+            c.width = i.width * k;
+            c.height = i.height * k;
+            c.getContext("2d").drawImage(i, 0, 0, c.width, c.height);
+            URL.revokeObjectURL(u);
+            ok(c.toDataURL("image/jpeg", 0.8));
+          };
+          i.onerror = () => no(new Error("Imagem inválida."));
+          i.src = u;
+        });
+      }
+      async function pdfTxt(f) {
+        if (!window.pdfjsLib) {
+          await new Promise((o, n) => {
+            const s = document.createElement("script");
+            s.src =
+              "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js";
+            s.onload = o;
+            s.onerror = () =>
+              n(new Error("Leitor de PDF indisponível (precisa de internet)."));
+            document.head.append(s);
+          });
+          pdfjsLib.GlobalWorkerOptions.workerSrc =
+            "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+        }
+        const d = await pdfjsLib.getDocument({ data: await f.arrayBuffer() })
+          .promise;
+        let t = "";
+        for (let i = 1; i <= Math.min(d.numPages, 8) && t.length < 6000; i++)
+          t +=
+            (await (await d.getPage(i)).getTextContent()).items
+              .map((x) => x.str)
+              .join(" ") + "\n";
+        return t.slice(0, 6000);
+      }
+      async function pick(f) {
+        if (!f) return;
+        try {
+          say("Lendo arquivo…");
+          if (f.type.startsWith("image/"))
+            PEND = { name: f.name || "foto", img: await img2(f) };
+          else if (/pdf/i.test(f.type) || /\.pdf$/i.test(f.name))
+            PEND = { name: f.name, txt: await pdfTxt(f) };
+          else {
+            if (f.size > 2e6)
+              throw new Error("Arquivo grande demais (máx. 2 MB).");
+            PEND = { name: f.name, txt: (await f.text()).slice(0, 6000) };
+          }
+          if (PEND.txt != null && !PEND.txt.trim()) {
+            PEND = null;
+            throw new Error("Não encontrei texto neste arquivo.");
+          }
+          attShow();
+          say("");
+        } catch (e) {
+          say("⚠ " + e.message);
+        }
+        $("#fi").value = "";
+      }
+      function aiCall(sys, t) {
+        const p = PEND;
+        clearPend();
+        if (p && p.img)
+          return api({
+            action: "vision",
+            system: sys,
+            user: t || "Registre os lançamentos desta imagem.",
+            image: p.img,
+          });
+        return api({
+          action: "ai",
+          system: sys,
+          user: p
+            ? (t || "Registre os lançamentos deste arquivo.") +
+              "\n\nARQUIVO " +
+              p.name +
+              ":\n" +
+              p.txt
+            : t,
+        });
+      }
+      function chatCall(c) {
+        const p = PEND;
+        clearPend();
+        const b = {
+          action: p && p.img ? "vision" : "chat",
+          modo: "chat",
+          msgs: c.m.slice(-7).map((x) => ({ r: x.r, t: x.t })),
+          resumo: resumo(),
+        };
+        if (p && p.img) b.image = p.img;
+        if (p && p.txt) b.anexo = p.name + ":\n" + p.txt;
+        return api(b);
+      }
+      async function mic() {
+        if (REC) return REC.stop();
+        if (!navigator.mediaDevices || !window.MediaRecorder)
+          return say("Seu navegador não suporta gravação de voz.");
+        try {
+          const st = await navigator.mediaDevices.getUserMedia({ audio: true }),
+            ch = [],
+            r = new MediaRecorder(st),
+            b = $("#mic");
+          const tm = setTimeout(
+            () => r.state === "recording" && r.stop(),
+            60000,
+          );
+          r.ondataavailable = (e) => ch.push(e.data);
+          r.onstop = async () => {
+            clearTimeout(tm);
+            st.getTracks().forEach((t) => t.stop());
+            REC = null;
+            b.classList.remove("rec");
+            const bl = new Blob(ch, { type: r.mimeType });
+            if (bl.size < 1500) return say("Não ouvi nada, tente de novo.");
+            say("Transcrevendo…");
+            try {
+              const d = await new Promise((o, n) => {
+                const f = new FileReader();
+                f.onload = () => o(f.result.split(",")[1]);
+                f.onerror = n;
+                f.readAsDataURL(bl);
+              });
+              const a = await api({
+                action: "transcribe",
+                audio: d,
+                mime: r.mimeType,
+              });
+              $("#in").value = ($("#in").value + " " + a.text).trim();
+              $("#in").focus();
+              say("");
+            } catch (e) {
+              say("⚠ " + e.message);
+            }
+          };
+          r.start();
+          REC = r;
+          b.classList.add("rec");
+          say("Gravando… toque no microfone para parar.");
+        } catch (e) {
+          say("⚠ Permita o uso do microfone para falar.");
+        }
+      }
+
+      /* ===== login animado ===== */
+      const AT = {
+        login: ["Entre na sua conta", "Use seu CPF e sua senha.", "Entrar"],
+        signup: ["Crie sua conta", "Leva menos de um minuto.", "Criar conta"],
+        reset: [
+          "Recupere o acesso",
+          "Use o código enviado por e-mail ou o de recuperação.",
+          "Redefinir senha",
+        ],
+      };
+      function posInd() {
+        const s = $("#seg"),
+          b = s.dataset.m === "signup" ? $("#m2") : $("#m1"),
+          i = s.querySelector(".ind");
+        i.style.width = b.offsetWidth + "px";
+        i.style.transform = "translateX(" + b.offsetLeft + "px)";
+      }
+      addEventListener("resize", posInd);
+      document.fonts && document.fonts.ready.then(posInd);
+      const _sa = showAuth;
+      showAuth = function (t) {
+        _sa(t);
+        posInd();
+      };
+      $("#apw").addEventListener("input", (e) => {
+        const v = e.target.value;
+        let s = 0;
+        if (v.length >= 8) s++;
+        if (
+          v.length >= 12 ||
+          (v.length >= 8 && /\d/.test(v) && /[a-z]/i.test(v))
+        )
+          s++;
+        if (v.length >= 10 && /\d/.test(v) && /[^A-Za-z0-9]/.test(v)) s++;
+        $("#str").dataset.s = v ? s || 1 : 0;
+      });
+      $("#aemail").insertAdjacentHTML(
+        "afterend",
+        '<svg class="ck" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
+      );
+      $("#aemail").addEventListener("input", (e) =>
+        e.target.parentNode.classList.toggle(
+          "ok",
+          EMR.test(e.target.value.trim()),
+        ),
+      );
+      const _am2 = authMode;
+      authMode = function (m) {
+        _am2(m);
+        $("#seg").dataset.m = m;
+        posInd();
+        $("#atitle").textContent = AT[m][0];
+        $("#asub").textContent = AT[m][1];
+        $("#abtn").innerHTML = "<span>" + AT[m][2] + "</span>";
+        const c = $("#acard");
+        c.classList.remove("sw", "shk");
+        void c.offsetWidth;
+        c.classList.add("sw");
+      };
+      function eye(b) {
+        const i = b.parentNode.querySelector("input");
+        i.type = i.type === "password" ? "text" : "password";
+        b.classList.toggle("on");
+      }
+      $("#acpf").addEventListener("input", (e) =>
+        e.target.parentNode.classList.toggle("ok", !!cpfOk(e.target.value)),
+      );
+      new MutationObserver(() => {
+        if ($("#aerr").textContent) {
+          const c = $("#acard");
+          c.classList.remove("sw", "shk");
+          void c.offsetWidth;
+          c.classList.add("shk");
+        }
+      }).observe($("#aerr"), {
+        childList: true,
+        characterData: true,
+        subtree: true,
+      });
       $("#rc").innerHTML = [...CATS, ...RCATS]
         .map((c) => `<option>${c}</option>`)
         .join("");
       $("#rp").innerHTML = PAYS.map((c) => `<option>${c}</option>`).join("");
-      theme(
-        localStorage.th ||
-          (matchMedia("(prefers-color-scheme:dark)").matches
-            ? "dark"
-            : "light"),
-      );
+      theme(localStorage.th || "dark");
       addEventListener("online", () => {
         pills();
         sync();
