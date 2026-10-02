@@ -4,6 +4,7 @@
 <link rel="manifest" href="manifest.json"><meta name="theme-color" content="#f6f5f1">
 <title>Meu Caixa</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
 :root{--bg:#f6f5f1;--c:#fff;--ink:#141414;--mut:#8a8a85;--ac:#d4f25a;--red:#e5604d;--grn:#2f9e6e;--ln:#ecebe5;--dock:rgba(246,245,241,.92)}
 [data-t=dark]{--bg:#0f0f0e;--c:#1a1a18;--ink:#f2f1ec;--mut:#8f8f88;--grn:#4cc790;--red:#ff7a66;--ln:#2a2a27;--dock:rgba(15,15,14,.92)}
@@ -29,7 +30,15 @@ input,select{font:inherit;border:1px solid var(--ln);border-radius:12px;padding:
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
 .sec{display:none}.sec.on{display:block}canvas{max-height:240px}
 @media(max-width:380px){body{padding:12px 12px 170px}.card{padding:14px}.grid{grid-template-columns:1fr}}
-.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;font-size:12px;color:var(--mut);cursor:pointer}.pill{display:flex;align-items:center;gap:6px;background:var(--c);border-radius:20px;padding:5px 10px}.pill i{width:7px;height:7px;border-radius:50%;background:var(--mut)}.pill.ok i{background:var(--grn)}.pill.err i{background:var(--red)}.em{padding:20px 0;text-align:center}.auth{position:fixed;inset:0;background:var(--bg);z-index:20;display:none;overflow:auto;padding:24px 16px}.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.ch{text-align:center;font-size:11px;color:var(--mut)}.cd{aspect-ratio:1/1.05;border-radius:10px;background:var(--bg);padding:4px 2px;display:flex;flex-direction:column;align-items:center;cursor:pointer;overflow:hidden;line-height:1.25}.cd span{font-weight:600;font-size:12px}.cd em{font-style:normal;font-size:9.5px;white-space:nowrap}.cd.sel{outline:2px solid var(--ac)}.cd.fut{opacity:.35}.nav button:last-child{padding:10px 12px;font-size:13px}.tabs button{padding:9px 2px;font-size:13px}.bd{display:inline-block;background:var(--red);color:#fff;border-radius:10px;font-size:10px;padding:1px 6px;margin-left:4px;font-weight:600}.bd:empty{display:none}.bub{max-width:85%;padding:10px 14px;border-radius:18px;margin-bottom:8px;line-height:1.4;word-break:break-word}.bub.u{background:var(--ac);color:#141414;margin-left:auto;border-bottom-right-radius:6px}.bub.b{background:var(--c);border-bottom-left-radius:6px}</style></head><body>
+.pills{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;font-size:12px;color:var(--mut);cursor:pointer}.pill{display:flex;align-items:center;gap:6px;background:var(--c);border-radius:20px;padding:5px 10px}.pill i{width:7px;height:7px;border-radius:50%;background:var(--mut)}.pill.ok i{background:var(--grn)}.pill.err i{background:var(--red)}.em{padding:20px 0;text-align:center}.auth{position:fixed;inset:0;background:var(--bg);z-index:20;display:none;overflow:auto;padding:24px 16px}.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}.ch{text-align:center;font-size:11px;color:var(--mut)}.cd{aspect-ratio:1/1.05;border-radius:10px;background:var(--bg);padding:4px 2px;display:flex;flex-direction:column;align-items:center;cursor:pointer;overflow:hidden;line-height:1.25}.cd span{font-weight:600;font-size:12px}.cd em{font-style:normal;font-size:9.5px;white-space:nowrap}.cd.sel{outline:2px solid var(--ac)}.cd.fut{opacity:.35}.nav button:last-child{padding:10px 12px;font-size:13px}.tabs button{padding:9px 2px;font-size:13px}.bd{display:inline-block;background:var(--red);color:#fff;border-radius:10px;font-size:10px;padding:1px 6px;margin-left:4px;font-weight:600}.bd:empty{display:none}.bub{max-width:85%;padding:10px 14px;border-radius:18px;margin-bottom:8px;line-height:1.4;word-break:break-word}.bub.u{background:var(--ac);color:#141414;margin-left:auto;border-bottom-right-radius:6px}.bub.b{background:var(--c);border-bottom-left-radius:6px}@keyframes up{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}@keyframes pop{from{opacity:0;transform:scale(.9) translateY(6px)}to{opacity:1;transform:none}}@keyframes grow{from{transform:scaleX(0)}to{transform:scaleX(1)}}@keyframes dot{0%,60%,100%{transform:translateY(0);opacity:.35}30%{transform:translateY(-4px);opacity:1}}
+.sec.on>.card,.sec.on>div>.card{animation:up .35s both}.sec.on>.card:nth-child(2){animation-delay:.04s}.sec.on>.card:nth-child(3){animation-delay:.08s}.sec.on>.card:nth-child(4){animation-delay:.12s}.sec.on>.card:nth-child(5){animation-delay:.16s}.sec.on>.card:nth-child(n+6){animation-delay:.2s}
+.auth>div{animation:up .45s both}#say.f{animation:up .25s both}.bar i{transform-origin:left;animation:grow .6s both}
+.bub{position:relative}.bub.pop{animation:pop .2s ease-out both}.bub.u{transform-origin:right bottom}.bub.b{transform-origin:left bottom}.bub.err{color:var(--red)}.tm{display:block;text-align:right;font-size:10px;opacity:.55;margin-top:2px}
+.dots{display:inline-flex;gap:4px;padding:4px 2px}.dots i{width:7px;height:7px;border-radius:50%;background:var(--mut);animation:dot 1.1s infinite}.dots i:nth-child(2){animation-delay:.15s}.dots i:nth-child(3){animation-delay:.3s}
+button,.cd{transition:transform .12s,background .2s,color .2s,opacity .2s}button:active:not(:disabled),.cd:active{transform:scale(.95)}.card{transition:background .25s}
+.rp summary{cursor:pointer;font-weight:600;list-style:none}.rp summary::-webkit-details-marker{display:none}.rp[open]>div{animation:up .25s both}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style></head><body>
 <div class="nav"><button class="g" onclick="mv(-1)">‹</button><b id="mes"></b><button class="g" id="nx" onclick="mv(1)">›</button><button class="g" id="th" onclick="theme()">☾</button><button class="g" onclick="logout()" title="Sair da conta">Sair</button></div>
 
 <div id="auth" class="auth"><div style="max-width:380px;margin:8vh auto 0">
@@ -58,8 +67,8 @@ input,select{font:inherit;border:1px solid var(--ln);border-radius:12px;padding:
 <div id="ta" class="sec"><div class="card"><h3>ALERTAS DE LIMITES</h3><div id="alr"></div></div></div>
 <div id="tb" class="sec">
  <div class="tabs" style="margin:0 0 12px"><button id="s1" class="on" onclick="sub(0)">Chat</button><button id="s2" onclick="sub(1)">Relatório</button></div>
- <div id="sc"><div id="msgs"></div><p class="mut" style="text-align:center;font-size:11px;margin-top:8px">Respostas de IA são informativas e não substituem um profissional.</p></div>
- <div id="sr" style="display:none"><div class="card"><h3>RELATÓRIO DA IA</h3><p class="mut" id="relq" style="margin-bottom:12px"></p><button id="relb" onclick="gerar()">Gerar relatório do mês</button></div><div class="card" id="relo" style="display:none"></div></div>
+ <div id="sc"><div class="row" style="margin-bottom:12px"><select id="cvs" style="flex:1;min-width:0" onchange="CVID=this.value;chRender()"></select><button class="g" onclick="CVID='';chRender()">＋ Nova</button><button class="g" onclick="delCv()">✕</button></div><div id="msgs"></div><p class="mut" style="text-align:center;font-size:11px;margin-top:8px">Respostas de IA são informativas e não substituem um profissional.</p></div>
+ <div id="sr" style="display:none"><div class="card"><h3>RELATÓRIO DA IA</h3><p class="mut" id="relq" style="margin-bottom:12px"></p><button id="relb" onclick="gerar()">Gerar relatório do mês</button></div><div id="relo"></div></div>
 </div>
 <div id="t2" class="sec">
  <div class="card"><h3>GASTOS FIXOS / RECORRENTES</h3><div id="recs"></div>
@@ -90,7 +99,7 @@ function pills(){const on=navigator.onLine,p=(k,t)=>`<span class="pill ${k}"><i>
  $('#pills').innerHTML=p(on?'ok':'err',on?'Online':'Offline')+p(ST.sheet,'Planilha · '+({ok:'sincronizada',err:'erro',off:'desconectada'})[ST.sheet])+p(ST.ia,'IA · '+({ok:ST.model,err:'indisponível',off:'desconectada'})[ST.ia])+(ST.msg?`<div class="mut" style="flex-basis:100%">${ST.msg}</div>`:'')}
 function merge(R){const dl=new Set([...(S.del||[]),...(R.del||[])]);S.del=[...dl];
  const un=(a,b)=>{const m={};[...(b||[]),...(a||[])].forEach(x=>m[x.id]=x);return Object.values(m).filter(x=>!dl.has(x.id))};
- S.tx=un(S.tx,R.tx);S.rec=un(S.rec,R.rec);S.gen={...R.gen,...S.gen};S.lim={...R.lim,...S.lim}}
+ const unc=(a,b)=>{const m={};[...(b||[]),...(a||[])].forEach(x=>{if(!m[x.id]||(x.ts||0)>=(m[x.id].ts||0))m[x.id]=x});return Object.values(m).filter(x=>!dl.has(x.id))};S.rep=un(S.rep,R.rep);S.cv=unc(S.cv,R.cv);S.tx=un(S.tx,R.tx);S.rec=un(S.rec,R.rec);S.gen={...R.gen,...S.gen};S.lim={...R.lim,...S.lim}}
 async function sync(){if(!U||!API){ST.sheet=ST.ia='off';ST.msg=API?'':'Servidor não configurado.';return pills()}if(busy)return;busy=1;ST.msg='Sincronizando…';pills();
  try{const p=await api({action:'ping'});ST.ia=p.ia?'ok':'err';if(p.rel!=null&&p.rel>=0){ST.rel=p.rel;relInfo()}if(p.nome&&p.nome!==U.nome){U.nome=p.nome;localStorage.u=JSON.stringify(U);hi()}ST.model=p.model;ST.msg=p.ia?'':'IA: '+p.iaerr;
   const r=await api({action:'load'});if(r.data)merge(r.data);gen();store();render();await api({action:'save',data:S});ST.sheet='ok'}
@@ -98,7 +107,7 @@ async function sync(){if(!U||!API){ST.sheet=ST.ia='off';ST.msg=API?'':'Servidor 
  busy=0;pills()}
 function gen(){const t=today(),m=mk(t);S.rec.forEach(r=>{const k=r.id+m;if(S.gen[k])return;const d=m+'-'+String(Math.min(r.dia,28)).padStart(2,'0');if(d<=t){S.tx.push({id:'r'+r.id+m,data:d,tipo:r.tipo,valor:r.valor,cat:r.cat,pay:r.pay,desc:r.desc});S.gen[k]=1}})}
 function mv(n){const[y,m]=M.split('-').map(Number),k=new Date(y,m-1+n,1).toLocaleDateString('sv').slice(0,7);if(k>mk(today()))return;M=k;SEL='';render()}
-let CUR=0,SUB=0,CH=[];
+let CUR=0,SUB=0,CVID='',TYP=0,ERR='',OP={};
 function tab(i){document.querySelectorAll('.sec').forEach((e,j)=>e.classList.toggle('on',i===j));document.querySelectorAll('.dock .tabs button').forEach((e,j)=>e.classList.toggle('on',i===j));CUR=i;if(i===3)chRender();dockMode()}
 const sum=a=>a.reduce((s,x)=>s+x.valor,0),grp=(a,f)=>a.reduce((o,x)=>{const k=f(x);o[k]=(o[k]||0)+x.valor;return o},{});
 const PAL=['#d4f25a','#7aa6ff','#e5604d','#f2b84b','#2f9e6e','#b48cf2','#5cc8c8','#ff9db1','#8a8a85','#a3b18a'];
@@ -112,15 +121,34 @@ function resumo(){const[y,m]=M.split('-').map(Number),ms=[0,1,2].map(i=>{const k
 const md=t=>esc(t).replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/^- /gm,'• ').replace(/\n/g,'<br>');
 function dockMode(){const c=CUR===3;$('#in').placeholder=c?'Pergunte sobre finanças…':'Ex: gastei 35 no iFood no crédito';$('.chat').style.display=(c&&SUB===1)?'none':'flex'}
 function sub(n){SUB=n;$('#sc').style.display=n?'none':'block';$('#sr').style.display=n?'block':'none';$('#s1').classList.toggle('on',!n);$('#s2').classList.toggle('on',!!n);dockMode()}
-function chRender(){const e=$('#msgs');e.innerHTML=CH.length?CH.map(m=>`<div class="bub ${m.r}">${md(m.t)}</div>`).join(''):'<div class="card mut" style="text-align:center">Pergunte sobre seus gastos, economia, dívidas ou investimentos.<br>Respondo só sobre finanças.</div>';if(CH.length)scrollTo(0,document.body.scrollHeight)}
-async function chatSend(t){if(!U||!API||!navigator.onLine){CH.push({r:'u',t},{r:'b',t:'⚠ O chat precisa de internet e de conexão com o servidor.'});return chRender()}
- CH.push({r:'u',t},{r:'b',t:'…'});chRender();
- try{const a=await api({action:'chat',msgs:CH.slice(0,-1).slice(-7),resumo:resumo()});CH[CH.length-1].t=a.text}catch(e){CH[CH.length-1].t='⚠ '+e.message}chRender()}
+const fmt=t=>t?new Date(t).toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'}):'',safe=t=>String(t||'').replace(/[^\x20-\x7E\u00A0-\u00FF]/g,'');
+function anim(el,to){const from=el._v==null?to:el._v;el._v=to;if(from===to||matchMedia('(prefers-reduced-motion:reduce)').matches){el.textContent=brl(to);return}const t0=performance.now();(function f(t){const p=Math.min(1,(t-t0)/450);el.textContent=brl(from+(to-from)*(1-Math.pow(1-p,3)));if(p<1)requestAnimationFrame(f)})(t0)}
+function curCv(){let c=S.cv.find(x=>x.id===CVID);if(!c){c={id:uid(),ts:Date.now(),tt:'',m:[]};S.cv.unshift(c);CVID=c.id;while(S.cv.length>10){S.cv.sort((a,b)=>b.ts-a.ts);S.del.push(S.cv.pop().id)}}return c}
+function chRender(sc){const e=$('#msgs'),c=S.cv.find(x=>x.id===CVID),m=c?c.m:[],pv=chRender.k===CVID?chRender.n:m.length,sel=$('#cvs');
+ sel.innerHTML='<option value="">Nova conversa</option>'+[...S.cv].sort((a,b)=>b.ts-a.ts).map(x=>`<option value="${x.id}">${esc(x.tt||'Conversa')} · ${new Date(x.ts).toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'})}</option>`).join('');sel.value=CVID;
+ e.innerHTML=(m.length||TYP||ERR?'':'<div class="card mut" style="text-align:center">Pergunte sobre seus gastos, economia, dívidas ou investimentos.<br>Respondo só sobre finanças.</div>')
+  +m.map((x,i)=>`<div class="bub ${x.r}${i>=pv?' pop':''}">${md(x.t)}<span class="tm">${fmt(x.ts)}</span></div>`).join('')
+  +(TYP?'<div class="bub b pop"><span class="dots"><i></i><i></i><i></i></span></div>':'')+(ERR?`<div class="bub b err">${esc(ERR)}</div>`:'');
+ chRender.k=CVID;chRender.n=m.length;if(sc)scrollTo({top:document.body.scrollHeight,behavior:'smooth'})}
+async function chatSend(t){const c=curCv();if(!c.tt)c.tt=t.slice(0,32);c.m.push({r:'u',t,ts:Date.now()});c.ts=Date.now();TYP=1;ERR='';chRender(1);
+ try{if(!U||!API||!navigator.onLine)throw new Error('O chat precisa de internet e de conexão com o servidor.');
+  const a=await api({action:'chat',msgs:c.m.slice(-7).map(x=>({r:x.r,t:x.t})),resumo:resumo()});c.m.push({r:'b',t:a.text,ts:Date.now()})}catch(e){ERR='⚠ '+e.message}
+ TYP=0;c.m=c.m.slice(-60);persist();chRender(1)}
+function delCv(){if(!CVID||!confirm('Excluir esta conversa?'))return;S.del.push(CVID);S.cv=S.cv.filter(x=>x.id!==CVID);CVID='';persist()}
+function delRep(id){if(!confirm('Excluir este relatório?'))return;S.del.push(id);S.rep=S.rep.filter(x=>x.id!==id);persist()}
 function relInfo(em){const n=ST.rel;$('#relq').textContent=em||(n==null?'Até 3 relatórios por dia.':`Restam ${n} de 3 relatórios hoje.`);$('#relb').disabled=n===0}
-function relRender(){if(!U)return;const o=JSON.parse(localStorage['rp_'+U.uid]||'null'),e=$('#relo');e.style.display=o?'block':'none';if(o)e.innerHTML=`<h3>ÚLTIMO RELATÓRIO · ${o.mes}</h3><div style="line-height:1.5">${md(o.t)}</div>`;relInfo()}
-async function gerar(){if(!U||!API||!navigator.onLine)return relInfo('⚠ Precisa de internet e conexão com o servidor.');const b=$('#relb');b.disabled=1;b.textContent='Gerando…';let em='';
- try{const a=await api({action:'report',resumo:resumo()});ST.rel=a.restantes;localStorage['rp_'+U.uid]=JSON.stringify({mes:M,t:a.text});relRender()}catch(e){em='⚠ '+e.message}
+function relRender(){if(!U)return;$('#relo').innerHTML=[...S.rep].sort((a,b)=>b.ts-a.ts).map((r,i)=>`<details class="card rp" ${(OP[r.id]??(i===0))?'open':''} ontoggle="OP['${r.id}']=this.open"><summary>Relatório · ${r.mes} <span class="mut">${new Date(r.ts).toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'})}</span></summary><div style="line-height:1.5;margin:12px 0">${md(r.t)}</div><div class="row" style="justify-content:flex-start"><button onclick="pdf('${r.id}')">Baixar PDF</button><button class="g" onclick="delRep('${r.id}')">Excluir</button></div></details>`).join('');relInfo()}
+async function gerar(){if(!U||!API||!navigator.onLine)return relInfo('⚠ Precisa de internet e conexão com o servidor.');const b=$('#relb');b.disabled=true;b.textContent='Gerando…';let em='';
+ try{const a=await api({action:'report',resumo:resumo()});ST.rel=a.restantes;S.rep.unshift({id:uid(),mes:M,ts:Date.now(),t:a.text});while(S.rep.length>15)S.del.push(S.rep.pop().id);persist()}catch(e){em='⚠ '+e.message}
  b.textContent='Gerar relatório do mês';b.disabled=false;relInfo(em)}
+function pdf(id){const r=S.rep.find(x=>x.id===id);if(!r)return;if(!window.jspdf)return relInfo('⚠ O gerador de PDF não carregou. Conecte-se à internet e recarregue.');
+ const d=new window.jspdf.jsPDF({unit:'pt',format:'a4'}),W=d.internal.pageSize.getWidth()-100;let y=60;
+ d.setFont('helvetica','bold');d.setFontSize(18);d.text('Meu Caixa - Relatorio financeiro',50,y);y+=22;
+ d.setFont('helvetica','normal');d.setFontSize(10);d.setTextColor(120);d.text(safe(`Referente a ${r.mes} - gerado em ${new Date(r.ts).toLocaleString('pt-BR')}${U.nome?' - '+U.nome:''}`),50,y);y+=28;d.setTextColor(20);
+ r.t.split('\n').forEach(l=>{const b=/^\s*\*\*.+\*\*\s*:?\s*$/.test(l);l=safe(l.replace(/\*\*/g,'').replace(/^\s*[-*]\s+/,'- '));
+  d.setFont('helvetica',b?'bold':'normal');d.setFontSize(b?13:11);if(b)y+=4;
+  d.splitTextToSize(l||' ',W).forEach(t=>{if(y>790){d.addPage();y=60}d.text(t,50,y);y+=b?18:15})});
+ d.save(`relatorio-${r.mes}.pdf`)}
 function alerts(){const[y,m]=M.split('-').map(Number),g=S.tx.filter(x=>x.tipo==='gasto'&&mk(x.data)===M),bc=grp(g,x=>x.cat),cur=M===mk(today()),nd=new Date(y,m,0).getDate(),dia=cur?+today().slice(8):nd,L=[];
  Object.keys(S.lim).filter(k=>S.lim[k]>0).forEach(k=>{const v=bc[k]||0,lm=S.lim[k],p=v/lm*100,pr=v/dia*nd;
   if(p>=100)L.push({n:2,p,t:`Limite estourado em ${k}: ${brl(v)} de ${brl(lm)} (${brl(v-lm)} acima).`});
@@ -142,10 +170,10 @@ function cal(tx,y,m){const nd=new Date(y,m,0).getDate(),off=new Date(y,m-1,1).ge
  const l=tx.filter(x=>x.data===SEL);
  $('#cald').innerHTML=SEL?`<b>${SEL.split('-').reverse().join('/')}</b>`+(l.map(x=>`<div class="row" style="margin-top:6px"><span>${x.desc||x.cat}</span><span class="${x.tipo==='receita'?'pos':''}">${x.tipo==='receita'?'+':x.tipo==='gasto'?'−':'↗ '}${brl(x.valor)}</span></div>`).join('')||'<div class="mut">Sem lançamentos neste dia.</div>'):'<span class="mut">Toque num dia para ver os lançamentos. Quanto mais vermelho, maior o gasto.</span>'}
 function selDay(d){SEL=SEL===d?'':d;render()}
-function render(){hi();alrRender();
+function render(){hi();alrRender();relRender();chRender();
  const ink=css('--ink'),[y,m]=M.split('-'),tx=S.tx.filter(x=>mk(x.data)===M),g=tx.filter(x=>x.tipo==='gasto'),r=tx.filter(x=>x.tipo==='receita'),iv=tx.filter(x=>x.tipo==='invest');
  $('#mes').textContent=new Date(y,m-1,1).toLocaleDateString('pt-BR',{month:'long',year:'numeric'});$('#nx').disabled=M>=mk(today());
- const sd=sum(r)-sum(g)-sum(iv);$('#saldo').textContent=brl(sd);$('#saldo').className='big '+(sd<0?'neg':'');$('#rec').textContent=brl(sum(r));$('#gas').textContent=brl(sum(g));$('#inv').textContent=brl(sum(iv));
+ const sd=sum(r)-sum(g)-sum(iv);anim($('#saldo'),sd);$('#saldo').className='big '+(sd<0?'neg':'');$('#rec').textContent=brl(sum(r));$('#gas').textContent=brl(sum(g));$('#inv').textContent=brl(sum(iv));
  const bc=grp(g,x=>x.cat);
  $('#lims').innerHTML=Object.keys(S.lim).filter(k=>S.lim[k]>0).map(k=>{const p=(bc[k]||0)/S.lim[k]*100;return `<div class="row"><span>${k}</span><span class="mut">${brl(bc[k]||0)} / ${brl(S.lim[k])}</span></div><div class="bar"><i style="width:${Math.min(p,100)}%;background:${p>=100?'var(--red)':p>=80?'#f2b84b':'var(--grn)'}"></i></div>`}).join('')||'<span class="mut">Defina limites em Ajustes.</span>';
  ch('c1','doughnut',Object.keys(bc),[{data:Object.values(bc),backgroundColor:PAL,borderWidth:0}]);
@@ -177,8 +205,8 @@ async function auth(){const cpf=$('#acpf').value,senha=$('#apw').value;aerr();
   U={uid:r.uid,tok:r.tok,nome:r.nome||''};localStorage.u=JSON.stringify(U);$('#apw').value=$('#apw2').value='';start()}
  catch(e){aerr(e.message==='Failed to fetch'?'Sem conexão com o servidor.':e.message)}$('#abtn').disabled=0}
 function start(){let l=localStorage[SK()];if(!l&&localStorage.g){l=localStorage.g;localStorage.removeItem('g')}
- S=JSON.parse(l||'null')||{tx:[],rec:[],lim:{},gen:{},del:[]};S.del=S.del||[];M=mk(today());$('#auth').style.display='none';gen();store();render();relRender();chRender();pills();sync()}
-const say=t=>$('#say').textContent=t,num=x=>+x.replace(/\.(?=\d{3}\b)/g,'').replace(',','.');
+ S=JSON.parse(l||'null')||{tx:[],rec:[],lim:{},gen:{},del:[]};S.del=S.del||[];S.rep=S.rep||[];S.cv=S.cv||[];CVID='';M=mk(today());$('#auth').style.display='none';gen();store();render();relRender();chRender();pills();sync()}
+const say=t=>{const e=$('#say');e.textContent=t;e.classList.remove('f');void e.offsetWidth;e.classList.add('f')},num=x=>+x.replace(/\.(?=\d{3}\b)/g,'').replace(',','.');
 function local(t){const inv=/invest/i.test(t),rec=/recebi|sal[aá]rio|ganhei/i.test(t),pay=PAYS.find(p=>t.toLowerCase().includes(p.toLowerCase()))||'Pix';
  return t.split(/[;\n]+/).map(s=>s.trim()).filter(Boolean).map(s=>{const n=[...s.matchAll(/(?<![A-Za-z\d])(\d{1,3}(?:\.\d{3})+(?:,\d+)?|\d+(?:[.,]\d+)?)(?![A-Za-z\d])/g)];
   return n.length&&{tipo:inv?'invest':rec?'receita':'gasto',valor:num(n[n.length-1][1]),cat:inv?'Investimento':rec?'Renda extra':'Outros',pay,desc:s.slice(0,60),data:today()}}).filter(Boolean)}
