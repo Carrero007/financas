@@ -856,8 +856,12 @@
         position: relative;
         overflow: hidden;
         flex: none;
-        height: max(320px, 44vh);
-        padding: 22px 24px;
+        height: auto;
+        display: flex;
+        flex-direction: column;
+        --ov: 28px;
+        --chh: clamp(110px, 21vh, 170px);
+        padding: 18px 24px 0;
         background: #c9f13d;
         color: #10110d;
       }
@@ -892,10 +896,10 @@
       .hl {
         position: relative;
         z-index: 1;
-        margin-top: 26px;
+        margin-top: 12px;
         font-family: var(--serif);
         font-weight: 400;
-        font-size: clamp(40px, 12.5vw, 54px);
+        font-size: clamp(34px, 10.5vw, 46px);
         line-height: 0.98;
         letter-spacing: -1.5px;
       }
@@ -918,9 +922,10 @@
       .hs {
         position: relative;
         z-index: 1;
-        margin-top: 14px;
+        margin: 0 0 calc(var(--ov) + 10px);
+        flex: 0 0 46%;
         max-width: 210px;
-        font-size: 14px;
+        font-size: 13.5px;
         line-height: 1.4;
         color: rgba(16, 17, 13, 0.74);
         animation: up 0.6s 0.8s both;
@@ -960,7 +965,7 @@
         position: relative;
         flex: 1;
         margin-top: -28px;
-        padding: 26px 24px calc(28px + env(safe-area-inset-bottom));
+        padding: 22px 24px calc(16px + env(safe-area-inset-bottom));
         background: var(--bg);
         border-radius: 28px 28px 0 0;
         box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.07);
@@ -978,11 +983,11 @@
         position: relative;
         display: flex;
         gap: 24px;
-        margin-bottom: 24px;
+        margin-bottom: 14px;
         border-bottom: 1px solid var(--ln);
       }
       .seg button {
-        padding: 0 0 12px;
+        padding: 0 0 9px;
         min-height: 0;
         background: none;
         border-radius: 0;
@@ -1014,14 +1019,14 @@
       #atitle {
         font-family: var(--serif);
         font-weight: 400;
-        font-size: 34px;
+        font-size: 28px;
         line-height: 1.05;
         letter-spacing: -0.8px;
       }
       #asub {
-        margin: 6px 0 20px;
+        margin: 4px 0 8px;
         color: var(--mut);
-        font-size: 14px;
+        font-size: 13px;
       }
       #acard.sw {
         animation: swp 0.4s both;
@@ -1041,8 +1046,9 @@
         border: 0;
         border-radius: 0;
         background: transparent;
-        padding: 18px 38px 14px 30px;
-        font-size: 17px;
+        padding: 12px 38px 10px 30px;
+        font-size: 16px;
+        min-height: 44px;
         box-shadow: none;
       }
       .f input:focus {
@@ -1144,16 +1150,16 @@
         stroke-dashoffset: 0;
       }
       .aerr {
-        min-height: 20px;
-        margin: 10px 0 6px;
+        min-height: 18px;
+        margin: 6px 0 4px;
         font-size: 13px;
         color: var(--red);
       }
       .go {
         position: relative;
         width: 100%;
-        height: 56px;
-        min-height: 56px;
+        height: 50px;
+        min-height: 50px;
         padding: 0;
         border-radius: 999px;
         background: var(--ac);
@@ -1195,7 +1201,7 @@
       }
       .lk.c {
         text-align: center;
-        margin: 18px 0 0;
+        margin: 10px 0 0;
       }
       .lk a {
         color: var(--mut);
@@ -1213,8 +1219,8 @@
         display: flex;
         gap: 7px;
         align-items: center;
-        margin-top: 26px;
-        font-size: 12px;
+        margin-top: 12px;
+        font-size: 11.5px;
         color: var(--mut);
       }
       .sec2 svg {
@@ -1590,24 +1596,86 @@
       .gsap-on #acard.sw {
         animation: none;
       }
-      .inst-lg {
-        width: 100%;
-        margin-top: 14px;
+      .inst-top {
+        margin-left: auto;
         display: flex;
         align-items: center;
-        justify-content: center;
-        gap: 8px;
-        background: var(--c2);
-        color: var(--ink);
+        gap: 6px;
+        min-height: 38px;
+        padding: 0 14px;
+        font-size: 13px;
+        background: #10110d;
+        color: #d4f25a;
+        box-shadow: 0 4px 14px rgba(16, 17, 13, 0.25);
+        animation: up 0.6s 0.5s both;
       }
-      .inst-lg svg {
-        width: 18px;
-        height: 18px;
+      .inst-top svg {
+        width: 16px;
+        height: 16px;
         stroke: currentColor;
         fill: none;
-        stroke-width: 2;
+        stroke-width: 2.2;
         stroke-linecap: round;
         stroke-linejoin: round;
+      }
+      .hrow {
+        position: relative;
+        z-index: 2;
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        margin-top: auto;
+      }
+      .chz {
+        position: relative;
+        flex: 1;
+        min-width: 0;
+        height: calc(var(--chh) + var(--ov));
+      }
+      .chz .fx3d {
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: auto;
+        width: 100%;
+        height: calc(100% - var(--ov));
+      }
+      .chz .bars {
+        right: 8%;
+        bottom: var(--ov);
+        height: calc((100% - var(--ov)) * 0.8);
+      }
+      .chz .bars i {
+        width: clamp(16px, 5vw, 26px);
+      }
+      @media (max-height: 680px) {
+        .hero {
+          --chh: 90px;
+        }
+        .hl {
+          font-size: clamp(30px, 9vw, 38px);
+        }
+        #asub {
+          display: none;
+        }
+      }
+      @media (min-width: 860px) {
+        .hero {
+          padding: 40px 48px 0;
+          --ov: 0px;
+          --chh: 42vh;
+        }
+        .hrow {
+          gap: 24px;
+        }
+        .hs {
+          margin: 0 0 40px;
+          flex: 0 0 auto;
+          max-width: 340px;
+        }
+        .chz .bars i {
+          width: clamp(40px, 5vw, 80px);
+        }
       }
       ol.stp {
         margin: 8px 0 0;
@@ -1651,16 +1719,31 @@
             <img class="mk" src="icons/icon-192x192.png" alt="" /><span
               class="wm2"
               >Cifra</span
+            ><button
+              type="button"
+              class="inst-top"
+              id="inst0"
+              onclick="instalar()"
+              hidden
             >
+              <svg viewBox="0 0 24 24">
+                <path d="M12 3v12M7 11l5 5 5-5M5 21h14" />
+              </svg>
+              Instalar app
+            </button>
           </div>
           <h2 class="hl">
             <span><b>Quanto sobrou</b></span
             ><span><b>este mês?</b></span>
           </h2>
-          <p class="hs">
-            Registre por texto, voz ou foto. A Cifra faz a conta.
-          </p>
-          <div class="bars" aria-hidden="true"><i></i><i></i><i></i></div>
+          <div class="hrow">
+            <p class="hs">
+              Registre por texto, voz ou foto. A Cifra faz a conta.
+            </p>
+            <div class="chz">
+              <div class="bars" aria-hidden="true"><i></i><i></i><i></i></div>
+            </div>
+          </div>
         </div>
         <div class="sheet">
           <div class="in">
@@ -1737,6 +1820,12 @@
                       return false;
                     "
                     >Enviar código por e-mail</a
+                  >
+                  <span
+                    class="mut"
+                    style="display: block; margin-top: 4px; font-size: 12px"
+                    >Sem e-mail cadastrado? Use o código de recuperação que você
+                    recebeu ao criar a conta.</span
                   >
                 </p>
               </div>
@@ -1827,20 +1916,8 @@
                 <rect x="4" y="11" width="16" height="10" rx="3" />
                 <path d="M8 11V8a4 4 0 0 1 8 0v3" />
               </svg>
-              Seu CPF é guardado só de forma criptografada (hash).
+              CPF guardado só criptografado (hash).
             </p>
-            <button
-              type="button"
-              class="inst-lg"
-              id="inst0"
-              onclick="instalar()"
-              hidden
-            >
-              <svg viewBox="0 0 24 24">
-                <path d="M12 3v12M7 11l5 5 5-5M5 21h14" />
-              </svg>
-              Instalar o app
-            </button>
           </div>
         </div>
       </div>
@@ -4321,6 +4398,7 @@
         api({ action: "email", email: v })
           .then(() => {
             ST.email = v;
+            setupCard();
             say("E-mail salvo.");
           })
           .catch((e) => say("⚠ " + e.message));
@@ -4848,10 +4926,15 @@
           .join("");
       }
       function setupCard() {
-        $("#setup").innerHTML =
-          !S.contas.length && !S.rec.length && !S.cartoes.length
-            ? '<div class="card sup"><div><b>Configure a Cifra</b><div class="mut">Responda algumas perguntas e eu monto contas, limites e metas.</div></div><button onclick="obShow()">Começar</button></div>'
-            : "";
+        const cfg =
+            !S.contas.length && !S.rec.length && !S.cartoes.length
+              ? '<div class="card sup"><div><b>Configure a Cifra</b><div class="mut">Responda algumas perguntas e eu monto contas, limites e metas.</div></div><button onclick="obShow()">Começar</button></div>'
+              : "",
+          em =
+            ST.email === ""
+              ? '<div class="card sup"><div><b>Cadastre um e-mail</b><div class="mut">Sem ele não dá para recuperar a senha por e-mail.</div></div><button onclick="tab(5);$(\'#em\').focus()">Cadastrar</button></div>'
+              : "";
+        $("#setup").innerHTML = em + cfg;
       }
       const _am2 = authMode;
       authMode = function (m) {
@@ -4947,10 +5030,11 @@
           visible = () => $("#auth").style.display === "block";
 
         function build() {
-          const hero = document.querySelector(".hero");
-          let renderer;
+          const hero = document.querySelector(".hero"),
+            box = document.querySelector(".chz");
+          let renderer, cv;
           try {
-            const cv = document.createElement("canvas");
+            cv = document.createElement("canvas");
             cv.className = "fx3d";
             renderer = new THREE.WebGLRenderer({
               canvas: cv,
@@ -4958,7 +5042,7 @@
               antialias: true,
               powerPreference: "low-power",
             });
-            hero.insertBefore(cv, hero.firstChild);
+            box.appendChild(cv);
           } catch (e) {
             return null;
           }
@@ -5042,18 +5126,18 @@
             cx = 0,
             cy = 0;
           function size() {
-            const w = hero.clientWidth,
-              h = hero.clientHeight;
+            const w = cv.clientWidth,
+              h = cv.clientHeight;
             if (!w || !h) return;
             renderer.setSize(w, h, false);
             cam.aspect = w / h;
             cam.updateProjectionMatrix();
             const vh = 2 * Math.tan((cam.fov * Math.PI) / 360) * cam.position.z,
               vw = vh * cam.aspect,
-              s = Math.min(vw * 0.125, vh / 6.6);
+              s = Math.min(vw * 0.28, vh / 6.4);
             group.scale.setScalar(s);
             group.position.set(
-              vw / 2 - vw * 0.07 - 1.5 * s,
+              vw / 2 - vw * 0.05 - 1.4 * s,
               -vh / 2 - vh * 0.03,
               0,
             );
@@ -5096,7 +5180,7 @@
             { passive: true },
           );
           size();
-          new ResizeObserver(size).observe(hero);
+          new ResizeObserver(size).observe(cv);
 
           const ks = bars.map((b) => b.userData);
           if (window.gsap && !reduce) {
