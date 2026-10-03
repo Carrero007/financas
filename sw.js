@@ -1,4 +1,4 @@
-const V = "cifra-v24",
+const V = "cifra-v25",
   A = [
     "./",
     "index.html",
