@@ -627,7 +627,7 @@
         hidden
         onchange="pick(this.files[0])"
       />
-      <div class="aic" id="aic"><div class="chips" id="aicc"><button onclick="aiSend(this.textContent)">Resuma meu mês</button><button onclick="aiSend(this.textContent)">Onde posso economizar?</button><button onclick="aiSend(this.textContent)">Como começar a investir?</button><button onclick="aiSend(this.textContent)">O que é CDB?</button></div>
+      <div class="aic" id="aic"><div class="chips" id="aicc"><button onclick="aiSend(this.textContent)">Resuma meu mês</button><button onclick="aiSend(this.textContent)">Onde posso economizar?</button><button onclick="aiSend(this.textContent)">Como começo a investir?</button><button onclick="aiSend(this.textContent)">O que é CDB?</button></div>
 <div class="aib"><button class="cl" aria-label="Anexar" onclick="$('#fi').click()"><svg viewBox="0 0 24 24"><path d="M21 11.5l-8.6 8.6a5 5 0 0 1-7-7l8.6-8.6a3.4 3.4 0 0 1 5 5l-8.6 8.6a1.7 1.7 0 0 1-2.4-2.4l8-8"/></svg></button><button class="cl" id="mic2" aria-label="Falar" onclick="mic()"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button><textarea id="cin" rows="1" placeholder="Pergunte à IA…" oninput="aiGrow()" onkeydown="if(event.key==='Enter'&&!event.shiftKey&&!matchMedia('(pointer:coarse)').matches){event.preventDefault();aiSend()}"></textarea><button class="snd" aria-label="Enviar" onclick="aiSend()">↑</button></div></div>
       <div class="chat">
         <button
