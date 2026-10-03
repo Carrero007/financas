@@ -689,45 +689,58 @@ function actVision(b, C, P, key) {
   } catch (x) {
     return out({ error: x.message });
   }
-  var errv = "";
+  var errv = "",
+    vars = [{ reasoning_effort: "none" }, {}];
   for (var q = 0; q < mods.length; q++) {
-    try {
-      var rv = UrlFetchApp.fetch(GURL + "chat/completions", {
-          method: "post",
-          contentType: "application/json",
-          muteHttpExceptions: true,
-          headers: { Authorization: "Bearer " + key },
-          payload: JSON.stringify({
-            model: mods[q],
-            temperature: 0.1,
-            response_format: { type: "json_object" },
-            messages: msgs,
-          }),
-        }),
-        jv = JSON.parse(rv.getContentText());
-      if (!jv.choices) {
-        errv = (jv.error && jv.error.message) || "Falha ao analisar a imagem";
-        if (rv.getResponseCode() === 401) break;
-        continue;
-      }
-      C.put("vok", mods[q], 21600);
-      var tv = limpaJson(jv.choices[0].message.content);
-      if (!chat) return out({ text: tv, model: mods[q] });
-      var pv = {};
+    for (var w = 0; w < vars.length; w++) {
       try {
-        pv = JSON.parse(tv);
-      } catch (e) {}
-      return out({
-        text:
-          pv.fora_do_escopo === true
-            ? DEF
-            : pv.resposta
-              ? String(pv.resposta)
-              : "Não consegui analisar a imagem.",
-        model: mods[q],
-      });
-    } catch (x) {
-      errv = x.message;
+        var body = {
+          model: mods[q],
+          temperature: 0.1,
+          max_completion_tokens: 2000,
+          messages: msgs,
+        };
+        for (var k in vars[w]) body[k] = vars[w][k];
+        var rv = UrlFetchApp.fetch(GURL + "chat/completions", {
+            method: "post",
+            contentType: "application/json",
+            muteHttpExceptions: true,
+            headers: { Authorization: "Bearer " + key },
+            payload: JSON.stringify(body),
+          }),
+          jv = JSON.parse(rv.getContentText());
+        if (!jv.choices || !jv.choices[0]) {
+          errv = (jv.error && jv.error.message) || "Falha ao analisar a imagem";
+          if (rv.getResponseCode() === 401) return out({ error: errv });
+          continue;
+        }
+        var raw = String(jv.choices[0].message.content || "").replace(
+            /<think>[\s\S]*?<\/think>/g,
+            "",
+          ),
+          tv = limpaJson(raw);
+        if (!raw.trim()) {
+          errv = "A IA não devolveu resposta para a imagem.";
+          continue;
+        }
+        C.put("vok", mods[q], 21600);
+        if (!chat) return out({ text: tv, model: mods[q] });
+        var pv = {};
+        try {
+          pv = JSON.parse(tv);
+        } catch (e) {}
+        return out({
+          text:
+            pv.fora_do_escopo === true
+              ? DEF
+              : pv.resposta
+                ? String(pv.resposta)
+                : raw.trim(),
+          model: mods[q],
+        });
+      } catch (x) {
+        errv = x.message;
+      }
     }
   }
   return out({ error: errv || "Nenhum modelo de visão disponível agora." });
