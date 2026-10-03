@@ -9,7 +9,18 @@ var _hdr = false,
 
 function autorizar() {
   users();
-  Logger.log("Cota de e-mails hoje: " + MailApp.getRemainingDailyQuota());
+  var eu = Session.getEffectiveUser().getEmail();
+  MailApp.sendEmail(
+    eu,
+    "Cifra · teste de e-mail",
+    "Se você recebeu isto, o envio de e-mail da Cifra está funcionando.",
+  );
+  Logger.log(
+    "E-mail de teste enviado para " +
+      eu +
+      " · cota restante hoje: " +
+      MailApp.getRemainingDailyQuota(),
+  );
 }
 function out(o) {
   return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(
@@ -349,44 +360,63 @@ function handle(e) {
   return out({ error: "acao" });
 }
 
+function logMail(motivo, k) {
+  try {
+    var s = sh("LogEmail");
+    if (!s.getLastRow()) s.appendRow(["quando", "motivo", "cpf(6)"]);
+    if (s.getLastRow() > 300) s.deleteRows(2, 150);
+    s.appendRow([new Date(), motivo, String(k || "").slice(0, 6)]);
+  } catch (e) {}
+}
 function actPedirReset(b, C) {
   if (!cpfOk(b.cpf)) return out({ error: "CPF inválido." });
   var chp = sha(pepper() + String(b.cpf).replace(/\D/g, ""));
   if (!limite(C, "pr" + chp, 3, 900))
     return out({ error: "Muitos pedidos. Aguarde 15 minutos." });
   var s = users(),
-    v = s.getDataRange().getValues();
+    v = s.getDataRange().getValues(),
+    achou = false;
   for (var z = 1; z < v.length; z++)
-    if (v[z][1] === chp && emailOk(v[z][9])) {
+    if (v[z][1] === chp) {
+      achou = true;
+      if (!emailOk(v[z][9])) {
+        logMail("conta sem e-mail cadastrado", chp);
+        break;
+      }
       var cod = String(
         (parseInt(Utilities.getUuid().replace(/-/g, "").slice(0, 8), 16) %
           900000) +
           100000,
       );
       try {
-        if (MailApp.getRemainingDailyQuota() > 0) {
-          MailApp.sendEmail({
-            to: v[z][9],
-            name: "Cifra",
-            subject: "Cifra · seu código de recuperação",
-            body:
-              "Seu código para redefinir a senha: " +
-              cod +
-              "\nVale por 15 minutos. Se não foi você, ignore este e-mail.",
-            htmlBody:
-              "<p>Seu código para redefinir a senha:</p><p style='font:700 28px monospace;letter-spacing:4px'>" +
-              cod +
-              "</p><p>Vale por 15 minutos. Se não foi você, ignore este e-mail.</p>",
-          });
-          s.getRange(z + 1, 11, 1, 2).setValues([
-            [rcHash(cod), Date.now() + 15 * 60000],
-          ]);
+        if (MailApp.getRemainingDailyQuota() < 1) {
+          logMail("cota diária de e-mails esgotada", chp);
+          break;
         }
+        s.getRange(z + 1, 11, 1, 2).setValues([
+          [rcHash(cod), Date.now() + 15 * 60000],
+        ]);
+        MailApp.sendEmail({
+          to: v[z][9],
+          name: "Cifra",
+          subject: "Cifra · seu código de recuperação",
+          body:
+            "Seu código para redefinir a senha: " +
+            cod +
+            "\nVale por 15 minutos. Se não foi você, ignore este e-mail.",
+          htmlBody:
+            "<p>Seu código para redefinir a senha:</p><p style='font:700 28px monospace;letter-spacing:4px'>" +
+            cod +
+            "</p><p>Vale por 15 minutos. Se não foi você, ignore este e-mail.</p>",
+        });
+        logMail("enviado", chp);
       } catch (me) {
+        logMail("ERRO: " + me.message, chp);
         console.error("Falha ao enviar e-mail: " + me.message);
       }
       break;
     }
+  if (!achou) logMail("CPF não cadastrado", chp);
   return out({ ok: 1 }); // resposta idêntica exista ou não o CPF
 }
 
@@ -644,53 +674,100 @@ function actVision(b, C, P, key) {
   var last = hist.length
     ? hist.pop().content
     : String(b.user || "").slice(0, 4000);
-  var mv =
-    P.getProperty("GROQ_VISION_MODEL") ||
-    "meta-llama/llama-4-scout-17b-16e-instruct";
+  var msgs = [{ role: "system", content: sysv }].concat(hist, [
+    {
+      role: "user",
+      content: [
+        { type: "text", text: last },
+        { type: "image_url", image_url: { url: im } },
+      ],
+    },
+  ]);
+  var mods;
   try {
-    var rv = UrlFetchApp.fetch(GURL + "chat/completions", {
-        method: "post",
-        contentType: "application/json",
-        muteHttpExceptions: true,
-        headers: { Authorization: "Bearer " + key },
-        payload: JSON.stringify({
-          model: mv,
-          temperature: 0.1,
-          response_format: { type: "json_object" },
-          messages: [{ role: "system", content: sysv }].concat(hist, [
-            {
-              role: "user",
-              content: [
-                { type: "text", text: last },
-                { type: "image_url", image_url: { url: im } },
-              ],
-            },
-          ]),
-        }),
-      }),
-      jv = JSON.parse(rv.getContentText());
-    if (!jv.choices)
-      throw new Error(
-        (jv.error && jv.error.message) || "Falha ao analisar a imagem",
-      );
-    var tv = jv.choices[0].message.content;
-    if (!chat) return out({ text: tv, model: mv });
-    var pv = {};
-    try {
-      pv = JSON.parse(tv);
-    } catch (e) {}
-    return out({
-      text:
-        pv.fora_do_escopo === true
-          ? DEF
-          : pv.resposta
-            ? String(pv.resposta)
-            : "Não consegui analisar a imagem.",
-      model: mv,
-    });
+    mods = visionList(key, P, C);
   } catch (x) {
     return out({ error: x.message });
   }
+  var errv = "";
+  for (var q = 0; q < mods.length; q++) {
+    try {
+      var rv = UrlFetchApp.fetch(GURL + "chat/completions", {
+          method: "post",
+          contentType: "application/json",
+          muteHttpExceptions: true,
+          headers: { Authorization: "Bearer " + key },
+          payload: JSON.stringify({
+            model: mods[q],
+            temperature: 0.1,
+            response_format: { type: "json_object" },
+            messages: msgs,
+          }),
+        }),
+        jv = JSON.parse(rv.getContentText());
+      if (!jv.choices) {
+        errv = (jv.error && jv.error.message) || "Falha ao analisar a imagem";
+        if (rv.getResponseCode() === 401) break;
+        continue;
+      }
+      C.put("vok", mods[q], 21600);
+      var tv = limpaJson(jv.choices[0].message.content);
+      if (!chat) return out({ text: tv, model: mods[q] });
+      var pv = {};
+      try {
+        pv = JSON.parse(tv);
+      } catch (e) {}
+      return out({
+        text:
+          pv.fora_do_escopo === true
+            ? DEF
+            : pv.resposta
+              ? String(pv.resposta)
+              : "Não consegui analisar a imagem.",
+        model: mods[q],
+      });
+    } catch (x) {
+      errv = x.message;
+    }
+  }
+  return out({ error: errv || "Nenhum modelo de visão disponível agora." });
+}
+function visionList(key, P, C) {
+  var m = C.get("vmodels2"),
+    l;
+  if (m) l = JSON.parse(m);
+  else {
+    var r = UrlFetchApp.fetch(GURL + "models", {
+        headers: { Authorization: "Bearer " + key },
+        muteHttpExceptions: true,
+      }),
+      j = JSON.parse(r.getContentText());
+    if (!j.data)
+      throw new Error((j.error && j.error.message) || "Chave Groq inválida");
+    l = j.data
+      .map(function (x) {
+        return x.id;
+      })
+      .filter(function (i) {
+        return (
+          /llama-4|vision|-vl|pixtral|qwen3\.\d+/i.test(i) &&
+          !/whisper|guard|tts|playai|orpheus|safeguard/i.test(i)
+        );
+      });
+    l.sort().reverse();
+    if (l.length) C.put("vmodels2", JSON.stringify(l), 3600);
+  }
+  var pref = [C.get("vok"), P.getProperty("GROQ_VISION_MODEL")].concat(l, [
+    "qwen/qwen3.8-27b",
+  ]);
+  pref = pref.filter(function (p, i) {
+    return p && pref.indexOf(p) === i;
+  });
+  if (!pref.length)
+    throw new Error(
+      "Sua chave Groq não tem nenhum modelo com visão disponível.",
+    );
+  return pref;
 }
 function actAi(b, C, key) {
   if (!limite(C, "ai" + b.uid, 80, 21600))
@@ -772,4 +849,10 @@ function actReport(b, key) {
     relUse(b.uid, -1);
     return out({ error: x.message });
   }
+}
+
+function limpaJson(t) {
+  t = String(t || "").replace(/<think>[\s\S]*?<\/think>/g, "");
+  var m = t.match(/\{[\s\S]*\}/);
+  return m ? m[0] : t;
 }

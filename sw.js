@@ -1,4 +1,4 @@
-const V = "cifra-v20",
+const V = "cifra-v24",
   A = [
     "./",
     "index.html",
@@ -24,28 +24,34 @@ self.addEventListener("activate", (e) =>
       .then(() => self.clients.claim()),
   ),
 );
+// Cache primeiro (abre na hora) e atualiza em segundo plano para a próxima abertura.
 self.addEventListener("fetch", (e) => {
   const r = e.request;
   if (r.method !== "GET" || !r.url.startsWith("http")) return;
   e.respondWith(
-    fetch(r)
-      .then((res) => {
-        if (res.ok && (res.type === "basic" || res.type === "cors")) {
-          const k = res.clone();
-          caches
-            .open(V)
-            .then((c) => c.put(r, k))
-            .catch(() => {});
-        }
-        return res;
-      })
-      .catch(() =>
-        caches
-          .match(r)
-          .then(
-            (m) =>
-              m || (r.mode === "navigate" ? caches.match("./") : undefined),
-          ),
-      ),
+    caches.match(r, { ignoreSearch: r.mode === "navigate" }).then((m) => {
+      const net = fetch(r)
+        .then((res) => {
+          const okT = res.ok && (res.type === "basic" || res.type === "cors"),
+            font =
+              res.type === "opaque" && /fonts\.googleapis\.com/.test(r.url);
+          if (okT || font) {
+            const k = res.clone();
+            caches
+              .open(V)
+              .then((c) => c.put(r, k))
+              .catch(() => {});
+          }
+          return res;
+        })
+        .catch(
+          () => m || (r.mode === "navigate" ? caches.match("./") : undefined),
+        );
+      if (m) {
+        e.waitUntil(net.catch(() => {}));
+        return m;
+      }
+      return net;
+    }),
   );
 });
