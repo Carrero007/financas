@@ -23,69 +23,58 @@
       src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"
     ></script>
     <style>
+      /* ===== Cifra · sistema de design ===== */
       :root {
-        --bg: #f6f5f1;
+        --bg: #f4f3ee;
         --c: #fff;
-        --ink: #141414;
-        --mut: #8a8a85;
-        --ac: #d4f25a;
-        --red: #e5604d;
-        --grn: #2f9e6e;
-        --ln: #ecebe5;
-        --dock: rgba(246, 245, 241, 0.92);
+        --c2: #eeede6;
+        --ink: #151513;
+        --mut: #7b786f;
+        --ln: #e5e3da;
+        --ac: #cdf24b;
+        --acink: #10110d;
+        --red: #d4472f;
+        --grn: #1f8a5b;
+        --warn: #e0a02e;
+        --blue: #6f9cf5;
+        --serif: "Instrument Serif", Georgia, serif;
+        --sh:
+          0 1px 2px rgba(20, 20, 10, 0.04), 0 8px 24px rgba(20, 20, 10, 0.04);
       }
       [data-t="dark"] {
-        --bg: #0f0f0e;
-        --c: #1a1a18;
-        --ink: #f2f1ec;
-        --mut: #8f8f88;
-        --grn: #4cc790;
+        --bg: #0b0b0a;
+        --c: #141412;
+        --c2: #1e1e1b;
+        --ink: #f1efe8;
+        --mut: #8d8a82;
+        --ln: #252522;
         --red: #ff7a66;
-        --ln: #2a2a27;
-        --dock: rgba(15, 15, 14, 0.92);
+        --grn: #4cc790;
+        --sh: none;
       }
       * {
         box-sizing: border-box;
         margin: 0;
+        -webkit-tap-highlight-color: transparent;
       }
       html {
         background: var(--bg);
+        scroll-behavior: smooth;
       }
       body {
         font:
-          15px -apple-system,
+          15px/1.45 Inter,
+          -apple-system,
           system-ui,
           sans-serif;
+        letter-spacing: -0.005em;
         background: var(--bg);
         color: var(--ink);
-        padding: 16px 16px 170px;
-        max-width: 640px;
+        padding: 0 16px calc(168px + env(safe-area-inset-bottom));
+        max-width: 620px;
         margin: auto;
-        transition: background 0.2s;
-      }
-      .card {
-        background: var(--c);
-        border-radius: 22px;
-        padding: 18px;
-        margin-bottom: 12px;
-      }
-      h3 {
-        font-size: 12px;
-        color: var(--mut);
-        font-weight: 600;
-        margin-bottom: 12px;
-        letter-spacing: 0.6px;
-      }
-      .big {
-        font-size: clamp(30px, 9vw, 40px);
-        font-weight: 700;
-        letter-spacing: -1px;
-      }
-      .row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        gap: 10px;
+        overflow-x: hidden;
+        transition: background 0.25s;
       }
       .mut {
         color: var(--mut);
@@ -97,153 +86,143 @@
       .neg {
         color: var(--red);
       }
-      .nav {
+      .row {
         display: flex;
+        justify-content: space-between;
         align-items: center;
-        gap: 8px;
-        margin-bottom: 12px;
+        gap: 10px;
       }
-      .nav b {
-        flex: 1;
-        text-align: center;
-        text-transform: capitalize;
+      .big,
+      #pat,
+      #saldo {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: clamp(46px, 14vw, 64px);
+        letter-spacing: -2px;
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
       }
+      /* botões */
       button {
         font: inherit;
+        font-weight: 600;
+        font-size: 14px;
         border: 0;
+        border-radius: 999px;
+        padding: 0 18px;
+        min-height: 42px;
         background: var(--ink);
         color: var(--bg);
-        border-radius: 14px;
-        padding: 10px 16px;
         cursor: pointer;
+        transition:
+          transform 0.12s,
+          background 0.2s,
+          color 0.2s,
+          opacity 0.2s;
       }
       button.g {
-        background: var(--ln);
+        background: var(--c2);
         color: var(--ink);
       }
       button:disabled {
-        opacity: 0.3;
+        opacity: 0.35;
         cursor: default;
       }
-      input,
-      select {
-        font: inherit;
-        border: 1px solid var(--ln);
-        border-radius: 12px;
-        padding: 10px;
-        width: 100%;
-        background: var(--c);
-        color: var(--ink);
+      button:active:not(:disabled),
+      .cd:active {
+        transform: scale(0.95);
       }
-      .bar {
-        height: 8px;
-        border-radius: 8px;
-        background: var(--ln);
-        overflow: hidden;
-        margin: 4px 0 12px;
+      button:focus-visible,
+      a:focus-visible {
+        outline: 2px solid var(--ac);
+        outline-offset: 2px;
       }
-      .bar i {
-        display: block;
-        height: 100%;
-      }
-      .dock {
-        position: fixed;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: var(--dock);
-        backdrop-filter: blur(14px);
-        padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
-        max-width: 640px;
-        margin: auto;
-      }
-      .chat {
-        display: flex;
-        gap: 8px;
-      }
-      .chat input {
-        border-radius: 18px;
-        padding: 13px 16px;
-        font-size: 16px;
-      }
-      .chat button {
-        background: var(--ac);
-        color: #141414;
-        font-weight: 700;
-        border-radius: 18px;
-        padding: 0 20px;
-      }
-      .tabs {
-        display: flex;
-        gap: 6px;
-        margin-top: 8px;
-      }
-      .tabs button {
-        flex: 1;
-        background: none;
-        color: var(--mut);
-        padding: 9px 4px;
-      }
-      .tabs .on {
-        background: var(--c);
-        color: var(--ink);
-        font-weight: 600;
-      }
-      #say {
+      .item button,
+      .amt button,
+      .row > button.g:not(.ib) {
+        min-height: 34px;
+        padding: 0 12px;
         font-size: 13px;
-        margin-bottom: 8px;
-        min-height: 18px;
-        max-height: 64px;
-        overflow: auto;
       }
-      .item {
-        padding: 11px 0;
-        border-bottom: 1px solid var(--ln);
-        align-items: flex-start;
-      }
-      .item:last-child {
-        border: 0;
-      }
-      .item > div:first-child {
-        min-width: 0;
-      }
-      .item b {
-        font-weight: 600;
-        word-break: break-word;
-        display: block;
-      }
-      .amt {
-        white-space: nowrap;
-        text-align: right;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        font-weight: 600;
-      }
-      .amt button {
-        padding: 5px 10px;
-      }
-      .stats {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 8px;
-        margin-top: 14px;
-      }
-      .stats div {
-        background: var(--bg);
+      /* campos */
+      input,
+      select,
+      textarea {
+        font: inherit;
+        font-size: 16px;
+        width: 100%;
+        color: var(--ink);
+        background: var(--c2);
+        border: 1px solid transparent;
         border-radius: 14px;
-        padding: 10px;
+        padding: 13px 14px;
+        min-height: 46px;
+        transition:
+          border-color 0.2s,
+          box-shadow 0.2s;
       }
-      .stats b {
-        display: block;
-        font-size: 14px;
-        margin-top: 2px;
+      input:focus,
+      select:focus,
+      textarea:focus {
+        outline: none;
+        border-color: var(--ac);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--ac) 28%, transparent);
+      }
+      [data-t="light"] input:focus,
+      [data-t="light"] select:focus {
+        border-color: var(--ink);
+        box-shadow: none;
+      }
+      input::placeholder {
+        color: var(--mut);
+        opacity: 0.85;
+      }
+      select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%238d8a82' stroke-width='2' stroke-linecap='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 14px center;
+        padding-right: 34px;
       }
       .grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 8px;
-        margin-top: 8px;
+        margin-top: 10px;
+      }
+      .card > button:not(.g),
+      .card > .row > button:not(.g) {
+        margin-top: 2px;
+      }
+      /* cards */
+      .card {
+        background: var(--c);
+        border: 1px solid var(--ln);
+        border-radius: 24px;
+        padding: 20px;
+        margin-bottom: 12px;
+        box-shadow: var(--sh);
+      }
+      h3 {
+        font-size: 14px;
+        font-weight: 600;
+        letter-spacing: -0.1px;
+        margin-bottom: 14px;
+      }
+      .pgh {
+        margin: 6px 0 16px;
+      }
+      .pgh h2 {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: 38px;
+        letter-spacing: -1px;
+        line-height: 1.02;
+      }
+      .pgh p {
+        margin-top: 4px;
+        font-size: 14px;
+        color: var(--mut);
       }
       .sec {
         display: none;
@@ -251,26 +230,91 @@
       .sec.on {
         display: block;
       }
-      canvas {
-        max-height: 240px;
+      .em {
+        padding: 22px 0;
+        text-align: center;
       }
-      @media (max-width: 380px) {
-        body {
-          padding: 12px 12px 170px;
-        }
-        .card {
-          padding: 14px;
-        }
-        .grid {
-          grid-template-columns: 1fr;
-        }
+      /* header */
+      .top {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin: 0 -16px 10px;
+        padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
+        background: color-mix(in srgb, var(--bg) 86%, transparent);
+        -webkit-backdrop-filter: blur(16px);
+        backdrop-filter: blur(16px);
       }
+      .top .logo {
+        width: 38px;
+        height: 38px;
+        border-radius: 12px;
+        flex: none;
+      }
+      .mo {
+        flex: 1;
+        min-width: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 2px;
+      }
+      .mo b {
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: 15px;
+        font-weight: 600;
+        text-transform: capitalize;
+      }
+      .mo button {
+        width: 34px;
+        min-height: 34px;
+        height: 34px;
+        padding: 0;
+        display: grid;
+        place-items: center;
+        flex: none;
+        font-size: 18px;
+      }
+      .ib {
+        width: 40px;
+        height: 40px;
+        min-height: 40px;
+        padding: 0;
+        display: grid;
+        place-items: center;
+        flex: none;
+      }
+      .ib svg,
+      .ic svg {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      #hi div {
+        font-family: var(--serif) !important;
+        font-weight: 400 !important;
+        font-size: 38px !important;
+        letter-spacing: -1px;
+        margin: 6px 0 12px !important;
+        line-height: 1.05;
+      }
+      /* status */
       .pills {
         display: flex;
         flex-wrap: wrap;
         gap: 6px;
-        margin-bottom: 12px;
-        font-size: 12px;
+        margin-bottom: 14px;
+        font-size: 11.5px;
         color: var(--mut);
         cursor: pointer;
       }
@@ -279,6 +323,7 @@
         align-items: center;
         gap: 6px;
         background: var(--c);
+        border: 1px solid var(--ln);
         border-radius: 20px;
         padding: 5px 10px;
       }
@@ -294,19 +339,243 @@
       .pill.err i {
         background: var(--red);
       }
-      .em {
-        padding: 20px 0;
-        text-align: center;
+      /* saldo (hero) */
+      #t0 > .card:first-child {
+        position: relative;
+        overflow: hidden;
+        border: 0;
+        padding: 24px;
+        color: var(--acink);
+        background: linear-gradient(145deg, #d8f75f, #bfea2a);
       }
-      .auth {
-        position: fixed;
-        inset: 0;
-        background: var(--bg);
-        z-index: 20;
+      #t0 > .card:first-child::after {
+        content: "";
+        position: absolute;
+        right: -6px;
+        top: -8px;
+        width: 170px;
+        height: 150px;
+        pointer-events: none;
+        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 130'%3E%3Cg transform='skewY(-8)'%3E%3Crect x='14' y='84' width='30' height='60' rx='9' fill='%2310110d' opacity='.1'/%3E%3Crect x='56' y='62' width='30' height='82' rx='9' fill='%2310110d' opacity='.1'/%3E%3Crect x='98' y='34' width='30' height='110' rx='9' fill='%2310110d' opacity='.1'/%3E%3C/g%3E%3C/svg%3E")
+          no-repeat;
+      }
+      #t0 > .card:first-child h3,
+      #t0 > .card:first-child .mut {
+        color: rgba(16, 17, 13, 0.62);
+        font-weight: 500;
+      }
+      #t0 > .card:first-child .big {
+        position: relative;
+        z-index: 1;
+        color: var(--acink);
+      }
+      #t0 > .card:first-child .big.neg {
+        color: #a52a18;
+      }
+      #t0 > .card:first-child .stats {
+        position: relative;
+        z-index: 1;
+      }
+      #t0 > .card:first-child .stats div {
+        background: rgba(16, 17, 13, 0.09);
+      }
+      #t0 > .card:first-child .stats b {
+        color: var(--acink);
+      }
+      #t0 > .card:first-child .stats b.pos {
+        color: #0a5a38;
+      }
+      #t0 > .card:first-child .stats b.neg {
+        color: #9b2a19;
+      }
+      .stats {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 16px;
+      }
+      .stats div {
+        background: var(--c2);
+        border-radius: 16px;
+        padding: 10px 12px;
+        min-width: 0;
+      }
+      .stats .mut {
+        font-size: 11.5px;
+      }
+      .stats b {
+        display: block;
+        margin-top: 2px;
+        font-size: clamp(12.5px, 3.7vw, 15px);
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
+      /* patrimônio */
+      #tc > .pgh + .card {
+        background: var(--ink);
+        color: var(--bg);
+        border: 0;
+      }
+      #tc > .pgh + .card h3,
+      #tc > .pgh + .card .mut {
+        color: color-mix(in srgb, var(--bg) 62%, transparent);
+        font-weight: 500;
+      }
+      #tc > .pgh + .card .big {
+        color: var(--bg);
+      }
+      #tc > .pgh + .card .stats div {
+        background: color-mix(in srgb, var(--bg) 12%, transparent);
+      }
+      #tc > .pgh + .card .stats b {
+        color: var(--bg);
+      }
+      [data-t="dark"] #tc > .pgh + .card {
+        background: linear-gradient(155deg, #212b0e, #141412 70%);
+        border: 1px solid var(--ln);
+      }
+      [data-t="dark"] #tc > .pgh + .card .big {
+        color: var(--ac);
+      }
+      [data-t="dark"] #tc > .pgh + .card h3,
+      [data-t="dark"] #tc > .pgh + .card .mut {
+        color: var(--mut);
+      }
+      [data-t="dark"] #tc > .pgh + .card .stats div {
+        background: rgba(255, 255, 255, 0.06);
+      }
+      [data-t="dark"] #tc > .pgh + .card .stats b {
+        color: var(--ink);
+      }
+      [data-t="dark"] #tc > .pgh + .card .stats b.neg {
+        color: var(--red);
+      }
+      /* listas */
+      .item {
+        padding: 13px 0;
+        border-bottom: 1px solid var(--ln);
+        align-items: flex-start;
+      }
+      .item:last-child {
+        border: 0;
+      }
+      .item > div:first-child {
+        min-width: 0;
+      }
+      .item b {
+        display: block;
+        font-weight: 600;
+        overflow-wrap: break-word;
+        word-break: normal;
+      }
+      .item.row {
+        align-items: center;
+        gap: 12px;
+      }
+      .it {
+        flex: 1;
+        min-width: 0;
+      }
+      .it .mut {
+        margin-top: 1px;
+      }
+      .av {
+        width: 40px;
+        height: 40px;
+        flex: none;
+        border-radius: 13px;
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+      }
+      .amt {
+        white-space: nowrap;
+        text-align: right;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        font-variant-numeric: tabular-nums;
+      }
+      #list .amt {
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 6px;
+      }
+      .amt .ac {
+        display: flex;
+        gap: 6px;
+      }
+      .amt .ac button {
+        min-height: 30px;
+        padding: 0 11px;
+      }
+      .dh {
+        display: flex;
+        justify-content: space-between;
+        padding: 18px 0 4px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--mut);
+      }
+      .dh:first-child {
+        padding-top: 0;
+      }
+      .dh span:first-child {
+        text-transform: capitalize;
+        letter-spacing: 0.2px;
+        font-size: 13px;
+        color: var(--ink);
+      }
+      .bar {
+        height: 8px;
+        border-radius: 8px;
+        background: var(--c2);
+        overflow: hidden;
+        margin: 6px 0 14px;
+      }
+      .bar i {
+        display: block;
+        height: 100%;
+        border-radius: 8px;
+        transform-origin: left;
+        animation: grow 0.6s both;
+      }
+      .sup {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 14px;
+        background: color-mix(in srgb, var(--ac) 12%, var(--c));
+        border: 1px solid color-mix(in srgb, var(--ac) 40%, transparent);
+      }
+      .sup b {
+        display: block;
+        margin-bottom: 2px;
+      }
+      .sup button {
+        flex: none;
+        background: var(--ac);
+        color: var(--acink);
+      }
+      .bd {
+        display: inline-block;
+        background: var(--red);
+        color: #fff;
+        border-radius: 10px;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 1px 6px;
+      }
+      .bd:empty {
         display: none;
-        overflow: auto;
-        padding: 24px 16px;
       }
+      canvas {
+        max-height: 240px;
+      }
+      /* calendário */
       .cal {
         display: grid;
         grid-template-columns: repeat(7, 1fr);
@@ -320,7 +589,7 @@
       .cd {
         aspect-ratio: 1/1.05;
         border-radius: 10px;
-        background: var(--bg);
+        background: var(--c2);
         padding: 4px 2px;
         display: flex;
         flex-direction: column;
@@ -344,128 +613,33 @@
       .cd.fut {
         opacity: 0.35;
       }
-      .nav button:last-child {
-        padding: 10px 12px;
-        font-size: 13px;
-      }
-      .tabs button {
-        padding: 9px 2px;
-        font-size: 13px;
-      }
-      .bd {
-        display: inline-block;
-        background: var(--red);
-        color: #fff;
-        border-radius: 10px;
-        font-size: 10px;
-        padding: 1px 6px;
-        margin-left: 4px;
-        font-weight: 600;
-      }
-      .bd:empty {
-        display: none;
-      }
+      /* chat */
       .bub {
-        max-width: 85%;
+        position: relative;
+        max-width: 86%;
         padding: 10px 14px;
-        border-radius: 18px;
+        border-radius: 20px;
         margin-bottom: 8px;
-        line-height: 1.4;
+        line-height: 1.45;
         word-break: break-word;
       }
       .bub.u {
         background: var(--ac);
-        color: #141414;
+        color: var(--acink);
         margin-left: auto;
         border-bottom-right-radius: 6px;
-      }
-      .bub.b {
-        background: var(--c);
-        border-bottom-left-radius: 6px;
-      }
-      @keyframes up {
-        from {
-          opacity: 0;
-          transform: translateY(10px);
-        }
-        to {
-          opacity: 1;
-          transform: none;
-        }
-      }
-      @keyframes pop {
-        from {
-          opacity: 0;
-          transform: scale(0.9) translateY(6px);
-        }
-        to {
-          opacity: 1;
-          transform: none;
-        }
-      }
-      @keyframes grow {
-        from {
-          transform: scaleX(0);
-        }
-        to {
-          transform: scaleX(1);
-        }
-      }
-      @keyframes dot {
-        0%,
-        60%,
-        100% {
-          transform: translateY(0);
-          opacity: 0.35;
-        }
-        30% {
-          transform: translateY(-4px);
-          opacity: 1;
-        }
-      }
-      .sec.on > .card,
-      .sec.on > div > .card {
-        animation: up 0.35s both;
-      }
-      .sec.on > .card:nth-child(2) {
-        animation-delay: 0.04s;
-      }
-      .sec.on > .card:nth-child(3) {
-        animation-delay: 0.08s;
-      }
-      .sec.on > .card:nth-child(4) {
-        animation-delay: 0.12s;
-      }
-      .sec.on > .card:nth-child(5) {
-        animation-delay: 0.16s;
-      }
-      .sec.on > .card:nth-child(n + 6) {
-        animation-delay: 0.2s;
-      }
-      .auth > div {
-        animation: up 0.45s both;
-      }
-      #say.f {
-        animation: up 0.25s both;
-      }
-      .bar i {
-        transform-origin: left;
-        animation: grow 0.6s both;
-      }
-      .bub {
-        position: relative;
-      }
-      .bub.pop {
-        animation: pop 0.2s ease-out both;
-      }
-      .bub.u {
         transform-origin: right bottom;
       }
       .bub.b {
+        background: var(--c2);
+        border-bottom-left-radius: 6px;
         transform-origin: left bottom;
       }
       .bub.err {
         color: var(--red);
+      }
+      .bub.pop {
+        animation: pop 0.2s ease-out both;
       }
       .tm {
         display: block;
@@ -492,38 +666,6 @@
       .dots i:nth-child(3) {
         animation-delay: 0.3s;
       }
-      button,
-      .cd {
-        transition:
-          transform 0.12s,
-          background 0.2s,
-          color 0.2s,
-          opacity 0.2s;
-      }
-      button:active:not(:disabled),
-      .cd:active {
-        transform: scale(0.95);
-      }
-      .card {
-        transition: background 0.25s;
-      }
-      .rp summary {
-        cursor: pointer;
-        font-weight: 600;
-        list-style: none;
-      }
-      .rp summary::-webkit-details-marker {
-        display: none;
-      }
-      .rp[open] > div {
-        animation: up 0.25s both;
-      }
-      @media (prefers-reduced-motion: reduce) {
-        * {
-          animation: none !important;
-          transition: none !important;
-        }
-      }
       .bub p,
       .rp p {
         margin: 0 0 6px;
@@ -538,184 +680,172 @@
       ul.md li {
         margin: 3px 0;
       }
-      .dock .tabs button {
-        font-size: 12px;
+      .rp summary {
+        cursor: pointer;
+        font-weight: 600;
+        list-style: none;
       }
-      /* ===== Cifra: tema ===== */
-      :root {
-        --bg: #f3f1ea;
-        --c: #faf9f5;
-        --ln: #e3e0d5;
-        --ink: #161614;
-        --mut: #85827a;
-        --ac: #d4f25a;
-        --serif: "Instrument Serif", Georgia, serif;
+      .rp summary::-webkit-details-marker {
+        display: none;
       }
-      [data-t="dark"] {
-        --bg: #0a0a09;
-        --c: #131311;
-        --ln: #242421;
-        --ink: #efede6;
-        --mut: #8b887f;
-        --dock: rgba(19, 19, 17, 0.9);
+      .rp[open] > div {
+        animation: up 0.25s both;
       }
-      body {
-        font-family:
-          Inter,
-          -apple-system,
-          system-ui,
-          sans-serif;
-        letter-spacing: -0.005em;
+      /* sub-abas */
+      .tabs {
+        display: flex;
+        gap: 6px;
       }
-      .card {
-        border-radius: 18px;
-        border: 1px solid var(--ln);
-        padding: 20px;
-      }
-      h3 {
-        font-size: 10.5px;
-        letter-spacing: 1.6px;
-        text-transform: uppercase;
-        font-weight: 500;
-      }
-      .big,
-      #pat,
-      #saldo {
-        font-family: var(--serif);
-        font-weight: 400;
-        font-size: clamp(44px, 13vw, 64px);
-        letter-spacing: -2px;
-        line-height: 1;
-      }
-      .obq {
-        font-family: var(--serif);
-        font-size: 34px;
-        line-height: 1.1;
-        margin: 18px 0 22px;
-      }
-      #hi div {
-        font-family: var(--serif) !important;
-        font-weight: 400 !important;
-        font-size: 30px !important;
-        letter-spacing: -0.5px;
-      }
-      .stats div {
-        background: none;
-        border: 1px solid var(--ln);
-        border-radius: 12px;
-      }
-      input,
-      select {
-        border-radius: 10px;
-        padding: 12px;
-        background: transparent;
-      }
-      input:focus,
-      select:focus {
-        outline: none;
-        border-color: var(--ac);
-      }
-      button {
-        border-radius: 999px;
-        font-weight: 500;
-      }
-      button.g {
-        background: transparent;
-        border: 1px solid var(--ln);
-      }
-      .bar {
-        height: 3px;
-        background: var(--ln);
-      }
-      .dock {
-        left: 12px;
-        right: 12px;
-        bottom: calc(10px + env(safe-area-inset-bottom));
-        padding: 10px;
-        border-radius: 26px;
-        border: 1px solid var(--ln);
-        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
-      }
-      .chat input {
-        border-radius: 999px;
-        min-width: 0;
+      .tabs button {
         flex: 1;
-      }
-      .chat button:last-child {
-        width: 46px;
-        padding: 0;
-        border-radius: 999px;
-      }
-      .chat button.ic {
-        width: 44px;
-        height: 46px;
-        padding: 0;
-        display: grid;
-        place-items: center;
-        flex: none;
-        background: transparent;
-        border: 1px solid var(--ln);
-        color: var(--ink);
-        font-weight: 400;
-      }
-      .ic svg {
-        width: 19px;
-        height: 19px;
-        stroke: currentColor;
-        fill: none;
-        stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
-      .chat button.ic.rec {
-        background: var(--red);
-        border-color: var(--red);
-        color: #fff;
-        animation: pulse 1s infinite;
-      }
-      @keyframes pulse {
-        50% {
-          opacity: 0.55;
-        }
-      }
-      #att:not(:empty) {
-        margin-bottom: 6px;
+        background: var(--c2);
+        color: var(--mut);
+        padding: 0 4px;
+        font-size: 13px;
       }
       .tabs .on {
         background: var(--ink);
         color: var(--bg);
-        border-radius: 999px;
       }
-      .pill {
+      /* dock */
+      .dock {
+        position: fixed;
+        left: 10px;
+        right: 10px;
+        bottom: calc(8px + env(safe-area-inset-bottom));
+        max-width: 600px;
+        margin: auto;
+        padding: 8px;
+        border-radius: 28px;
+        background: color-mix(in srgb, var(--c) 96%, transparent);
         border: 1px solid var(--ln);
-        background: transparent;
+        -webkit-backdrop-filter: blur(18px);
+        backdrop-filter: blur(18px);
+        box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
       }
-      .cd {
-        border-radius: 8px;
+      #say {
+        font-size: 12.5px;
+        padding: 0 8px 8px;
+        max-height: 60px;
+        overflow: auto;
+        color: var(--mut);
       }
-      .logo {
-        width: 34px;
-        height: 34px;
-        border-radius: 10px;
-        display: block;
+      #say:empty {
+        display: none;
       }
-      .brand {
+      #att:not(:empty) {
+        margin: 0 4px 6px;
+      }
+      .chat {
         display: flex;
+        gap: 6px;
+        align-items: flex-end;
+      }
+      .chat textarea {
+        flex: 1;
+        min-width: 0;
+        height: 46px;
+        max-height: 140px;
+        resize: none;
+        overflow-y: auto;
+        line-height: 1.35;
+        padding: 11px 16px;
+        border-radius: 23px;
+        scrollbar-width: none;
+      }
+      .chat button.ic {
+        width: 44px;
+        height: 46px;
+        min-height: 46px;
+        padding: 0;
+        display: grid;
+        place-items: center;
+        flex: none;
+        background: var(--c2);
+        color: var(--ink);
+      }
+      .chat button.ic.rec {
+        background: var(--red);
+        color: #fff;
+        animation: pulse 1s infinite;
+      }
+      .chat button:last-child {
+        width: 46px;
+        height: 46px;
+        min-height: 46px;
+        padding: 0;
+        flex: none;
+        border-radius: 50%;
+        background: var(--ac);
+        color: var(--acink);
+        font-size: 20px;
+        font-weight: 700;
+      }
+      .dock .tabs {
+        gap: 2px;
+        margin-top: 8px;
+      }
+      .dock .tabs button {
+        position: relative;
+        display: flex;
+        flex-direction: column;
         align-items: center;
-        gap: 10px;
-        margin: 2px 0 14px;
-        font-family: var(--serif);
-        font-size: 26px;
+        gap: 3px;
+        padding: 7px 2px 6px;
+        min-height: 0;
+        border-radius: 18px;
+        background: none;
+        color: var(--mut);
+        font-size: 10.5px;
+        font-weight: 500;
       }
-      body {
-        padding-bottom: 190px;
+      .dock .tabs button.on {
+        background: var(--ac);
+        color: var(--acink);
+        font-weight: 600;
       }
-
-      /* ===== Cifra: login ===== */
+      .dock .tabs svg {
+        width: 21px;
+        height: 21px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 1.9;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      .dock .tabs .bd {
+        position: absolute;
+        top: 1px;
+        left: 54%;
+      }
+      /* sobreposições */
+      .auth {
+        position: fixed;
+        inset: 0;
+        z-index: 20;
+        display: none;
+        overflow: auto;
+        padding: 24px 16px;
+        background: color-mix(in srgb, var(--bg) 80%, transparent);
+        -webkit-backdrop-filter: blur(14px);
+        backdrop-filter: blur(14px);
+      }
+      #auth,
+      #ob {
+        background: var(--bg);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+      }
+      #ed .card,
+      #rcm .card {
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+      }
+      .auth > div {
+        animation: up 0.35s both;
+      }
+      /* login */
       #auth {
         padding: 0;
-        background: var(--bg);
-        overflow: auto;
       }
       .shell {
         min-height: 100%;
@@ -726,10 +856,15 @@
         position: relative;
         overflow: hidden;
         flex: none;
-        height: max(300px, 44vh);
+        height: max(320px, 44vh);
         padding: 22px 24px;
         background: #c9f13d;
         color: #10110d;
+      }
+      .htop {
+        display: flex;
+        align-items: center;
+        gap: 12px;
       }
       .mk {
         width: 46px;
@@ -737,6 +872,22 @@
         border-radius: 13px;
         display: block;
         animation: up 0.6s 0.1s both;
+      }
+      .wm2 {
+        font-family: var(--serif);
+        font-size: 30px;
+        letter-spacing: -0.8px;
+        animation: up 0.6s 0.2s both;
+      }
+      .ring {
+        position: absolute;
+        left: -90px;
+        bottom: -140px;
+        width: 330px;
+        height: 330px;
+        border-radius: 50%;
+        border: 44px solid rgba(16, 17, 13, 0.06);
+        pointer-events: none;
       }
       .hl {
         position: relative;
@@ -764,10 +915,15 @@
       .hl span:nth-child(2) b {
         animation-delay: 0.52s;
       }
-      @keyframes rv {
-        from {
-          transform: translateY(110%);
-        }
+      .hs {
+        position: relative;
+        z-index: 1;
+        margin-top: 14px;
+        max-width: 210px;
+        font-size: 14px;
+        line-height: 1.4;
+        color: rgba(16, 17, 13, 0.74);
+        animation: up 0.6s 0.8s both;
       }
       .bars {
         position: absolute;
@@ -783,10 +939,10 @@
       .bars i {
         display: block;
         width: clamp(30px, 9.5vw, 48px);
-        background: #10110d;
-        border-radius: 12px 12px 0 0;
+        border-radius: 14px 14px 0 0;
+        background: linear-gradient(90deg, #10110d, #262a1b);
         transform-origin: bottom;
-        animation: gr 1s cubic-bezier(0.2, 1, 0.3, 1) both;
+        animation: gr 1s cubic-bezier(0.3, 1.4, 0.5, 1) both;
       }
       .bars i:nth-child(1) {
         height: 42%;
@@ -800,11 +956,6 @@
         height: 100%;
         animation-delay: 0.41s;
       }
-      @keyframes gr {
-        from {
-          transform: scaleY(0);
-        }
-      }
       .sheet {
         position: relative;
         flex: 1;
@@ -812,13 +963,11 @@
         padding: 26px 24px calc(28px + env(safe-area-inset-bottom));
         background: var(--bg);
         border-radius: 28px 28px 0 0;
+        box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.07);
         animation: rise 0.9s 0.6s cubic-bezier(0.2, 0.9, 0.2, 1) both;
       }
-      @keyframes rise {
-        from {
-          transform: translateY(48px);
-          opacity: 0;
-        }
+      [data-t="light"] .sheet {
+        box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.06);
       }
       .in {
         width: 100%;
@@ -834,11 +983,11 @@
       }
       .seg button {
         padding: 0 0 12px;
+        min-height: 0;
         background: none;
         border-radius: 0;
         color: var(--mut);
         font-size: 15px;
-        font-weight: 600;
         transition: color 0.25s;
       }
       .seg button.on {
@@ -877,28 +1026,8 @@
       #acard.sw {
         animation: swp 0.4s both;
       }
-      @keyframes swp {
-        from {
-          opacity: 0.4;
-          transform: translateY(6px);
-        }
-      }
       #acard.shk {
         animation: shk 0.45s both;
-      }
-      @keyframes shk {
-        20% {
-          transform: translateX(-8px);
-        }
-        40% {
-          transform: translateX(7px);
-        }
-        60% {
-          transform: translateX(-5px);
-        }
-        80% {
-          transform: translateX(3px);
-        }
       }
       .f {
         position: relative;
@@ -914,16 +1043,17 @@
         background: transparent;
         padding: 18px 38px 14px 30px;
         font-size: 17px;
+        box-shadow: none;
       }
       .f input:focus {
-        outline: none;
         border: 0;
         box-shadow: none;
         background: transparent;
       }
-      .f input::placeholder {
-        color: var(--mut);
-        opacity: 0.8;
+      .f input:-webkit-autofill {
+        -webkit-box-shadow: 0 0 0 100px var(--bg) inset !important;
+        -webkit-text-fill-color: var(--ink) !important;
+        caret-color: var(--ink);
       }
       .f::after {
         content: "";
@@ -968,6 +1098,7 @@
         margin-top: -18px;
         width: 36px;
         height: 36px;
+        min-height: 0;
         padding: 0;
         background: none;
         color: var(--mut);
@@ -1022,10 +1153,11 @@
         position: relative;
         width: 100%;
         height: 56px;
+        min-height: 56px;
         padding: 0;
         border-radius: 999px;
         background: var(--ac);
-        color: #10110d;
+        color: var(--acink);
         font-size: 16px;
         font-weight: 700;
         transition:
@@ -1034,6 +1166,9 @@
       }
       .go:hover:not(:disabled) {
         filter: brightness(1.07);
+      }
+      .go:active:not(:disabled) {
+        transform: scale(0.98);
       }
       .go:disabled {
         cursor: progress;
@@ -1053,11 +1188,6 @@
         border: 2.5px solid rgba(16, 17, 13, 0.25);
         border-top-color: #10110d;
         animation: spin 0.7s linear infinite;
-      }
-      @keyframes spin {
-        to {
-          transform: rotate(360deg);
-        }
       }
       .lk {
         margin: 8px 0 6px;
@@ -1097,94 +1227,6 @@
         stroke-linecap: round;
         stroke-linejoin: round;
       }
-      @media (min-width: 860px) {
-        .shell {
-          flex-direction: row;
-          min-height: 100vh;
-        }
-        .hero {
-          flex: 1.05;
-          height: auto;
-          min-height: 100vh;
-          padding: 40px 48px;
-        }
-        .mk {
-          width: 56px;
-          height: 56px;
-          border-radius: 16px;
-        }
-        .hl {
-          margin-top: 48px;
-          font-size: clamp(64px, 7vw, 108px);
-          letter-spacing: -3px;
-        }
-        .bars {
-          height: 58%;
-          right: 8%;
-        }
-        .bars i {
-          width: clamp(52px, 6vw, 92px);
-        }
-        .sheet {
-          flex: 1;
-          margin: 0;
-          border-radius: 0;
-          display: flex;
-          align-items: center;
-          padding: 48px 6vw;
-          animation: up 0.8s 0.5s both;
-        }
-      }
-
-      /* login: refinamento */
-      .hero {
-        height: max(320px, 44vh);
-      }
-      .top {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-      }
-      .wm2 {
-        font-family: var(--serif);
-        font-size: 30px;
-        letter-spacing: -0.8px;
-        animation: up 0.6s 0.2s both;
-      }
-      .ring {
-        position: absolute;
-        left: -90px;
-        bottom: -140px;
-        width: 330px;
-        height: 330px;
-        border-radius: 50%;
-        border: 44px solid rgba(16, 17, 13, 0.06);
-        pointer-events: none;
-      }
-      .hs {
-        position: relative;
-        z-index: 1;
-        margin-top: 14px;
-        max-width: 210px;
-        font-size: 14px;
-        line-height: 1.4;
-        color: rgba(16, 17, 13, 0.74);
-        animation: up 0.6s 0.8s both;
-      }
-      .bars {
-        gap: clamp(8px, 2.6vw, 14px);
-      }
-      .bars i {
-        border-radius: 14px;
-        background: linear-gradient(90deg, #10110d, #262a1b);
-        animation-timing-function: cubic-bezier(0.3, 1.4, 0.5, 1);
-      }
-      .sheet {
-        box-shadow: 0 -1px 0 rgba(255, 255, 255, 0.07);
-      }
-      [data-t="light"] .sheet {
-        box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.06);
-      }
       .str {
         display: flex;
         gap: 4px;
@@ -1201,37 +1243,46 @@
         background: var(--red);
       }
       .str[data-s="2"] i:nth-child(-n + 2) {
-        background: #f2b84b;
+        background: var(--warn);
       }
       .str[data-s="3"] i {
         background: var(--grn);
       }
-      .go:active:not(:disabled) {
-        transform: scale(0.98);
-      }
-      .go:focus-visible,
-      .seg button:focus-visible,
-      .lk a:focus-visible,
-      .eye:focus-visible {
-        outline: 2px solid var(--ac);
-        outline-offset: 3px;
-      }
-      [data-t="light"] .go:focus-visible,
-      [data-t="light"] .seg button:focus-visible,
-      [data-t="light"] .lk a:focus-visible {
-        outline-color: var(--ink);
-      }
       @media (min-width: 860px) {
+        .shell {
+          flex-direction: row;
+          min-height: 100vh;
+        }
         .hero {
+          flex: 1.05;
           height: auto;
+          min-height: 100vh;
+          padding: 40px 48px;
+        }
+        .mk {
+          width: 56px;
+          height: 56px;
+          border-radius: 16px;
         }
         .wm2 {
           font-size: 36px;
+        }
+        .hl {
+          margin-top: 48px;
+          font-size: clamp(64px, 7vw, 108px);
+          letter-spacing: -3px;
         }
         .hs {
           max-width: 340px;
           font-size: 18px;
           margin-top: 22px;
+        }
+        .bars {
+          height: 58%;
+          right: 8%;
+        }
+        .bars i {
+          width: clamp(52px, 6vw, 92px);
         }
         .ring {
           left: -160px;
@@ -1240,164 +1291,17 @@
           height: 560px;
           border-width: 80px;
         }
+        .sheet {
+          flex: 1;
+          margin: 0;
+          border-radius: 0;
+          display: flex;
+          align-items: center;
+          padding: 48px 6vw;
+          animation: up 0.8s 0.5s both;
+        }
       }
-
-      /* ===== Cifra: app ===== */
-      body {
-        padding: calc(14px + env(safe-area-inset-top)) 16px 190px;
-        max-width: 620px;
-      }
-      h3 {
-        font-size: 15px;
-        font-weight: 600;
-        letter-spacing: -0.2px;
-        text-transform: none;
-        color: var(--ink);
-        margin-bottom: 14px;
-      }
-      .brand {
-        margin: 0 0 4px;
-      }
-      .nav {
-        margin-bottom: 12px;
-      }
-      .nav b {
-        font-family: var(--serif);
-        font-weight: 400;
-        font-size: 28px;
-        letter-spacing: -0.7px;
-      }
-      .nav button {
-        width: 40px;
-        height: 40px;
-        padding: 0;
-        display: grid;
-        place-items: center;
-      }
-      .nav button:last-child {
-        width: auto;
-        padding: 0 14px;
-        font-size: 13px;
-      }
-      .card {
-        background: var(--c);
-        border: 0;
-        border-radius: 26px;
-        padding: 22px;
-      }
-      #hi div {
-        font-size: 36px !important;
-        letter-spacing: -1px;
-        margin: 6px 0 14px !important;
-      }
-      #t0 > .card:first-child {
-        position: relative;
-        overflow: hidden;
-        background: #c9f13d;
-        color: #10110d;
-        padding: 24px;
-      }
-      #t0 > .card:first-child::after {
-        content: "";
-        position: absolute;
-        right: -4px;
-        top: -6px;
-        width: 160px;
-        height: 140px;
-        background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 150 130'%3E%3Cg transform='skewY(-8)'%3E%3Crect x='14' y='84' width='30' height='60' rx='9' fill='%2310110d' opacity='.1'/%3E%3Crect x='56' y='62' width='30' height='82' rx='9' fill='%2310110d' opacity='.1'/%3E%3Crect x='98' y='34' width='30' height='110' rx='9' fill='%2310110d' opacity='.1'/%3E%3C/g%3E%3C/svg%3E")
-          no-repeat;
-        pointer-events: none;
-        animation: up 0.9s 0.25s both;
-      }
-      #t0 > .card:first-child h3 {
-        color: rgba(16, 17, 13, 0.62);
-        font-weight: 500;
-      }
-      #t0 > .card:first-child .big {
-        position: relative;
-        z-index: 1;
-        color: #10110d;
-      }
-      #t0 > .card:first-child .stats {
-        position: relative;
-        z-index: 1;
-      }
-      #t0 > .card:first-child .mut {
-        color: rgba(16, 17, 13, 0.62);
-      }
-      #t0 > .card:first-child .stats div {
-        background: rgba(16, 17, 13, 0.09);
-        border: 0;
-      }
-      #t0 > .card:first-child .stats b {
-        color: #10110d;
-      }
-      #t0 > .card:first-child .stats b.pos {
-        color: #0a5a38;
-      }
-      #t0 > .card:first-child .stats b.neg {
-        color: #9b2a19;
-      }
-      .stats div {
-        background: var(--bg);
-        border: 0;
-        border-radius: 16px;
-        padding: 12px;
-      }
-      .stats b {
-        font-size: 15px;
-      }
-      .item {
-        padding: 14px 0;
-      }
-      .amt {
-        font-variant-numeric: tabular-nums;
-      }
-      .card input,
-      .card select {
-        border: 0;
-        border-bottom: 1px solid var(--ln);
-        border-radius: 0;
-        padding: 12px 2px;
-        background: transparent;
-      }
-      .card input:focus,
-      .card select:focus {
-        outline: none;
-        border-bottom-color: var(--ac);
-      }
-      [data-t="light"] .card input:focus,
-      [data-t="light"] .card select:focus {
-        border-bottom-color: var(--ink);
-      }
-      .grid {
-        gap: 6px 18px;
-      }
-      .bar {
-        height: 6px;
-        border-radius: 6px;
-      }
-      .pill {
-        font-size: 11.5px;
-      }
-      .tabs .on {
-        background: var(--ac);
-        color: #10110d;
-      }
-      .bub.u {
-        background: var(--ac);
-        color: #10110d;
-      }
-      .bub.b {
-        background: var(--c);
-      }
-      .cd.sel {
-        outline: 2px solid var(--ac);
-      }
-      .bd {
-        background: var(--red);
-      }
-      /* quiz */
+      /* onboarding */
       #ob {
         padding: 0;
       }
@@ -1405,317 +1309,35 @@
         max-width: 440px;
         min-height: 100%;
         margin: 0 auto;
-        padding: max(7vh, 28px) 24px calc(28px + env(safe-area-inset-bottom));
+        padding: max(4vh, 16px) 24px calc(28px + env(safe-area-inset-bottom));
         display: flex;
         flex-direction: column;
       }
-      .obp {
+      .obt {
         display: flex;
-        gap: 5px;
-        margin-bottom: 30px;
-      }
-      .obp i {
-        position: relative;
-        flex: 1;
-        height: 3px;
-        border-radius: 3px;
-        background: var(--ln);
-        overflow: hidden;
-      }
-      .obp i.d::after {
-        content: "";
-        position: absolute;
-        inset: 0;
-        background: var(--ac);
-        transform-origin: left;
-      }
-      [data-t="light"] .obp i.d::after {
-        background: var(--ink);
-      }
-      .obp i.c::after {
-        animation: fillx 0.6s both;
-      }
-      @keyframes fillx {
-        from {
-          transform: scaleX(0);
-        }
-      }
-      .obn {
-        margin-bottom: 10px;
-        font-size: 13px;
-        color: var(--mut);
-      }
-      .obq {
-        font-family: var(--serif);
-        font-weight: 400;
-        font-size: 38px;
-        line-height: 1.04;
-        letter-spacing: -1px;
-        animation: rv2 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
-      }
-      @keyframes rv2 {
-        from {
-          opacity: 0;
-          transform: translateY(14px);
-        }
-      }
-      .obh {
-        margin: 8px 0 22px;
-        color: var(--mut);
-        animation: up 0.6s 0.08s both;
-      }
-      .f.ni input {
-        padding-left: 2px;
-      }
-      .obl {
-        display: block;
-        margin-top: 10px;
-        font-size: 12.5px;
-        color: var(--mut);
-      }
-      .f.ni input {
-        padding-top: 6px;
-      }
-      .obf {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-top: auto;
-        padding-top: 30px;
-      }
-      .obf .go {
-        flex: 1;
+        justify-content: space-between;
+        margin: 0 -8px 14px;
       }
       .obfb {
         background: none;
         color: var(--mut);
         padding: 0 8px;
+        min-height: 40px;
         font-size: 14px;
-      }
-      .obck {
-        width: 84px;
-        height: 84px;
-        padding: 22px;
-        margin-bottom: 22px;
-        border-radius: 50%;
-        background: var(--ac);
-        stroke: #10110d;
-        fill: none;
-        stroke-width: 2.6;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-        animation: pp 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) both;
-      }
-      .obck path {
-        stroke-dasharray: 24;
-        stroke-dashoffset: 24;
-        animation: dr 0.5s 0.3s forwards;
-      }
-      @keyframes pp {
-        from {
-          opacity: 0;
-          transform: scale(0.4);
-        }
-      }
-      @keyframes dr {
-        to {
-          stroke-dashoffset: 0;
-        }
-      }
-
-      /* ===== Cifra: estrutura do app ===== */
-      body {
-        padding-top: 0;
-      }
-      .top {
-        position: sticky;
-        top: 0;
-        z-index: 10;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin: 0 -16px 10px;
-        padding: calc(10px + env(safe-area-inset-top)) 16px 10px;
-        background: color-mix(in srgb, var(--bg) 88%, transparent);
-        -webkit-backdrop-filter: blur(14px);
-        backdrop-filter: blur(14px);
-      }
-      .top .logo {
-        width: 36px;
-        height: 36px;
-        border-radius: 11px;
-        flex: none;
-      }
-      .mo {
-        flex: 1;
-        min-width: 0;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 2px;
-      }
-      .mo b {
-        min-width: 0;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
-        font-size: 16px;
-        font-weight: 600;
-        text-transform: capitalize;
-        letter-spacing: -0.2px;
-      }
-      .mo button {
-        width: 34px;
-        height: 34px;
-        padding: 0;
-        display: grid;
-        place-items: center;
-        flex: none;
-        font-size: 18px;
-      }
-      .ib {
-        width: 38px;
-        height: 38px;
-        padding: 0;
-        display: grid;
-        place-items: center;
-        flex: none;
-      }
-      .ib svg {
-        width: 18px;
-        height: 18px;
-        stroke: currentColor;
-        fill: none;
-        stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
-      .pgh {
-        margin: 4px 0 16px;
-      }
-      .pgh h2 {
-        font-family: var(--serif);
-        font-weight: 400;
-        font-size: 34px;
-        letter-spacing: -1px;
-        line-height: 1.05;
-      }
-      .pgh p {
-        margin-top: 4px;
-        font-size: 14px;
-        color: var(--mut);
-      }
-      .dock .tabs {
-        gap: 2px;
-        margin-top: 6px;
-      }
-      .dock .tabs button {
-        position: relative;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 3px;
-        padding: 8px 2px 7px;
-        border-radius: 16px;
-        font-size: 10.5px;
         font-weight: 500;
-      }
-      .dock .tabs svg {
-        width: 21px;
-        height: 21px;
-        stroke: currentColor;
-        fill: none;
-        stroke-width: 1.9;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
-      .dock .tabs .bd {
-        position: absolute;
-        top: 2px;
-        left: 54%;
-        margin: 0;
-      }
-      .item.row {
-        align-items: center;
-        gap: 12px;
-      }
-      .it {
-        flex: 1;
-        min-width: 0;
-      }
-      .av {
-        width: 38px;
-        height: 38px;
-        flex: none;
-        border-radius: 12px;
-        display: grid;
-        place-items: center;
-        font-weight: 700;
-      }
-      .dh {
-        display: flex;
-        justify-content: space-between;
-        padding: 18px 0 4px;
-        font-size: 13px;
-        font-weight: 600;
-        text-transform: capitalize;
-      }
-      .dh:first-child {
-        padding-top: 0;
-      }
-      .sup {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 14px;
-        border: 1px dashed var(--ac) !important;
-      }
-      .sup b {
-        display: block;
-        margin-bottom: 2px;
-      }
-      .sup button {
-        flex: none;
-        background: var(--ac);
-        color: #10110d;
-        font-weight: 600;
-      }
-      #tc > .pgh + .card {
-        background: var(--ink);
-        color: var(--bg);
-      }
-      #tc > .pgh + .card h3,
-      #tc > .pgh + .card .mut {
-        color: color-mix(in srgb, var(--bg) 62%, transparent);
-      }
-      #tc > .pgh + .card .big {
-        color: var(--bg);
-      }
-      #tc > .pgh + .card .stats div {
-        background: color-mix(in srgb, var(--bg) 12%, transparent);
-      }
-      #tc > .pgh + .card .stats b {
-        color: var(--bg);
-      }
-      [data-t="dark"] #tc > .pgh + .card .stats b.neg {
-        color: #c0392b;
-      }
-      /* quiz: navegação */
-      .obt {
-        display: flex;
-        justify-content: space-between;
-        margin: -8px -8px 18px;
-      }
-      .obt .obfb {
-        padding: 8px;
-        font-size: 14px;
       }
       .obt .obfb:disabled {
         opacity: 0;
       }
+      .obp {
+        display: flex;
+        gap: 5px;
+        margin-bottom: 26px;
+      }
       .obp button {
         flex: 1;
         padding: 8px 0;
+        min-height: 0;
         background: none;
         border-radius: 0;
       }
@@ -1740,8 +1362,257 @@
       .obp button.c i::after {
         animation: fillx 0.6s both;
       }
-      .obp i {
-        all: unset;
+      .obn {
+        margin-bottom: 10px;
+        font-size: 13px;
+        color: var(--mut);
+      }
+      .obq {
+        font-family: var(--serif);
+        font-weight: 400;
+        font-size: 38px;
+        line-height: 1.04;
+        letter-spacing: -1px;
+        animation: rv2 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+      .obh {
+        margin: 8px 0 22px;
+        color: var(--mut);
+        animation: up 0.6s 0.08s both;
+      }
+      .f.ni input {
+        padding: 6px 2px 14px;
+      }
+      .obl {
+        display: block;
+        margin-top: 10px;
+        font-size: 12.5px;
+        color: var(--mut);
+      }
+      .obf {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: auto;
+        padding-top: 30px;
+      }
+      .obf .go {
+        flex: 1;
+      }
+      .obck {
+        width: 84px;
+        height: 84px;
+        padding: 22px;
+        margin-bottom: 22px;
+        border-radius: 50%;
+        background: var(--ac);
+        stroke: #10110d;
+        fill: none;
+        stroke-width: 2.6;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        animation: pp 0.6s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+      }
+      .obck path {
+        stroke-dasharray: 24;
+        stroke-dashoffset: 24;
+        animation: dr 0.5s 0.3s forwards;
+      }
+      /* animações */
+      @keyframes up {
+        from {
+          opacity: 0;
+          transform: translateY(10px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes pop {
+        from {
+          opacity: 0;
+          transform: scale(0.9) translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: none;
+        }
+      }
+      @keyframes grow {
+        from {
+          transform: scaleX(0);
+        }
+        to {
+          transform: scaleX(1);
+        }
+      }
+      @keyframes dot {
+        0%,
+        60%,
+        100% {
+          transform: translateY(0);
+          opacity: 0.35;
+        }
+        30% {
+          transform: translateY(-4px);
+          opacity: 1;
+        }
+      }
+      @keyframes pulse {
+        50% {
+          opacity: 0.55;
+        }
+      }
+      @keyframes rv {
+        from {
+          transform: translateY(110%);
+        }
+      }
+      @keyframes gr {
+        from {
+          transform: scaleY(0);
+        }
+      }
+      @keyframes rise {
+        from {
+          transform: translateY(48px);
+          opacity: 0;
+        }
+      }
+      @keyframes swp {
+        from {
+          opacity: 0.4;
+          transform: translateY(6px);
+        }
+      }
+      @keyframes shk {
+        20% {
+          transform: translateX(-8px);
+        }
+        40% {
+          transform: translateX(7px);
+        }
+        60% {
+          transform: translateX(-5px);
+        }
+        80% {
+          transform: translateX(3px);
+        }
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      @keyframes fillx {
+        from {
+          transform: scaleX(0);
+        }
+      }
+      @keyframes rv2 {
+        from {
+          opacity: 0;
+          transform: translateY(14px);
+        }
+      }
+      @keyframes pp {
+        from {
+          opacity: 0;
+          transform: scale(0.4);
+        }
+      }
+      @keyframes dr {
+        to {
+          stroke-dashoffset: 0;
+        }
+      }
+      .sec.on > .card,
+      .sec.on > div > .card {
+        animation: up 0.35s both;
+      }
+      .sec.on > .card:nth-child(2) {
+        animation-delay: 0.04s;
+      }
+      .sec.on > .card:nth-child(3) {
+        animation-delay: 0.08s;
+      }
+      .sec.on > .card:nth-child(4) {
+        animation-delay: 0.12s;
+      }
+      .sec.on > .card:nth-child(n + 5) {
+        animation-delay: 0.16s;
+      }
+      #say.f {
+        animation: up 0.25s both;
+      }
+      @media (max-width: 380px) {
+        body {
+          padding-left: 12px;
+          padding-right: 12px;
+        }
+        .card {
+          padding: 16px;
+        }
+        .grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        * {
+          animation: none !important;
+          transition: none !important;
+        }
+      }
+
+      /* ===== 3D, GSAP e instalação ===== */
+      [hidden] {
+        display: none !important;
+      }
+      .fx3d {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 1;
+        pointer-events: none;
+      }
+      .hero.three .bars {
+        display: none;
+      }
+      .htop,
+      .hl,
+      .hs {
+        position: relative;
+        z-index: 2;
+      }
+      .gsap-on .fld,
+      .gsap-on #acard.sw {
+        animation: none;
+      }
+      .inst-lg {
+        width: 100%;
+        margin-top: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        background: var(--c2);
+        color: var(--ink);
+      }
+      .inst-lg svg {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+        fill: none;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+      ol.stp {
+        margin: 8px 0 0;
+        padding-left: 20px;
+        line-height: 1.6;
       }
     </style>
   </head>
@@ -1776,7 +1647,7 @@
       <div class="shell">
         <div class="hero">
           <div class="ring"></div>
-          <div class="top">
+          <div class="htop">
             <img class="mk" src="icons/icon-192x192.png" alt="" /><span
               class="wm2"
               >Cifra</span
@@ -1806,7 +1677,8 @@
                 <div class="f fld" style="--d: 0.02s">
                   <svg class="fi" viewBox="0 0 24 24">
                     <path d="M20 21a8 8 0 0 0-16 0" />
-                    <circle cx="12" cy="7" r="4" /></svg>
+                    <circle cx="12" cy="7" r="4" />
+                  </svg>
                   <input
                     id="anome"
                     type="text"
@@ -1818,7 +1690,8 @@
                 <div class="f fld" style="--d: 0.06s">
                   <svg class="fi" viewBox="0 0 24 24">
                     <rect x="3" y="5" width="18" height="14" rx="3" />
-                    <path d="M3 8l9 6 9-6" /></svg>
+                    <path d="M3 8l9 6 9-6" />
+                  </svg>
                   <input
                     id="aemail"
                     type="email"
@@ -1831,7 +1704,8 @@
               <div class="f fld" style="--d: 0.08s">
                 <svg class="fi" viewBox="0 0 24 24">
                   <rect x="3" y="5" width="18" height="14" rx="3" />
-                  <path d="M7 10h4M7 14h6M15 10h2" /></svg>
+                  <path d="M7 10h4M7 14h6M15 10h2" />
+                </svg>
                 <input
                   id="acpf"
                   inputmode="numeric"
@@ -1846,7 +1720,8 @@
                 <div class="f fld" style="--d: 0.04s">
                   <svg class="fi" viewBox="0 0 24 24">
                     <circle cx="8" cy="15" r="4" />
-                    <path d="M11 12l9-9M16 7l3 3" /></svg>
+                    <path d="M11 12l9-9M16 7l3 3" />
+                  </svg>
                   <input
                     id="arc"
                     type="text"
@@ -1868,7 +1743,8 @@
               <div class="f fld" style="--d: 0.12s">
                 <svg class="fi" viewBox="0 0 24 24">
                   <rect x="4" y="11" width="16" height="10" rx="3" />
-                  <path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+                  <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                </svg>
                 <input
                   id="apw"
                   type="password"
@@ -1895,7 +1771,8 @@
                 <div class="f fld" style="--d: 0.04s">
                   <svg class="fi" viewBox="0 0 24 24">
                     <rect x="4" y="11" width="16" height="10" rx="3" />
-                    <path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+                    <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+                  </svg>
                   <input
                     id="apw2"
                     type="password"
@@ -1921,7 +1798,8 @@
                   <svg class="fi" viewBox="0 0 24 24">
                     <path
                       d="M20 12v8H4v-8M2 7h20v5H2zM12 22V7M12 7H8a2.5 2.5 0 1 1 0-5c3 0 4 5 4 5zM12 7h4a2.5 2.5 0 1 0 0-5c-3 0-4 5-4 5z"
-                    /></svg>
+                    />
+                  </svg>
                   <input
                     id="ainv"
                     type="text"
@@ -1947,9 +1825,22 @@
             <p class="sec2">
               <svg viewBox="0 0 24 24">
                 <rect x="4" y="11" width="16" height="10" rx="3" />
-                <path d="M8 11V8a4 4 0 0 1 8 0v3" /></svg>
+                <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+              </svg>
               Seu CPF é guardado só de forma criptografada (hash).
             </p>
+            <button
+              type="button"
+              class="inst-lg"
+              id="inst0"
+              onclick="instalar()"
+              hidden
+            >
+              <svg viewBox="0 0 24 24">
+                <path d="M12 3v12M7 11l5 5 5-5M5 21h14" />
+              </svg>
+              Instalar o app
+            </button>
           </div>
         </div>
       </div>
@@ -1971,8 +1862,8 @@
             ><select id="ed6">
               <option value="gasto">Gasto</option>
               <option value="receita">Receita</option>
-              <option value="invest">Investimento</option>
-            </select>
+              <option value="invest">Investimento</option></select
+            ><select id="ed7"></select>
           </div>
           <div class="row" style="margin-top: 12px">
             <button onclick="edSave()">Salvar</button
@@ -2016,8 +1907,32 @@
         </div>
       </div>
     </div>
+    <div id="inm" class="auth" style="z-index: 50">
+      <div style="max-width: 380px; margin: 12vh auto 0">
+        <div class="card">
+          <h3>Instalar a Cifra</h3>
+          <div id="inmt"></div>
+          <button
+            style="margin-top: 14px"
+            onclick="$('#inm').style.display = 'none'"
+          >
+            Entendi
+          </button>
+        </div>
+      </div>
+    </div>
     <div id="hi"></div>
     <div id="setup"></div>
+    <div class="card sup" id="instb" hidden>
+      <div>
+        <b>Instale a Cifra</b>
+        <div class="mut">Abre em tela cheia, direto da tela inicial.</div>
+      </div>
+      <button onclick="instalar()">Instalar</button
+      ><button class="g ib" aria-label="Dispensar" onclick="instDismiss()">
+        ✕
+      </button>
+    </div>
     <div class="pills" id="pills" onclick="sync()"></div>
     <div id="t0" class="sec on">
       <div class="card">
@@ -2263,6 +2178,13 @@
           </button>
         </div>
       </div>
+      <div class="card" id="instc" hidden>
+        <h3>Aplicativo</h3>
+        <p class="mut" style="margin-bottom: 12px">
+          Instale a Cifra na tela inicial para abrir como um app, em tela cheia.
+        </p>
+        <button onclick="instalar()">Instalar app</button>
+      </div>
       <div class="card">
         <h3>Conta</h3>
         <input id="nm" maxlength="60" placeholder="Seu nome" />
@@ -2316,47 +2238,65 @@
             <path d="M5 11a7 7 0 0 0 14 0M12 18v3" />
           </svg>
         </button>
-        <input
+        <textarea
           id="in"
-          placeholder="Ex: gastei 35 no iFood no crédito"
-          onkeydown="if (event.key === 'Enter') send();"
-        /><button onclick="send()">↑</button>
+          rows="1"
+          placeholder="Gastei 35 no iFood"
+          oninput="grow()"
+          onkeydown="
+            if (
+              event.key === 'Enter' &&
+              !event.shiftKey &&
+              !matchMedia('(pointer:coarse)').matches
+            ) {
+              event.preventDefault();
+              send();
+            }
+          "
+        ></textarea
+        ><button onclick="send()">↑</button>
       </div>
       <div class="tabs">
         <button class="on" onclick="tab(0)">
           <svg viewBox="0 0 24 24">
             <path
               d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"
-            /></svg>
+            />
+          </svg>
           <span>Início</span></button
         ><button onclick="tab(1)">
           <svg viewBox="0 0 24 24">
             <path d="M5 3h14v18l-3-2-2 2-2-2-2 2-2-2-3 2z" />
-            <path d="M9 8h6M9 12h6" /></svg>
+            <path d="M9 8h6M9 12h6" />
+          </svg>
           <span>Extrato</span></button
         ><button onclick="tab(2)">
           <svg viewBox="0 0 24 24">
             <rect x="3" y="6" width="18" height="13" rx="3" />
-            <path d="M3 10h18M7 15h3" /></svg>
+            <path d="M3 10h18M7 15h3" />
+          </svg>
           <span>Contas</span></button
         ><button onclick="tab(3)">
           <svg viewBox="0 0 24 24">
             <path d="M6 16v-5a6 6 0 0 1 12 0v5l2 2H4z" />
-            <path d="M10 21h4" /></svg>
+            <path d="M10 21h4" />
+          </svg>
           <span>Alertas</span><b id="bd" class="bd"></b></button
         ><button onclick="tab(4)">
           <svg viewBox="0 0 24 24">
             <path
               d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"
             />
-            <path d="M19 17l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z" /></svg>
+            <path d="M19 17l.7 2 2 .7-2 .7-.7 2-.7-2-2-.7 2-.7z" />
+          </svg>
           <span>IA</span></button
         ><button onclick="tab(5)">
           <svg viewBox="0 0 24 24">
             <circle cx="12" cy="12" r="3" />
             <path
               d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"
-            /></svg>
+            />
+          </svg>
           <span>Ajustes</span>
         </button>
       </div>
@@ -2451,7 +2391,11 @@
           .catch((e) => {
             throw e.name === "AbortError"
               ? new Error("o servidor demorou demais para responder")
-              : e;
+              : e.name === "SyntaxError"
+                ? new Error(
+                    "resposta inválida do servidor (reimplante o Apps Script)",
+                  )
+                : e;
           })
           .finally(() => clearTimeout(tm));
       };
@@ -2505,24 +2449,31 @@
         S.parc = unc(S.parc, R.parc);
         S.rep = un(S.rep, R.rep);
         S.cv = unc(S.cv, R.cv);
-        S.tx = un(S.tx, R.tx);
-        S.rec = un(S.rec, R.rec);
+        S.tx = unc(S.tx, R.tx);
+        S.rec = unc(S.rec, R.rec);
         S.gen = { ...R.gen, ...S.gen };
         S.lim = { ...R.lim, ...S.lim };
         S.onb = S.onb || R.onb;
       }
+      let AGAIN = 0;
       async function sync() {
         if (!U || !API) {
           ST.sheet = ST.ia = "off";
           ST.msg = API ? "" : "Servidor não configurado.";
           return pills();
         }
-        if (busy) return;
+        if (busy) {
+          AGAIN = 1;
+          return;
+        }
         busy = 1;
         ST.msg = "Sincronizando…";
         pills();
         try {
-          const p = await api({ action: "ping" });
+          const [p, r] = await Promise.all([
+            api({ action: "ping" }),
+            api({ action: "load" }),
+          ]);
           ST.ia = p.ia ? "ok" : "err";
           if (p.rel != null && p.rel >= 0) {
             ST.rel = p.rel;
@@ -2537,7 +2488,7 @@
           ST.email = p.email || "";
           if ($("#em") && !$("#em").value) $("#em").value = ST.email;
           ST.msg = p.ia ? "" : "IA: " + p.iaerr;
-          const r = await api({ action: "load" });
+
           if (r.data) merge(r.data);
           gen();
           if (!S.onb && !S.tx.length && !S.contas.length && !S.rec.length)
@@ -2555,6 +2506,10 @@
         }
         busy = 0;
         pills();
+        if (AGAIN) {
+          AGAIN = 0;
+          setTimeout(sync, 300);
+        }
       }
       function gen() {
         const t = today(),
@@ -2585,20 +2540,26 @@
           }
         });
         S.rec.forEach((r) => {
-          const k = r.id + m;
-          if (S.gen[k]) return;
-          const d = m + "-" + String(Math.min(r.dia, 28)).padStart(2, "0");
-          if (d <= t) {
-            S.tx.push({
-              id: "r" + r.id + m,
-              data: d,
-              tipo: r.tipo,
-              valor: r.valor,
-              cat: r.cat,
-              pay: r.pay,
-              desc: r.desc,
-            });
-            S.gen[k] = 1;
+          if (!r.ini) r.ini = m;
+          let mm = r.ini < m ? r.ini : m,
+            g = 0;
+          while (mm <= m && g++ < 36) {
+            const k = r.id + mm,
+              d = mm + "-" + pad(Math.min(r.dia, 28));
+            if (!S.gen[k] && d <= t) {
+              S.tx.push({
+                id: "r" + r.id + mm,
+                ts: Date.now(),
+                data: d,
+                tipo: r.tipo,
+                valor: r.valor,
+                cat: r.cat,
+                pay: r.pay,
+                desc: r.desc,
+              });
+              S.gen[k] = 1;
+            }
+            mm = addM(mm + "-01", 1).slice(0, 7);
           }
         });
       }
@@ -2624,6 +2585,9 @@
           .querySelectorAll(".dock .tabs button")
           .forEach((e, j) => e.classList.toggle("on", i === j));
         CUR = i;
+        ["#hi", "#pills", "#setup", "#instb"].forEach(
+          (s) => ($(s).style.display = i === 0 ? "" : "none"),
+        );
         say("");
         if (i === 4) chRender();
         dockMode();
@@ -2747,13 +2711,35 @@
           })
         );
       };
+      const toNum = (v) =>
+          typeof v === "number"
+            ? v
+            : parseFloat(
+                String(v == null ? "" : v)
+                  .replace(/[^\d,.-]/g, "")
+                  .replace(/\.(?=\d{3}\b)/g, "")
+                  .replace(",", "."),
+              ) || 0,
+        normCat = (c, tipo) =>
+          [...CATS, ...RCATS, "Investimento"].find(
+            (k) => k.toLowerCase() === String(c || "").toLowerCase(),
+          ) ||
+          (tipo === "receita"
+            ? "Renda extra"
+            : tipo === "invest"
+              ? "Investimento"
+              : "Outros");
       function mkItem(x, ids, pids) {
-        const d = x.data && x.data <= today() ? x.data : today(),
+        const d =
+            /^\d{4}-\d\d-\d\d$/.test(x.data || "") && x.data <= today()
+              ? x.data
+              : today(),
           tipo = TIPOS.includes(x.tipo) ? x.tipo : "gasto",
-          v = +x.valor,
-          pay = PAYS.includes(x.pay) ? x.pay : "Pix",
+          v = toNum(x.valor),
+          cart0 = tipo === "gasto" ? byName(S.cartoes, x.cartao) : null,
+          pay = cart0 ? "Crédito" : PAYS.includes(x.pay) ? x.pay : "Pix",
           cart =
-            byName(S.cartoes, x.cartao) ||
+            cart0 ||
             (pay === "Crédito" && (S.cartoes || []).length === 1
               ? S.cartoes[0]
               : null),
@@ -2770,9 +2756,9 @@
             data: d,
             tipo,
             valor: v,
-            cat: x.cat || "Outros",
+            cat: normCat(x.cat, tipo),
             pay,
-            desc: x.desc || x.cat,
+            desc: String(x.desc || x.cat || "").slice(0, 60) || "Lançamento",
             conta: cont ? cont.id : "",
             cartao: cart ? cart.id : "",
           };
@@ -2844,10 +2830,17 @@
           (c.vence > c.fecha ? ref : addM(ref + "-01", 1).slice(0, 7)) +
           "-" +
           pad(Math.min(c.vence, 28)),
-        paga = (c, ref) =>
-          S.tx.some(
-            (x) => x.tipo === "pagfat" && x.cartao === c.id && x.ref === ref,
-          );
+        pago = (c, ref) =>
+          r2(
+            sum(
+              S.tx.filter(
+                (x) =>
+                  x.tipo === "pagfat" && x.cartao === c.id && x.ref === ref,
+              ),
+            ),
+          ),
+        rest = (c, ref) => Math.max(0, r2(fatTotal(c, ref) - pago(c, ref))),
+        paga = (c, ref) => fatTotal(c, ref) > 0 && rest(c, ref) <= 0.005;
       function parcItems(c) {
         const o = [];
         (S.parc || []).forEach((p) => {
@@ -2863,7 +2856,10 @@
       }
       function itens(c) {
         return [
-          ...S.tx.filter((x) => x.tipo === "gasto" && x.cartao === c.id),
+          ...S.tx.filter(
+            (x) =>
+              x.tipo === "gasto" && x.cartao === c.id && x.pay === "Crédito",
+          ),
           ...parcItems(c),
         ];
       }
@@ -2873,19 +2869,18 @@
       function fatStatus(c, ref) {
         const t = today();
         if (paga(c, ref)) return "Paga";
+        if (!fatTotal(c, ref)) return "Aberta";
         if (t > vencD(c, ref)) return "Atrasada";
         if (t > fechaD(c, ref)) return "Fechada";
         return "Aberta";
       }
       function dividas(c) {
         const refs = [...new Set(itens(c).map((x) => refOf(c, x.data)))].filter(
-          (r) => !paga(c, r),
+          (r) => rest(c, r) > 0.005,
         );
         return {
           refs,
-          total: r2(
-            sum(itens(c).filter((x) => refs.includes(refOf(c, x.data)))),
-          ),
+          total: r2(sum(refs.map((r) => ({ valor: rest(c, r) })))),
         };
       }
       function addConta() {
@@ -2965,7 +2960,7 @@
           d = dividas(c),
           ref = d.refs.filter((r) => r <= cur).sort()[0];
         if (!ref) return say("Nenhuma fatura em aberto neste cartão.");
-        const v = fatTotal(c, ref);
+        const v = rest(c, ref);
         if (
           !confirm(
             `Registrar o pagamento da fatura ${ref} de ${c.nome}: ${brl(v)}?`,
@@ -3111,7 +3106,7 @@
                 tot = fatTotal(c, ref),
                 dv = dividas(c).total,
                 st = fatStatus(c, ref);
-              return `<div class="item row"><div><b>${esc(c.nome)}</b><div class="mut">Limite ${brl(c.limite)} · Disponível ${brl(c.limite - dv)}</div><div class="mut">Fatura atual ${brl(tot)} · <b class="${st === "Atrasada" ? "neg" : ""}">${st}</b> · fecha dia ${c.fecha}, vence dia ${c.vence}</div></div><div class="amt"><button onclick="pagFat('${c.id}')">Pagar</button><button class="g" onclick="delCartao('${c.id}')">✕</button></div></div>`;
+              return `<div class="item row"><div><b>${esc(c.nome)}</b><div class="mut">Limite ${brl(c.limite)} · Disponível ${brl(c.limite - dv)}</div><div class="mut">Fatura atual ${brl(tot)} · <span class="${st === "Atrasada" ? "neg" : ""}" style="font-weight:600">${st}</span> · fecha dia ${c.fecha}, vence dia ${c.vence}</div></div><div class="amt"><button onclick="pagFat('${c.id}')">Pagar</button><button class="g" onclick="delCartao('${c.id}')">✕</button></div></div>`;
             })
             .join("") ||
           '<span class="mut">Cadastre seus cartões para acompanhar faturas e limite.</span>';
@@ -3231,7 +3226,10 @@
       }
       function manter(ids) {
         S.tx.forEach((x) => {
-          if (ids.includes(x.id)) x.ok = 1;
+          if (ids.includes(x.id)) {
+            x.ok = 1;
+            x.ts = Date.now();
+          }
         });
         persist();
       }
@@ -3331,6 +3329,14 @@
           (c) => `<option${c === x.pay ? " selected" : ""}>${c}</option>`,
         ).join("");
         $("#ed6").value = x.tipo;
+        $("#ed7").innerHTML =
+          '<option value="">Sem conta</option>' +
+          (S.contas || [])
+            .map(
+              (c) =>
+                `<option value="${c.id}"${c.id === x.conta ? " selected" : ""}>${esc(c.nome)}</option>`,
+            )
+            .join("");
         $("#ed").style.display = "block";
       }
       function edSave() {
@@ -3345,7 +3351,11 @@
           cat: $("#ed4").value,
           pay: $("#ed5").value,
           tipo: $("#ed6").value,
+          conta: $("#ed7").value,
+          ts: Date.now(),
         });
+        if (x.pay === "Crédito" && !x.cartao && S.cartoes.length === 1)
+          x.cartao = S.cartoes[0].id;
         $("#ed").style.display = "none";
         persist();
       }
@@ -3518,9 +3528,7 @@
       };
       function dockMode() {
         const c = CUR === 4;
-        $("#in").placeholder = c
-          ? "Pergunte sobre finanças…"
-          : "Ex: gastei 35 no iFood no crédito";
+        $("#in").placeholder = c ? "Pergunte à IA…" : "Gastei 35 no iFood";
         $(".chat").style.display = c && SUB === 1 ? "none" : "flex";
       }
       function sub(n) {
@@ -3785,7 +3793,17 @@
         const r = sum(
           S.tx.filter((x) => x.tipo === "receita" && mk(x.data) === M),
         );
-        if (sum(g) > 0 && sum(g) > r)
+        const pend = cur
+          ? sum(
+              S.rec.filter(
+                (q) =>
+                  q.tipo === "receita" &&
+                  Math.min(q.dia, 28) > hoje &&
+                  !S.gen[q.id + M],
+              ),
+            )
+          : 0;
+        if (sum(g) > 0 && sum(g) > r + pend)
           L.push({
             n: 1,
             p: 0,
@@ -3862,10 +3880,10 @@
           g = tx.filter((x) => x.tipo === "gasto"),
           r = tx.filter((x) => x.tipo === "receita"),
           iv = tx.filter((x) => x.tipo === "invest");
-        $("#mes").textContent = new Date(y, m - 1, 1).toLocaleDateString(
-          "pt-BR",
-          { month: "long", year: "numeric" },
-        );
+        $("#mes").textContent =
+          new Date(y, m - 1, 1).toLocaleDateString("pt-BR", { month: "long" }) +
+          " " +
+          y;
         $("#nx").disabled = M >= mk(today());
         const sd = sum(r) - sum(g) - sum(iv);
         anim($("#saldo"), sd);
@@ -3969,6 +3987,8 @@
         ["rd", "rv", "rdia"].forEach((i) => ($("#" + i).value = ""));
       }
       async function logout() {
+        if (U && API && navigator.onLine) await sync().catch(() => {});
+        const KEY = U ? SK() : "";
         if (
           ST.sheet !== "ok" &&
           !confirm(
@@ -3976,7 +3996,9 @@
           )
         )
           return;
-        localStorage.removeItem(SK());
+        if (U && API && navigator.onLine)
+          await api({ action: "logout" }).catch(() => {});
+        if (KEY) localStorage.removeItem(KEY);
         localStorage.removeItem("u");
         location.reload();
       }
@@ -3998,14 +4020,23 @@
         return 1;
       };
       let mode = "login";
-      const aerr = (t) => ($("#aerr").textContent = t || "");
+      const netErr = (e) =>
+        e.name === "SyntaxError"
+          ? "O servidor respondeu algo inesperado. Reimplante o Apps Script (nova versão)."
+          : e.message === "Failed to fetch"
+            ? "Não consegui falar com o servidor. Tente de novo em instantes."
+            : e.message;
+      const aerr = (t, ok) => {
+        $("#aerr").style.color = ok ? "var(--grn)" : "";
+        $("#aerr").textContent = t || "";
+      };
       function authMode(m) {
         mode = m;
         const su = m === "signup",
           rs = m === "reset";
         $("#a0").style.display = su ? "block" : "none";
         $("#a2").style.display = su || rs ? "block" : "none";
-        $("#ainv").style.display = su ? "block" : "none";
+        $("#ainv").parentNode.style.display = su ? "block" : "none";
         $("#a3").style.display = rs ? "block" : "none";
         $("#m1").classList.toggle("on", m === "login");
         $("#m2").classList.toggle("on", su);
@@ -4057,14 +4088,11 @@
           U = { uid: r.uid, tok: r.tok, nome: r.nome || "" };
           localStorage.u = JSON.stringify(U);
           $("#apw").value = $("#apw2").value = "";
+          if (window.cifraFx) await cifraFx.exit(!r.rc);
           if (r.rc) showRC(r.rc);
           else start();
         } catch (e) {
-          aerr(
-            e.message === "Failed to fetch"
-              ? "Sem conexão com o servidor."
-              : e.message,
-          );
+          aerr(netErr(e));
         }
         $("#abtn").disabled = 0;
       }
@@ -4146,6 +4174,7 @@
         const t = $("#in").value.trim();
         if (!t && !PEND) return;
         $("#in").value = "";
+        grow();
         if (CUR === 4) return chatSend(t);
         say("Pensando…");
         let r,
@@ -4197,8 +4226,7 @@
             S.tx = S.tx.filter((t) => t !== x);
             persist();
             return sayU(`Apaguei: ${x.desc || x.cat} · ${brl(x.valor)}`, () => {
-              S.del = S.del.filter((i) => i !== old.id);
-              S.tx.push(old);
+              S.tx.push({ ...old, id: uid(), ts: Date.now() });
               persist();
             });
           }
@@ -4212,17 +4240,17 @@
             n.data = c.data;
           if (TIPOS.includes(c.tipo)) n.tipo = c.tipo;
           if (!Object.keys(n).length) return say("Não entendi o que alterar.");
-          Object.assign(x, n);
+          Object.assign(x, n, { ts: Date.now() });
           persist();
           return sayU(
             `Atualizei: ${x.desc || x.cat} · ${old.valor !== x.valor ? brl(old.valor) + " → " : ""}${brl(x.valor)}`,
             () => {
-              Object.assign(x, old);
+              Object.assign(x, old, { ts: Date.now() });
               persist();
             },
           );
         }
-        const it = (r.itens || []).filter((x) => x && +x.valor > 0);
+        const it = (r.itens || []).filter((x) => x && toNum(x.valor) > 0);
         if (!it.length)
           return say(
             "Não entendi os valores. " + (fb ? "IA indisponível: " + fb : ""),
@@ -4250,7 +4278,7 @@
                 });
                 persist();
               }))(
-          `${it.length} lançamento(s) anotado(s) · ${brl(sum(it.map((x) => ({ valor: +x.valor }))))}` +
+          `${it.length} lançamento(s) anotado(s) · ${brl(sum(it.map((x) => ({ valor: toNum(x.valor) }))))}` +
             (fb ? ` · ⚠ modo sem IA (${fb})` : ""),
         );
       }
@@ -4278,17 +4306,13 @@
             }),
           }).then((r) => r.json());
           if (r.error) throw new Error(r.error);
-          aerr("");
-          $("#arc").value = "";
-          $("#arc").placeholder = r.email
-            ? "Código enviado para " + r.email
-            : "Se houver e-mail cadastrado, o código foi enviado";
-        } catch (e) {
           aerr(
-            e.message === "Failed to fetch"
-              ? "Sem conexão com o servidor."
-              : e.message,
+            "Se este CPF tiver e-mail cadastrado, enviamos um código válido por 15 minutos. Confira o spam.",
+            true,
           );
+          $("#arc").value = "";
+        } catch (e) {
+          aerr(netErr(e));
         }
       }
       function saveEmail(v) {
@@ -4710,6 +4734,7 @@
                 mime: r.mimeType,
               });
               $("#in").value = ($("#in").value + " " + a.text).trim();
+              grow();
               $("#in").focus();
               say("");
             } catch (e) {
@@ -4725,6 +4750,11 @@
         }
       }
 
+      function grow() {
+        const e = $("#in");
+        e.style.height = "auto";
+        e.style.height = Math.max(46, Math.min(e.scrollHeight + 2, 140)) + "px";
+      }
       /* ===== login animado ===== */
       const AT = {
         login: ["Entre na sua conta", "Use seu CPF e sua senha.", "Entrar"],
@@ -4810,7 +4840,7 @@
                         : x.tipo === "gasto"
                           ? "−"
                           : "↗ ";
-                  return `<div class="item row"><div class="av" style="background:${col}26;color:${col}">${esc((x.cat || "?").charAt(0))}</div><div class="it"><b>${esc(x.desc || x.cat)}</b><div class="mut">${esc(x.cat)} · ${esc(x.pay)}</div></div><div class="amt ${x.tipo === "receita" ? "pos" : x.tipo === "gasto" ? "" : "mut"}">${sg}${brl(x.valor)}<button class="g" aria-label="Editar" onclick="edOpen('${x.id}')">✎</button><button class="g" aria-label="Apagar" onclick="del('${x.id}')">✕</button></div></div>`;
+                  return `<div class="item row"><div class="av" style="background:${col}26;color:${col}">${esc((x.cat || "?").charAt(0))}</div><div class="it"><b>${esc(x.desc || x.cat)}</b><div class="mut">${esc(x.cat)} · ${esc(x.pay)}</div></div><div class="amt ${x.tipo === "receita" ? "pos" : x.tipo === "gasto" ? "" : "mut"}">${sg}${brl(x.valor)}<span class="ac"><button class="g" aria-label="Editar" onclick="edOpen('${x.id}')">✎</button><button class="g" aria-label="Apagar" onclick="del('${x.id}')">✕</button></span></div></div>`;
                 })
                 .join("")
             );
@@ -4829,6 +4859,17 @@
         $("#seg").dataset.m = m;
         posInd();
         $("#atitle").textContent = AT[m][0];
+        $("#apw").autocomplete =
+          m === "login" ? "current-password" : "new-password";
+        const lk = $("#acard .lk.c"),
+          la = lk.querySelector("a");
+        lk.style.display = m === "signup" ? "none" : "";
+        la.textContent =
+          m === "reset" ? "Voltar para entrar" : "Esqueci minha senha";
+        la.onclick = () => {
+          authMode(m === "reset" ? "login" : "reset");
+          return false;
+        };
         $("#asub").textContent = AT[m][1];
         $("#abtn").innerHTML = "<span>" + AT[m][2] + "</span>";
         const c = $("#acard");
@@ -4845,7 +4886,7 @@
         e.target.parentNode.classList.toggle("ok", !!cpfOk(e.target.value)),
       );
       new MutationObserver(() => {
-        if ($("#aerr").textContent) {
+        if ($("#aerr").textContent && !$("#aerr").style.color) {
           const c = $("#acard");
           c.classList.remove("sw", "shk");
           void c.offsetWidth;
@@ -4855,6 +4896,9 @@
         childList: true,
         characterData: true,
         subtree: true,
+      });
+      $("#acard").addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && e.target.tagName === "INPUT") auth();
       });
       $("#rc").innerHTML = [...CATS, ...RCATS]
         .map((c) => `<option>${c}</option>`)
@@ -4873,6 +4917,441 @@
       else showAuth();
       if ("serviceWorker" in navigator)
         navigator.serviceWorker.register("sw.js");
+    </script>
+    <script>
+      /* ===== Cifra: animações (Three.js + GSAP) e instalação do app ===== */
+      (function () {
+        "use strict";
+        const GS =
+            "https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js",
+          TH =
+            "https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js",
+          reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        let libs,
+          S3 = null,
+          built = false;
+        const load = (u) =>
+            new Promise((ok) => {
+              const s = document.createElement("script");
+              s.src = u;
+              s.onload = () => ok(1);
+              s.onerror = () => ok(0);
+              document.head.append(s);
+            }),
+          loadLibs = () =>
+            libs ||
+            (libs = Promise.all([
+              window.gsap ? 1 : load(GS),
+              window.THREE ? 1 : load(TH),
+            ])),
+          visible = () => $("#auth").style.display === "block";
+
+        function build() {
+          const hero = document.querySelector(".hero");
+          let renderer;
+          try {
+            const cv = document.createElement("canvas");
+            cv.className = "fx3d";
+            renderer = new THREE.WebGLRenderer({
+              canvas: cv,
+              alpha: true,
+              antialias: true,
+              powerPreference: "low-power",
+            });
+            hero.insertBefore(cv, hero.firstChild);
+          } catch (e) {
+            return null;
+          }
+          renderer.setPixelRatio(Math.min(devicePixelRatio || 1, 2));
+          renderer.setClearColor(0x000000, 0);
+          const scene = new THREE.Scene(),
+            cam = new THREE.PerspectiveCamera(30, 1, 0.1, 100),
+            group = new THREE.Group();
+          cam.position.set(0, 0, 14);
+          scene.add(new THREE.AmbientLight(0xffffff, 0.55));
+          const key = new THREE.DirectionalLight(0xffffff, 1.1);
+          key.position.set(-3, 6, 8);
+          scene.add(key);
+          const rim = new THREE.PointLight(0xe4ff6a, 2.2, 40);
+          rim.position.set(5, 1, 6);
+          scene.add(rim);
+          scene.add(group);
+
+          /* três pilares finos e altos, mais claros à direita */
+          const W = 0.62,
+            GAP = 0.34,
+            HS = [2.2, 3.6, 5.2],
+            CL = [0x0f100b, 0x171a0f, 0x20260f],
+            bars = [];
+          HS.forEach((h, i) => {
+            const r = 0.3,
+              sh = new THREE.Shape();
+            sh.moveTo(-W / 2, 0);
+            sh.lineTo(W / 2, 0);
+            sh.lineTo(W / 2, h - r);
+            sh.quadraticCurveTo(W / 2, h, W / 2 - r, h);
+            sh.lineTo(-W / 2 + r, h);
+            sh.quadraticCurveTo(-W / 2, h, -W / 2, h - r);
+            sh.lineTo(-W / 2, 0);
+            const g = new THREE.ExtrudeGeometry(sh, {
+              depth: 0.5,
+              bevelEnabled: true,
+              bevelThickness: 0.035,
+              bevelSize: 0.035,
+              bevelSegments: 4,
+              curveSegments: 14,
+            });
+            g.translate(0, 0, -0.25);
+            const m = new THREE.Mesh(
+              g,
+              new THREE.MeshStandardMaterial({
+                color: CL[i],
+                roughness: 0.32,
+                metalness: 0.3,
+              }),
+            );
+            m.position.x = (i - 1) * (W + GAP);
+            m.userData = { k: 1, p: 0 };
+            group.add(m);
+            bars.push(m);
+          });
+
+          /* linha de tendência subindo + ponto luminoso */
+          const curve = new THREE.CatmullRomCurve3([
+              new THREE.Vector3(-1.9, 1.2, 0.5),
+              new THREE.Vector3(-0.96, 2.9, 0.5),
+              new THREE.Vector3(0, 4.2, 0.5),
+              new THREE.Vector3(0.96, 5.9, 0.5),
+            ]),
+            tube = new THREE.Mesh(
+              new THREE.TubeGeometry(curve, 90, 0.045, 8, false),
+              new THREE.MeshBasicMaterial({ color: 0xffffff }),
+            ),
+            orb = new THREE.Mesh(
+              new THREE.SphereGeometry(0.16, 24, 24),
+              new THREE.MeshBasicMaterial({ color: 0xffffff }),
+            ),
+            total = tube.geometry.index.count,
+            L = { t: 1 };
+          group.add(tube, orb);
+          hero.classList.add("three");
+
+          let raf = 0,
+            tx = 0,
+            ty = 0,
+            cx = 0,
+            cy = 0;
+          function size() {
+            const w = hero.clientWidth,
+              h = hero.clientHeight;
+            if (!w || !h) return;
+            renderer.setSize(w, h, false);
+            cam.aspect = w / h;
+            cam.updateProjectionMatrix();
+            const vh = 2 * Math.tan((cam.fov * Math.PI) / 360) * cam.position.z,
+              vw = vh * cam.aspect,
+              s = Math.min(vw * 0.125, vh / 6.6);
+            group.scale.setScalar(s);
+            group.position.set(
+              vw / 2 - vw * 0.07 - 1.5 * s,
+              -vh / 2 - vh * 0.03,
+              0,
+            );
+            if (reduce) start();
+          }
+          function frame(now) {
+            raf = 0;
+            if (!visible() || document.hidden) return;
+            const t = now / 1000;
+            cx += (tx - cx) * 0.06;
+            cy += (ty - cy) * 0.06;
+            group.rotation.y = -0.35 + cx * 0.25;
+            group.rotation.x = 0.06 + cy * 0.08;
+            bars.forEach((m, i) => {
+              const u = m.userData;
+              m.scale.y = Math.max(
+                0.0001,
+                u.k * (1 + u.p + Math.sin(t * 1.3 + i * 1.1) * 0.01),
+              );
+            });
+            tube.geometry.setDrawRange(
+              0,
+              L.t >= 1 ? total : Math.max(3, Math.floor((total * L.t) / 3) * 3),
+            );
+            orb.visible = L.t > 0.02;
+            orb.position.copy(curve.getPoint(Math.min(1, L.t)));
+            orb.scale.setScalar(1 + Math.sin(t * 3) * 0.18);
+            renderer.render(scene, cam);
+            if (!reduce) raf = requestAnimationFrame(frame);
+          }
+          function start() {
+            if (!raf) raf = requestAnimationFrame(frame);
+          }
+          $("#auth").addEventListener(
+            "pointermove",
+            (e) => {
+              tx = (e.clientX / innerWidth - 0.5) * 2;
+              ty = (e.clientY / innerHeight - 0.5) * 2;
+            },
+            { passive: true },
+          );
+          size();
+          new ResizeObserver(size).observe(hero);
+
+          const ks = bars.map((b) => b.userData);
+          if (window.gsap && !reduce) {
+            ks.forEach((u) => (u.k = 0));
+            L.t = 0;
+            gsap.to(ks, {
+              k: 1,
+              duration: 1.2,
+              ease: "elastic.out(1,.6)",
+              stagger: 0.12,
+              delay: 0.4,
+            });
+            gsap.to(L, {
+              t: 1,
+              duration: 1.5,
+              ease: "power2.inOut",
+              delay: 0.9,
+            });
+          }
+          let exited = false;
+          return {
+            start,
+            pulse() {
+              if (!window.gsap || reduce) return;
+              ks.forEach((u, i) =>
+                gsap.fromTo(
+                  u,
+                  { p: 0 },
+                  {
+                    p: 0.1,
+                    duration: 0.18,
+                    yoyo: true,
+                    repeat: 1,
+                    ease: "power2.out",
+                    delay: i * 0.04,
+                    overwrite: "auto",
+                  },
+                ),
+              );
+            },
+            exit(fade) {
+              return new Promise((res) => {
+                if (!window.gsap || reduce) return res();
+                exited = true;
+                const sheet = document.querySelector(".sheet");
+                sheet.style.animation = "none";
+                const tl = gsap.timeline({ onComplete: res });
+                tl.to(
+                  ks,
+                  { k: 1.5, duration: 0.5, ease: "power3.in", stagger: 0.05 },
+                  0,
+                )
+                  .to(
+                    sheet,
+                    { y: 70, opacity: 0, duration: 0.45, ease: "power2.in" },
+                    0,
+                  )
+                  .to(
+                    [".hl", ".htop"],
+                    { y: -24, opacity: 0, duration: 0.4, ease: "power2.in" },
+                    0,
+                  );
+                if (fade) tl.to("#auth", { opacity: 0, duration: 0.25 }, 0.4);
+                setTimeout(res, 1100);
+              });
+            },
+            reset() {
+              if (!exited || !window.gsap) return;
+              exited = false;
+              gsap.set(["#auth", ".sheet", ".hl", ".htop"], {
+                clearProps: "all",
+              });
+              document.querySelector(".sheet").style.animation = "";
+              ks.forEach((u) => (u.k = 1));
+            },
+          };
+        }
+
+        function extras() {
+          if (!window.gsap) return;
+          document.documentElement.classList.add("gsap-on");
+          if (reduce) return;
+          gsap.to(".ring", {
+            scale: 1.08,
+            duration: 4,
+            yoyo: true,
+            repeat: -1,
+            ease: "sine.inOut",
+          });
+          const hx = gsap.quickTo(".hl", "x", {
+              duration: 0.7,
+              ease: "power3",
+            }),
+            hy = gsap.quickTo(".hl", "y", { duration: 0.7, ease: "power3" }),
+            rx = gsap.quickTo(".ring", "x", { duration: 1, ease: "power3" }),
+            ry = gsap.quickTo(".ring", "y", { duration: 1, ease: "power3" });
+          $("#auth").addEventListener(
+            "pointermove",
+            (e) => {
+              const a = e.clientX / innerWidth - 0.5,
+                b = e.clientY / innerHeight - 0.5;
+              hx(a * 12);
+              hy(b * 8);
+              rx(a * -30);
+              ry(b * -20);
+            },
+            { passive: true },
+          );
+          const go = $("#abtn"),
+            qx = gsap.quickTo(go, "x", { duration: 0.4, ease: "power3" }),
+            qy = gsap.quickTo(go, "y", { duration: 0.4, ease: "power3" });
+          go.addEventListener("pointermove", (e) => {
+            if (e.pointerType !== "mouse") return;
+            const r = go.getBoundingClientRect();
+            qx((e.clientX - r.left - r.width / 2) * 0.12);
+            qy((e.clientY - r.top - r.height / 2) * 0.25);
+          });
+          go.addEventListener("pointerleave", () => {
+            qx(0);
+            qy(0);
+          });
+          let okc = false,
+            ls = "0";
+          $("#acpf").addEventListener("input", () => {
+            const v = !!cpfOk($("#acpf").value);
+            if (v && !okc) fx.pulse();
+            okc = v;
+          });
+          $("#apw").addEventListener("input", () =>
+            setTimeout(() => {
+              const s = $("#str").dataset.s;
+              if (s !== ls) {
+                ls = s;
+                fx.pulse();
+              }
+            }, 0),
+          );
+        }
+
+        const fx = (window.cifraFx = {
+          start() {
+            loadLibs().then(() => {
+              if (!built) {
+                built = true;
+                if (window.THREE) S3 = build();
+                extras();
+              }
+              if (S3) {
+                S3.reset();
+                S3.start();
+              }
+            });
+          },
+          pulse() {
+            S3 && S3.pulse();
+          },
+          exit(f) {
+            return S3 ? S3.exit(f) : Promise.resolve();
+          },
+          mode() {
+            if (!window.gsap || reduce || !built) return;
+            const els = [
+              "#atitle",
+              "#asub",
+              ...[
+                ...document.querySelectorAll(
+                  "#acard .f,#acard .str,#acard .lk,#abtn",
+                ),
+              ].filter((e) => e.offsetParent),
+            ];
+            gsap.fromTo(
+              els,
+              { y: 16, opacity: 0 },
+              {
+                y: 0,
+                opacity: 1,
+                duration: 0.5,
+                ease: "power3.out",
+                stagger: 0.045,
+                overwrite: true,
+                clearProps: "opacity,transform",
+              },
+            );
+            fx.pulse();
+          },
+        });
+        const _am = authMode;
+        authMode = function (m) {
+          _am(m);
+          fx.mode();
+        };
+        const _sa = showAuth;
+        showAuth = function (t) {
+          _sa(t);
+          fx.start();
+        };
+        document.addEventListener("visibilitychange", () => {
+          if (!document.hidden && visible()) fx.start();
+        });
+        if (visible()) fx.start();
+
+        /* ===== instalar o app ===== */
+        let DIP = null;
+        const standalone = () =>
+            matchMedia("(display-mode: standalone)").matches ||
+            navigator.standalone === true,
+          instUI = () => {
+            const show = !standalone(),
+              dis = +localStorage.instx > Date.now();
+            $("#inst0").hidden = !show;
+            $("#instc").hidden = !show;
+            $("#instb").hidden = !show || dis;
+          };
+        window.instDismiss = () => {
+          localStorage.instx = Date.now() + 7 * 864e5;
+          instUI();
+        };
+        window.instalar = async () => {
+          if (DIP) {
+            DIP.prompt();
+            await DIP.userChoice.catch(() => {});
+            DIP = null;
+            instUI();
+            return;
+          }
+          const ua = navigator.userAgent,
+            ios =
+              /iphone|ipad|ipod/i.test(ua) ||
+              (navigator.platform === "MacIntel" &&
+                navigator.maxTouchPoints > 1),
+            and = /android/i.test(ua);
+          $("#inmt").innerHTML = ios
+            ? '<p>No <b>Safari</b>:</p><ol class="stp"><li>Toque em <b>Compartilhar</b> (o quadrado com a seta para cima).</li><li>Role e toque em <b>Adicionar à Tela de Início</b>.</li><li>Toque em <b>Adicionar</b>.</li></ol>'
+            : and
+              ? '<ol class="stp"><li>Toque no menu <b>⋮</b> do navegador.</li><li>Escolha <b>Instalar app</b> ou <b>Adicionar à tela inicial</b>.</li><li>Confirme.</li></ol>'
+              : '<ol class="stp"><li>Procure o ícone de instalação na barra de endereço, ou abra o menu <b>⋮</b>.</li><li>Escolha <b>Instalar Cifra</b>.</li><li>Confirme.</li></ol>';
+          $("#inm").style.display = "block";
+        };
+        addEventListener("beforeinstallprompt", (e) => {
+          e.preventDefault();
+          DIP = e;
+          instUI();
+        });
+        addEventListener("appinstalled", () => {
+          DIP = null;
+          instUI();
+          say("Cifra instalada. Procure o ícone na tela inicial.");
+        });
+        matchMedia("(display-mode: standalone)").addEventListener &&
+          matchMedia("(display-mode: standalone)").addEventListener(
+            "change",
+            instUI,
+          );
+        instUI();
+      })();
     </script>
   </body>
 </html>
