@@ -1683,6 +1683,142 @@
         padding-left: 20px;
         line-height: 1.6;
       }
+
+      /* ===== animações suaves ===== */
+      .dock .tabs {
+        position: relative;
+      }
+      .dock .tabs::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        width: var(--pw, 0);
+        transform: translateX(var(--px, 0));
+        background: var(--ac);
+        border-radius: 18px;
+        transition:
+          transform 0.5s cubic-bezier(0.3, 1.25, 0.5, 1),
+          width 0.35s;
+      }
+      .dock .tabs button {
+        z-index: 1;
+      }
+      .dock .tabs button.on {
+        background: transparent;
+      }
+      .dock .tabs button svg {
+        transition: transform 0.4s cubic-bezier(0.3, 1.6, 0.5, 1);
+      }
+      .dock .tabs button.on svg {
+        transform: translateY(-1px) scale(1.12);
+      }
+      .card,
+      .dock,
+      .top,
+      .pill,
+      .stats div,
+      .bub {
+        transition:
+          background-color 0.35s,
+          border-color 0.35s,
+          color 0.35s;
+      }
+      .sec.enter .item {
+        animation: up 0.42s calc(var(--i, 0) * 35ms + 0.1s) both;
+      }
+      .sec.mvx[data-d="n"] {
+        animation: mxn 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+      .sec.mvx[data-d="p"] {
+        animation: mxp 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+      #mes.flip {
+        animation: mflip 0.38s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+      }
+      .item.out {
+        animation: iout 0.2s ease-in forwards;
+        pointer-events: none;
+      }
+      .item.fl {
+        animation: flash 1.8s ease-out both;
+        border-radius: 14px;
+      }
+      #ed,
+      #rcm,
+      #inm {
+        animation: fade 0.22s both;
+      }
+      #ed .card,
+      #rcm .card,
+      #inm .card {
+        animation: pop 0.34s cubic-bezier(0.2, 1.3, 0.4, 1) both;
+      }
+      #t0 > .card:first-child::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(
+          110deg,
+          transparent 30%,
+          rgba(255, 255, 255, 0.4) 50%,
+          transparent 70%
+        );
+        transform: translateX(-110%);
+        animation: sheen 1.3s 0.45s ease-out 1 both;
+      }
+      .bar i {
+        animation-duration: 0.9s;
+        animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+      }
+      .pill i {
+        transition: background 0.3s;
+      }
+      @keyframes mxn {
+        from {
+          opacity: 0;
+          transform: translateX(30px);
+        }
+      }
+      @keyframes mxp {
+        from {
+          opacity: 0;
+          transform: translateX(-30px);
+        }
+      }
+      @keyframes mflip {
+        from {
+          opacity: 0;
+          transform: translateY(8px);
+        }
+      }
+      @keyframes iout {
+        to {
+          opacity: 0;
+          transform: translateX(28px);
+        }
+      }
+      @keyframes flash {
+        0%,
+        35% {
+          background: color-mix(in srgb, var(--ac) 32%, transparent);
+        }
+        to {
+          background: transparent;
+        }
+      }
+      @keyframes fade {
+        from {
+          opacity: 0;
+        }
+      }
+      @keyframes sheen {
+        to {
+          transform: translateX(110%);
+        }
+      }
     </style>
   </head>
   <body>
@@ -2381,6 +2517,7 @@
     </div>
 
     <script>
+      window.FLASH = new Set();
       const $ = (s) => document.querySelector(s),
         brl = (v) =>
           v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -3157,9 +3294,9 @@
           inv = sum(S.tx.filter((x) => x.tipo === "invest")),
           dv = sum(ks.map((c) => ({ valor: dividas(c).total })));
         anim($("#pat"), sc + inv - dv);
-        $("#pc").textContent = brl(sc);
-        $("#pi").textContent = brl(inv);
-        $("#pf").textContent = brl(dv);
+        anim($("#pc"), sc);
+        anim($("#pi"), inv);
+        anim($("#pf"), dv);
         $("#cts").innerHTML =
           cs
             .map(
@@ -3966,9 +4103,9 @@
         const sd = sum(r) - sum(g) - sum(iv);
         anim($("#saldo"), sd);
         $("#saldo").className = "big " + (sd < 0 ? "neg" : "");
-        $("#rec").textContent = brl(sum(r));
-        $("#gas").textContent = brl(sum(g));
-        $("#inv").textContent = brl(sum(iv));
+        anim($("#rec"), sum(r));
+        anim($("#gas"), sum(g));
+        anim($("#inv"), sum(iv));
         const bc = grp(g, (x) => x.cat);
         $("#lims").innerHTML =
           Object.keys(S.lim)
@@ -4039,9 +4176,17 @@
         ).join("");
       }
       const del = (id) => {
-          S.del = [...(S.del || []), id];
-          S.tx = S.tx.filter((x) => x.id !== id);
-          persist();
+          const b = document.querySelector(`#list [onclick="del('${id}')"]`),
+            it = b && b.closest(".item"),
+            go = () => {
+              S.del = [...(S.del || []), id];
+              S.tx = S.tx.filter((x) => x.id !== id);
+              persist();
+            };
+          if (it && !matchMedia("(prefers-reduced-motion:reduce)").matches) {
+            it.classList.add("out");
+            setTimeout(go, 200);
+          } else go();
         },
         delRec = (id) => {
           S.del = [...(S.del || []), id];
@@ -4343,6 +4488,8 @@
           return say(
             "Não consegui registrar. Confira os nomes das contas e cartões.",
           );
+        ids.forEach((i) => FLASH.add(i));
+        setTimeout(() => FLASH.clear(), 2500);
         persist();
         (fb
           ? say
@@ -4919,7 +5066,7 @@
                         : x.tipo === "gasto"
                           ? "−"
                           : "↗ ";
-                  return `<div class="item row"><div class="av" style="background:${col}26;color:${col}">${esc((x.cat || "?").charAt(0))}</div><div class="it"><b>${esc(x.desc || x.cat)}</b><div class="mut">${esc(x.cat)} · ${esc(x.pay)}</div></div><div class="amt ${x.tipo === "receita" ? "pos" : x.tipo === "gasto" ? "" : "mut"}">${sg}${brl(x.valor)}<span class="ac"><button class="g" aria-label="Editar" onclick="edOpen('${x.id}')">✎</button><button class="g" aria-label="Apagar" onclick="del('${x.id}')">✕</button></span></div></div>`;
+                  return `<div class="item row${FLASH.has(x.id) ? " fl" : ""}"><div class="av" style="background:${col}26;color:${col}">${esc((x.cat || "?").charAt(0))}</div><div class="it"><b>${esc(x.desc || x.cat)}</b><div class="mut">${esc(x.cat)} · ${esc(x.pay)}</div></div><div class="amt ${x.tipo === "receita" ? "pos" : x.tipo === "gasto" ? "" : "mut"}">${sg}${brl(x.valor)}<span class="ac"><button class="g" aria-label="Editar" onclick="edOpen('${x.id}')">✎</button><button class="g" aria-label="Apagar" onclick="del('${x.id}')">✕</button></span></div></div>`;
                 })
                 .join("")
             );
@@ -5436,6 +5583,60 @@
             instUI,
           );
         instUI();
+      })();
+    </script>
+    <script>
+      /* ===== animações: indicador do dock, transições de aba e mês ===== */
+      (function () {
+        const reduce = () =>
+            matchMedia("(prefers-reduced-motion:reduce)").matches,
+          re = (e, c, ms) => {
+            e.classList.remove(c);
+            void e.offsetWidth;
+            e.classList.add(c);
+            ms && setTimeout(() => e.classList.remove(c), ms);
+          };
+        window.posDock = () => {
+          const t = document.querySelector(".dock .tabs"),
+            b = t && t.querySelector("button.on");
+          if (b) {
+            t.style.setProperty("--px", b.offsetLeft + "px");
+            t.style.setProperty("--pw", b.offsetWidth + "px");
+          }
+        };
+        const _tab = tab;
+        tab = function (i) {
+          _tab(i);
+          const s = document.querySelectorAll(".sec")[i];
+          if (s && !reduce()) {
+            [...s.querySelectorAll(".item")]
+              .slice(0, 14)
+              .forEach((e, k) => e.style.setProperty("--i", k));
+            re(s, "enter", 900);
+          }
+          if (i === 0 && ON && !reduce()) {
+            ["#saldo", "#rec", "#gas", "#inv"].forEach((q) => ($(q)._v = 0));
+            render();
+          }
+          posDock();
+          navigator.vibrate && navigator.vibrate(6);
+        };
+        const _mv = mv;
+        mv = function (n) {
+          const m0 = M;
+          _mv(n);
+          if (M === m0 || reduce()) return;
+          const s = document.querySelector(".sec.on");
+          s.dataset.d = n > 0 ? "n" : "p";
+          re(s, "mvx", 450);
+          re($("#mes"), "flip", 450);
+        };
+        if (window.Chart && Chart.defaults)
+          Chart.defaults.animation = { duration: 900, easing: "easeOutQuart" };
+        addEventListener("resize", posDock);
+        addEventListener("load", posDock);
+        document.fonts && document.fonts.ready.then(posDock);
+        posDock();
       })();
     </script>
   </body>
