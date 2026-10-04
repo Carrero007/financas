@@ -1040,7 +1040,7 @@ function sayU(t, f) {
   const e = $("#say");
   e.innerHTML =
     esc(t) +
-    ' · <a href="#" onclick="undo();return false" style="color:var(--ac);font-weight:600">Desfazer</a>';
+    ' · <a href="#" onclick="undo();return false" style="color:var(--act);font-weight:600">Desfazer</a>';
   e.classList.remove("f");
   void e.offsetWidth;
   e.classList.add("f");
@@ -1580,7 +1580,7 @@ function render() {
       {
         label: "Receitas",
         data: mt("receita"),
-        backgroundColor: "#d4f25a",
+        backgroundColor: PAL[0],
         borderRadius: 8,
       },
       {
@@ -2636,7 +2636,7 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
     const key = new THREE.DirectionalLight(0xffffff, 1.1);
     key.position.set(-3, 6, 8);
     scene.add(key);
-    const rim = new THREE.PointLight(0xe4ff6a, 2.2, 40);
+    const rim = new THREE.PointLight(new THREE.Color(PAL[0]), 2.2, 40);
     rim.position.set(5, 1, 6);
     scene.add(rim);
     scene.add(group);
@@ -3697,3 +3697,100 @@ $("#ta").addEventListener("click", (e) => {
 });
 tab(CUR);
 if (ON) render();
+
+/* ===== v27: personalização (cor de destaque e tema) ===== */
+(function () {
+  const COR = [
+      ["lima", "Lima", "#cdf24b"],
+      ["violeta", "Violeta", "#b9a2ff"],
+      ["coral", "Coral", "#ff9b73"],
+      ["rosa", "Rosa", "#ff8fbf"],
+      ["turquesa", "Turquesa", "#4fd9c4"],
+    ],
+    R = document.documentElement,
+    hex = (k) => (COR.find((c) => c[0] === k) || COR[0])[2],
+    ok = (k) => COR.some((c) => c[0] === k);
+  let tm = 0;
+  window.corAtual = () => (ok(R.dataset.c) ? R.dataset.c : "lima");
+  function ui() {
+    const k = corAtual();
+    document.querySelectorAll("#sws .swi").forEach((e) => {
+      const on = e.dataset.k === k;
+      e.classList.toggle("on", on);
+      e.querySelector("button").setAttribute("aria-checked", on);
+    });
+  }
+  function apply(k) {
+    if (!ok(k)) k = "lima";
+    R.dataset.c = k;
+    try {
+      localStorage.cor = k;
+    } catch (e) {}
+    PAL[0] = hex(k);
+    ui();
+    clearTimeout(tm);
+    tm = setTimeout(() => {
+      PAL[0] = hex(corAtual());
+      if (ON) render();
+    }, 500);
+  }
+  window.setCor = (k) => {
+    if (k === corAtual()) return;
+    apply(k);
+    navigator.vibrate && navigator.vibrate(8);
+    S.cor = k;
+    S.corTs = Date.now();
+    store();
+    clearTimeout(T);
+    T = setTimeout(sync, 800);
+  };
+  $("#sws").innerHTML = COR.map(
+    (c) =>
+      `<div class="swi" data-k="${c[0]}"><button type="button" style="--sc:${c[2]}" role="radio" aria-checked="false" aria-label="${c[1]}" onclick="setCor('${c[0]}')"><svg viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></button><span>${c[1]}</span></div>`,
+  ).join("");
+  /* sincroniza a cor entre aparelhos (vale a escolha mais recente) */
+  const _mg = merge;
+  merge = function (Rm) {
+    const lc = S.cor,
+      lt = S.corTs || 0;
+    _mg(Rm);
+    if ((Rm.corTs || 0) > lt) {
+      S.cor = Rm.cor;
+      S.corTs = Rm.corTs;
+    } else {
+      S.cor = lc;
+      S.corTs = lt;
+    }
+    if (S.cor && ok(S.cor) && S.cor !== corAtual()) apply(S.cor);
+  };
+  const _st = start;
+  start = function () {
+    _st();
+    apply(S.cor && ok(S.cor) ? S.cor : "lima");
+  };
+  /* tema: claro, escuro ou automático */
+  const sys = matchMedia("(prefers-color-scheme:dark)"),
+    _th = theme;
+  function thmUI() {
+    const p = localStorage.thp || R.dataset.t;
+    document
+      .querySelectorAll("#thm button")
+      .forEach((b) => b.classList.toggle("on", b.dataset.t === p));
+  }
+  theme = function (t) {
+    if (typeof t !== "string") t = R.dataset.t === "dark" ? "light" : "dark";
+    _th(t === "auto" ? (sys.matches ? "dark" : "light") : t);
+    localStorage.thp = t;
+    thmUI();
+  };
+  sys.addEventListener &&
+    sys.addEventListener("change", () => {
+      if (localStorage.thp === "auto") theme("auto");
+    });
+  $("#thm").addEventListener("click", (e) => {
+    const b = e.target.closest("button");
+    b && theme(b.dataset.t);
+  });
+  apply(localStorage.cor);
+  theme(localStorage.thp || localStorage.th || "dark");
+})();
