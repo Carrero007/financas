@@ -2,7 +2,7 @@
 <html lang="pt-BR">
   <head>
     <meta charset="utf-8" />
-    <script>try{document.documentElement.dataset.c=localStorage.cor||"lima"}catch(e){}</script>
+    <script>try{document.documentElement.dataset.c=localStorage.cor||"lima"}catch(e){}try{var u=JSON.parse(localStorage.u||"null");if(u){var k=JSON.parse(localStorage["lk_"+u.uid]||"null");if(k&&(k.bio||k.pin)){var t=+localStorage["lka_"+u.uid]||0;if(!k.delay||!t||Date.now()-t>=k.delay*1000)document.documentElement.dataset.lk="1"}}}catch(e){}</script>
     <meta
       name="viewport"
       content="width=device-width,initial-scale=1,viewport-fit=cover"
@@ -162,7 +162,7 @@
                     "
                     >Enviar código por e-mail</a
                   >
-                  <span class="mut" style="display:block;margin-top:4px;font-size:12px">Sem e-mail cadastrado? Use o código de recuperação que você recebeu ao criar a conta.</span>
+                  <span class="mut" style="display:block;margin-top:4px;font-size:12px">Sem e-mail verificado? Use o código de recuperação que você recebeu ao criar a conta.</span>
                 </p>
               </div>
               <div class="f fld" style="--d: 0.12s">
@@ -334,7 +334,11 @@
         </div>
       </div>
     </div>
-    <div id="cfm" class="auth" style="z-index:60"><div style="max-width:340px;margin:22vh auto 0"><div class="card"><h3 id="cft" style="font-size:18px;margin-bottom:8px"></h3><p class="mut" id="cfx" style="margin-bottom:18px;font-size:14px"></p><div class="row"><button class="g" id="cfn" style="flex:1">Cancelar</button><button id="cfy" style="flex:1"></button></div></div></div></div>
+    <div id="cfm" class="auth" style="z-index:60"><div style="max-width:340px;margin:22vh auto 0"><div class="card"><h3 id="cft" style="font-size:18px;margin-bottom:8px"></h3><p class="mut" id="cfx" style="margin-bottom:18px;font-size:14px"></p><input id="cfi" inputmode="decimal" style="display:none;margin:-6px 0 18px"><div class="row"><button class="g" id="cfn" style="flex:1">Cancelar</button><button id="cfy" style="flex:1"></button></div></div></div></div>
+    <input id="impf" type="file" accept=".csv,text/csv,text/plain" hidden />
+    <input id="bkf" type="file" accept="application/json,.json" hidden />
+    <div id="shm" class="auth" style="z-index:55"><div style="max-width:420px;margin:6vh auto 0"><div class="card" id="shc"></div></div></div>
+    <div id="lock" class="lock"><div class="lkw"><img src="icons/icon-192x192.png" alt="" /><h2>Cifra bloqueada</h2><p class="mut" id="lkm">Confirme que é você.</p><div class="lkd" id="lkd"></div><div class="lkp" id="lkp"></div><button class="go" id="lkb" onclick="lkBioGo()"><span>Desbloquear com biometria</span></button><p class="lk c"><a href="#" onclick="logout();return false">Sair da conta</a></p></div></div>
     <div id="hi"></div>
     <div id="setup"></div>
     <div class="card sup" id="instb" hidden>
@@ -582,7 +586,7 @@
       </div>
       <div class="card">
         <h3>Gastos fixos e recorrentes</h3>
-        <p class="mut hint">Lançados sozinhos todo mês, no dia escolhido.</p>
+        <p class="mut hint">Lançados sozinhos todo mês, no dia escolhido. Você pode pausar qualquer um sem perder o cadastro.</p>
         <div id="recs"></div>
         <details class="fold">
           <summary>＋ Adicionar gasto fixo</summary>
@@ -597,13 +601,39 @@
           <button class="wide" onclick="addRec()">Adicionar</button>
         </details>
       </div>
+      <div class="card" id="catc">
+        <h3>Categorias</h3>
+        <p class="mut hint">Crie as suas. Elas aparecem nos lançamentos, limites, gráficos e na IA.</p>
+        <div id="catb"></div>
+        <div id="catl" style="margin-top:6px"></div>
+        <details class="fold">
+          <summary>＋ Nova categoria</summary>
+          <label class="lb">Nome</label>
+          <input id="cnn" maxlength="24" placeholder="Ex.: Pets" />
+          <label class="lb">Ícone</label>
+          <div class="emj" id="cne"></div>
+          <button class="wide" onclick="addCat()">Criar categoria</button>
+        </details>
+      </div>
       <div class="card">
         <h3>Limite mensal por categoria</h3>
         <p class="mut hint">Deixe vazio para não ter limite. Você é avisado ao chegar em 80%.</p>
         <div id="limf"></div>
+        <div id="rollb" class="rollb"></div>
+      </div>
+      <div class="card" id="secc">
+        <h3>Segurança</h3>
+        <p class="mut hint" id="lks">Bloqueio do app desativado.</p>
+        <button class="opt" id="lkbio" onclick="lkBio()"><span class="ico">🫆</span><span class="tx"><b>Biometria ou Face ID</b><small>Abre o app só com a sua digital ou rosto</small></span><i>›</i></button>
+        <button class="opt" onclick="lkPin()"><span class="ico">🔢</span><span class="tx"><b id="lkpt">Definir PIN</b><small>De 4 a 6 números, como alternativa</small></span><i>›</i></button>
+        <label class="lb">Bloquear automaticamente</label>
+        <select id="lkdel" onchange="lkDelay(this.value)"><option value="0">Ao sair do app</option><option value="60">Após 1 minuto</option><option value="300">Após 5 minutos</option><option value="900">Após 15 minutos</option></select>
+        <button class="opt" onclick="lkNow()" style="margin-top:8px"><span class="ico">🔒</span><span class="tx"><b>Bloquear agora</b></span><i>›</i></button>
+        <button class="opt" id="lkoff" onclick="lkOff()"><span class="ico">🔓</span><span class="tx"><b>Desativar bloqueio</b></span><i>›</i></button>
+        <button class="opt" onclick="trocarSenha()"><span class="ico">🔑</span><span class="tx"><b>Alterar senha</b><small>Também sai dos outros aparelhos</small></span><i>›</i></button>
       </div>
       <div class="card">
-        <h3>Dados e segurança</h3>
+        <h3>Dados</h3>
         <button class="opt" onclick="csv()">
           <span class="ico"><svg viewBox="0 0 24 24"><path d="M12 3v12M7 11l5 5 5-5M5 21h14" /></svg></span>
           <span class="tx"><b>Exportar lançamentos</b><small>Baixa tudo em uma planilha CSV</small></span><i>›</i>
@@ -612,6 +642,10 @@
           <span class="ico"><svg viewBox="0 0 24 24"><circle cx="8" cy="15" r="4" /><path d="M11 12l9-9M16 7l3 3" /></svg></span>
           <span class="tx"><b>Novo código de recuperação</b><small>O anterior deixa de valer</small></span><i>›</i>
         </button>
+        <button class="opt" onclick="csvImport()"><span class="ico">📥</span><span class="tx"><b>Importar extrato (CSV)</b><small>Do seu banco ou de uma planilha</small></span><i>›</i></button>
+        <button class="opt" onclick="bkExport()"><span class="ico">💾</span><span class="tx"><b>Backup completo (JSON)</b><small>Baixa todos os seus dados</small></span><i>›</i></button>
+        <button class="opt" onclick="bkImport()"><span class="ico">♻️</span><span class="tx"><b>Restaurar backup</b><small>Mescla um backup com seus dados</small></span><i>›</i></button>
+        <div id="stor" style="padding:12px 0 4px"></div>
         <button class="opt" onclick="obShow()">
           <span class="ico"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 0 1 14-5l2 2M20 4v5h-5M20 12a8 8 0 0 1-14 5l-2-2M4 20v-5h5" /></svg></span>
           <span class="tx"><b>Refazer configuração inicial</b><small>Responde as perguntas de novo</small></span><i>›</i>
@@ -624,6 +658,7 @@
         </button>
       </div>
       <button class="g dng" onclick="logout()">Sair da conta</button>
+      <button class="lnkd" onclick="excluirConta()">Excluir minha conta</button>
     </div>
 
     <div class="dock">

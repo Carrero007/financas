@@ -1,4 +1,4 @@
-const V = "cifra-v27",
+const V = "cifra-v30",
   A = [
     "./",
     "index.html",
@@ -13,7 +13,13 @@ self.addEventListener("install", (e) => {
   e.waitUntil(
     caches
       .open(V)
-      .then((c) => Promise.all(A.map((u) => c.add(u).catch(() => {})))),
+      .then((c) =>
+        Promise.all(
+          A.map((u) =>
+            c.add(new Request(u, { cache: "reload" })).catch(() => {}),
+          ),
+        ),
+      ),
   );
 });
 self.addEventListener("activate", (e) =>

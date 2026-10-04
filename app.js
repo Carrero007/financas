@@ -214,6 +214,10 @@ async function sync() {
     setTimeout(sync, 300);
   }
 }
+/* gasto fixo pausado: meses de pausa são pulados, nunca lançados depois */
+function recPausada(r, mm) {
+  return !!(r && r.pausado && (!r.ate || mm < r.ate));
+}
 function gen() {
   const t = today(),
     m = mk(t);
@@ -244,22 +248,29 @@ function gen() {
   });
   S.rec.forEach((r) => {
     if (!r.ini) r.ini = m;
-    let mm = r.ini < m ? r.ini : m,
+    let mm =
+        r.ini < m
+          ? r.ini < addM(m + "-01", -35).slice(0, 7)
+            ? addM(m + "-01", -35).slice(0, 7)
+            : r.ini
+          : m,
       g = 0;
     while (mm <= m && g++ < 36) {
       const k = r.id + mm,
         d = mm + "-" + pad(Math.min(r.dia, 28));
       if (!S.gen[k] && d <= t) {
-        S.tx.push({
-          id: "r" + r.id + mm,
-          ts: Date.now(),
-          data: d,
-          tipo: r.tipo,
-          valor: r.valor,
-          cat: r.cat,
-          pay: r.pay,
-          desc: r.desc,
-        });
+        if (recPausada(r, mm)) S.gen[k] = 1;
+        else
+          S.tx.push({
+            id: "r" + r.id + mm,
+            ts: Date.now(),
+            data: d,
+            tipo: r.tipo,
+            valor: r.valor,
+            cat: r.cat,
+            pay: r.pay,
+            desc: r.desc,
+          });
         S.gen[k] = 1;
       }
       mm = addM(mm + "-01", 1).slice(0, 7);
@@ -315,6 +326,7 @@ const PAL = [
   "#a3b18a",
 ];
 function ch(id, type, labels, sets, opt = {}) {
+  if (!window.Chart) return;
   const cv = $("#" + id),
     emp = !sets.some((d) => d.data.some((v) => v !== 0));
   let e = cv.nextElementSibling;
@@ -734,7 +746,7 @@ function prevHtml() {
     vv = sum(vt),
     vp = dia >= 7 && vt.length >= 3 ? (vv / dia) * (nd - dia) : 0,
     fut = (S.rec || []).filter(
-      (q) => Math.min(q.dia, 28) > dia && !S.gen[q.id + M],
+      (q) => Math.min(q.dia, 28) > dia && !S.gen[q.id + M] && !recPausada(q, M),
     ),
     rf = sum(fut.filter((q) => q.tipo === "receita")),
     gf = sum(fut.filter((q) => q.tipo === "gasto")),
@@ -1155,7 +1167,7 @@ function resumo() {
   return JSON.stringify({
     mes_atual: M,
     hoje: today(),
-    limites: S.lim,
+    limites: window.effLims ? effLims() : S.lim,
     meses: ms,
     ultimos_lancamentos: S.tx
       .slice(-10)
@@ -1427,7 +1439,8 @@ function alerts() {
                 (r) =>
                   r.tipo === "gasto" &&
                   r.cat === k &&
-                  Math.min(r.dia, 28) > hoje,
+                  Math.min(r.dia, 28) > hoje &&
+                  !recPausada(r, M),
               ),
             )
           : 0;
@@ -1466,7 +1479,8 @@ function alerts() {
           (q) =>
             q.tipo === "receita" &&
             Math.min(q.dia, 28) > hoje &&
-            !S.gen[q.id + M],
+            !S.gen[q.id + M] &&
+            !recPausada(q, M),
         ),
       )
     : 0;
@@ -1621,7 +1635,7 @@ function render() {
     '<div class="mut" style="padding:4px 0 8px">Nenhum gasto fixo ainda. Adicione aluguel, internet, salário…</div>';
   $("#limf").innerHTML = CATS.map(
     (c, i) =>
-      `<label class="lrow"><i style="background:${PAL[i % PAL.length]}"></i><span>${c}</span><div class="pre"><em>R$</em><input type="number" inputmode="decimal" placeholder="sem limite" value="${S.lim[c] || ""}" onchange="S.lim['${c}']=+this.value;persist()"></div></label>`,
+      `<label class="lrow"><i style="background:${PAL[i % PAL.length]}"></i><span>${c}</span><div class="pre"><em>R$</em><input type="number" inputmode="decimal" placeholder="sem limite" value="${S.lim[c] || ""}" onchange="S.lim['${c}']=+this.value;S.limTs=Date.now();persist()"></div></label>`,
   ).join("");
 }
 const del = (id) => {
@@ -1983,7 +1997,7 @@ async function pedirReset() {
     }).then((r) => r.json());
     if (r.error) throw new Error(r.error);
     aerr(
-      "Se este CPF tiver e-mail cadastrado, enviamos um código válido por 15 minutos. Confira o spam.",
+      "Se este CPF tiver e-mail verificado, enviamos um código válido por 15 minutos. Confira o spam.",
       true,
     );
     $("#arc").value = "";
@@ -2580,8 +2594,13 @@ addEventListener("offline", pills);
 document.addEventListener("visibilitychange", () => {
   if (!document.hidden) sync();
 });
-if (U) start();
-else showAuth();
+if (U) {
+  try {
+    start();
+  } catch (e) {
+    console.error(e);
+  }
+} else showAuth();
 if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
 
 /* ===== Cifra: animações (Three.js + GSAP) e instalação do app ===== */
@@ -3102,6 +3121,7 @@ ch = function (id, type, labels, sets, opt = {}) {
     delete C[id];
   }
   if (emp) return;
+  if (!window.Chart) return;
   if (!w.offsetParent) {
     DIRTY = 1;
     return;
@@ -3590,7 +3610,15 @@ const akey = (a) => {
 const ik = (a) => "i:" + a.t.replace(/[\d.,]+|R\$|%|\s+/g, "").slice(0, 48);
 const rk = (k) => "al|" + M + "|" + k,
   rd = (k) => !!S.gen[rk(k)];
-const allAl = () => _al().map((a) => ({ ...a, k: akey(a) }));
+const allAl = () => {
+  const o = S.lim;
+  if (window.effLims) S.lim = effLims();
+  try {
+    return _al().map((a) => ({ ...a, k: akey(a) }));
+  } finally {
+    S.lim = o;
+  }
+};
 const allIn = () => _in().L.map((a) => ({ ...a, k: ik(a) }));
 alerts = function () {
   return allAl().filter((a) => !rd(a.k));
@@ -3793,4 +3821,1444 @@ if (ON) render();
   });
   apply(localStorage.cor);
   theme(localStorage.thp || localStorage.th || "dark");
+})();
+
+/* ===== v28: correções da revisão ===== */
+(function () {
+  /* 1. limites: vale a edição mais recente entre aparelhos */
+  const _mg = merge;
+  merge = function (Rm) {
+    const ll = S.lim,
+      lt = S.limTs || 0,
+      rt = Rm.limTs || 0;
+    _mg(Rm);
+    if (rt > lt) {
+      S.lim = { ...(Rm.lim || {}) };
+      S.limTs = rt;
+    } else if (lt > rt) {
+      S.lim = ll;
+      S.limTs = lt;
+    }
+  };
+  /* 2. "Refazer configuração" não duplica mais contas, cartões, metas e fixos */
+  const NOMES = ["Salário", "Moradia", "Investimento mensal"],
+    _oe = obEnd;
+  obEnd = function () {
+    const lj = JSON.stringify(S.lim);
+    _oe();
+    const k = (x) =>
+        String(x.nome || "")
+          .trim()
+          .toLowerCase(),
+      grp = (a) => {
+        const m = {};
+        a.forEach((x) => (m[k(x)] = m[k(x)] || []).push(x));
+        return Object.values(m).filter((g) => g.length > 1);
+      },
+      drop = (arr, id) => {
+        S.del.push(id);
+        return arr.filter((x) => x.id !== id);
+      };
+    const seen = {};
+    [...S.rec].reverse().forEach((r) => {
+      const q = r.desc + "|" + r.tipo;
+      if (NOMES.includes(r.desc) && seen[q]) {
+        S.del.push(r.id);
+        S.rec = S.rec.filter((x) => x.id !== r.id);
+      } else seen[q] = 1;
+    });
+    grp(S.contas).forEach((g) => {
+      const keep = g[0],
+        last = g[g.length - 1];
+      keep.saldo0 = last.saldo0;
+      keep.ts = Date.now();
+      g.slice(1).forEach((d) => {
+        S.tx.forEach((t) => {
+          if (t.conta === d.id) t.conta = keep.id;
+          if (t.destino === d.id) t.destino = keep.id;
+        });
+        S.cartoes.forEach((c) => {
+          if (c.conta === d.id) c.conta = keep.id;
+        });
+        S.parc.forEach((p) => {
+          if (p.conta === d.id) p.conta = keep.id;
+        });
+        S.contas = drop(S.contas, d.id);
+      });
+    });
+    grp(S.cartoes).forEach((g) => {
+      const keep = g[0],
+        last = g[g.length - 1];
+      Object.assign(keep, {
+        limite: last.limite,
+        fecha: last.fecha,
+        vence: last.vence,
+        conta: last.conta,
+        ts: Date.now(),
+      });
+      g.slice(1).forEach((d) => {
+        S.tx.forEach((t) => {
+          if (t.cartao === d.id) t.cartao = keep.id;
+        });
+        S.parc.forEach((p) => {
+          if (p.cartao === d.id) p.cartao = keep.id;
+        });
+        S.cartoes = drop(S.cartoes, d.id);
+      });
+    });
+    grp(S.metas).forEach((g) => {
+      const keep = g[0],
+        last = g[g.length - 1];
+      Object.assign(keep, {
+        alvo: last.alvo,
+        guardado: last.guardado,
+        ts: Date.now(),
+      });
+      g.slice(1).forEach((d) => {
+        S.metas = drop(S.metas, d.id);
+      });
+    });
+    if (JSON.stringify(S.lim) !== lj) S.limTs = Date.now();
+    persist();
+  };
+  /* 3. "Guardar" na meta sem prompt() do navegador */
+  window.askValue = (t, m, ok, ph) =>
+    new Promise((res) => {
+      const i = $("#cfi");
+      i.style.display = "block";
+      i.value = "";
+      i.placeholder = ph || "";
+      i.onkeydown = (e) => {
+        if (e.key === "Enter") $("#cfy").click();
+      };
+      askModal(t, m, ok).then((v) => {
+        i.style.display = "none";
+        i.onkeydown = null;
+        res(v ? i.value : null);
+      });
+      setTimeout(() => i.focus(), 150);
+    });
+  aporte = async function (id) {
+    const t = S.metas.find((x) => x.id === id);
+    if (!t) return;
+    const r = await askValue(
+      "Guardar na meta",
+      t.nome,
+      "Guardar",
+      "Valor em R$",
+    );
+    if (r == null) return;
+    const v = toNum(r);
+    if (!(v > 0)) return say("Informe um valor válido.");
+    t.guardado += v;
+    t.ts = Date.now();
+    persist();
+  };
+  /* 4. Esc fecha as janelas */
+  document.addEventListener("keydown", (e) => {
+    if (e.key !== "Escape") return;
+    if ($("#cfm").style.display === "block") $("#cfn").click();
+    else
+      ["#ed", "#inm"].forEach((s) => {
+        if ($(s).style.display === "block") $(s).style.display = "none";
+      });
+  });
+  /* 5. aviso de nova versão do app */
+  if ("serviceWorker" in navigator) {
+    const had = !!navigator.serviceWorker.controller;
+    navigator.serviceWorker.addEventListener("controllerchange", () => {
+      if (!had || $("#upd")) return;
+      const d = document.createElement("div");
+      d.id = "upd";
+      d.className = "upd";
+      d.innerHTML =
+        '<span>Nova versão da Cifra pronta.</span><button onclick="location.reload()">Atualizar</button>';
+      document.body.append(d);
+    });
+  }
+})();
+
+/* ===== v29: categorias, importação, backup, privacidade, bloqueio e conta ===== */
+(function () {
+  const R = document.documentElement,
+    E = (id) => document.getElementById(id);
+  const BASEC = [...CATS],
+    RES = [...RCATS, "Investimento", "Transferência", "Fatura"].map((x) =>
+      x.toLowerCase(),
+    );
+  const EMJ = [
+    "🐶",
+    "🎁",
+    "🏋️",
+    "✈️",
+    "🍺",
+    "💇",
+    "🧾",
+    "🛠️",
+    "🎮",
+    "👶",
+    "📱",
+    "⛽",
+    "🏥",
+    "🎓",
+    "🛒",
+    "☕",
+  ];
+  let catEmoji = EMJ[0],
+    HOLDU = 0;
+  const hold = (ms) => {
+    HOLDU = Date.now() + ms;
+  };
+  window.holdLock = hold;
+
+  /* ---- janela genérica ---- */
+  const shm = E("shm"),
+    shc = E("shc");
+  window.openSheet = (h) => {
+    shc.innerHTML = h;
+    shm.style.display = "block";
+    const i = shc.querySelector("input:not([type=file]),select");
+    i && setTimeout(() => i.focus(), 160);
+  };
+  window.closeSheet = () => {
+    shm.style.display = "none";
+    shc.innerHTML = "";
+  };
+  shm.addEventListener("click", (e) => {
+    if (e.target === shm || e.target.parentNode === shm) closeSheet();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (
+      e.key === "Escape" &&
+      shm.style.display === "block" &&
+      E("cfm").style.display !== "block"
+    )
+      closeSheet();
+  });
+  window.askValue = (t, m, ok, ph, type) =>
+    new Promise((res) => {
+      const i = E("cfi");
+      i.type = type || "text";
+      i.inputMode = type === "password" ? "text" : "decimal";
+      i.style.display = "block";
+      i.value = "";
+      i.placeholder = ph || "";
+      i.onkeydown = (e) => {
+        if (e.key === "Enter") E("cfy").click();
+      };
+      askModal(t, m, ok).then((v) => {
+        i.style.display = "none";
+        i.onkeydown = null;
+        res(v ? i.value : null);
+      });
+      setTimeout(() => i.focus(), 150);
+    });
+
+  /* ---- categorias personalizadas ---- */
+  function applyCats() {
+    const sig = JSON.stringify(S.cats || []);
+    if (applyCats.s === sig) return;
+    applyCats.s = sig;
+    CATS.length = 0;
+    CATS.push(...BASEC, ...(S.cats || []).map((c) => c.nome));
+    (S.cats || []).forEach((c) => {
+      CATI[c.nome] = c.emoji || "🏷️";
+    });
+    const rc = E("rc"),
+      v = rc.value;
+    rc.innerHTML = [...CATS, ...RCATS]
+      .map((c) => `<option>${esc(c)}</option>`)
+      .join("");
+    if (v) rc.value = v;
+  }
+  const emjRow = (sel, fn) =>
+    EMJ.map(
+      (e) =>
+        `<button type="button" class="${e === sel ? "on" : ""}" onclick="${fn}('${e}')">${e}</button>`,
+    ).join("");
+  window.pickEmj = (e) => {
+    catEmoji = e;
+    E("cne").innerHTML = emjRow(e, "pickEmj");
+  };
+  function catsUI() {
+    E("cne").innerHTML = E("cne").innerHTML || emjRow(catEmoji, "pickEmj");
+    E("catb").innerHTML = BASEC.map(
+      (c) => `<span class="cp">${CATI[c] || ""} ${esc(c)}</span>`,
+    ).join("");
+    E("catl").innerHTML =
+      (S.cats || [])
+        .map(
+          (c) =>
+            `<div class="item row"><div class="av">${esc(c.emoji || "🏷️")}</div><div class="it"><b>${esc(c.nome)}</b><div class="mut">${S.lim[c.nome] > 0 ? "Limite " + brl(S.lim[c.nome]) : "Sem limite"}</div></div><div class="amt"><button class="g" aria-label="Editar" onclick="editCat('${c.id}')">✎</button><button class="g" aria-label="Excluir" onclick="delCat('${c.id}')">✕</button></div></div>`,
+        )
+        .join("") ||
+      '<div class="mut" style="padding:6px 0 10px">Você ainda não criou categorias.</div>';
+  }
+  const catErr = (n, id) => {
+    if (!n) return "Dê um nome para a categoria.";
+    if (/[|<>"'\\:]/.test(n))
+      return "Use só letras, números e espaços no nome.";
+    const l = n.toLowerCase();
+    if (
+      RES.includes(l) ||
+      [
+        ...BASEC,
+        ...RCATS,
+        ...(S.cats || []).filter((c) => c.id !== id).map((c) => c.nome),
+      ].some((c) => c.toLowerCase() === l)
+    )
+      return "Já existe uma categoria com esse nome.";
+    return "";
+  };
+  window.addCat = () => {
+    const n = E("cnn").value.trim().replace(/\s+/g, " ").slice(0, 24),
+      er = catErr(n);
+    if (er) return say(er);
+    if ((S.cats || []).length >= 30) return say("Limite de 30 categorias.");
+    (S.cats = S.cats || []).push({
+      id: uid(),
+      nome: n,
+      emoji: catEmoji,
+      ts: Date.now(),
+    });
+    E("cnn").value = "";
+    persist();
+    say("Categoria criada ✓");
+  };
+  let EE = "";
+  window.pickEmj2 = (e) => {
+    EE = e;
+    E("cee").innerHTML = emjRow(e, "pickEmj2");
+  };
+  window.editCat = (id) => {
+    const c = S.cats.find((x) => x.id === id);
+    if (!c) return;
+    EE = c.emoji || EMJ[0];
+    openSheet(
+      `<h3>Editar categoria</h3><label class="lb">Nome</label><input id="cen" maxlength="24" value="${esc(c.nome)}"><label class="lb">Ícone</label><div class="emj" id="cee">${emjRow(EE, "pickEmj2")}</div><p class="mut" style="margin:0 0 12px">Ao renomear, os lançamentos e gastos fixos dessa categoria acompanham o novo nome.</p><div class="row"><button onclick="saveCat('${id}')">Salvar</button><button class="g" onclick="closeSheet()">Cancelar</button></div>`,
+    );
+  };
+  const reassign = (old, novo) => {
+    const t = Date.now();
+    S.tx.forEach((x) => {
+      if (x.cat === old) {
+        x.cat = novo;
+        x.ts = t;
+      }
+    });
+    S.rec.forEach((x) => {
+      if (x.cat === old) {
+        x.cat = novo;
+        x.ts = t;
+      }
+    });
+    (S.parc || []).forEach((x) => {
+      if (x.cat === old) {
+        x.cat = novo;
+        x.ts = t;
+      }
+    });
+  };
+  window.saveCat = (id) => {
+    const c = S.cats.find((x) => x.id === id),
+      n = E("cen").value.trim().replace(/\s+/g, " ").slice(0, 24),
+      er = catErr(n, id);
+    if (er) return say(er);
+    if (n !== c.nome) {
+      reassign(c.nome, n);
+      if (S.lim[c.nome] != null) {
+        S.lim[n] = S.lim[c.nome];
+        delete S.lim[c.nome];
+        S.limTs = Date.now();
+      }
+      S.limH = (S.limH || []).map((e) =>
+        e.c === c.nome ? { ...e, c: n, ts: Date.now() } : e,
+      );
+      c.nome = n;
+    }
+    c.emoji = EE;
+    c.ts = Date.now();
+    closeSheet();
+    persist();
+  };
+  window.delCat = async (id) => {
+    const c = S.cats.find((x) => x.id === id);
+    if (!c) return;
+    if (
+      !(await askModal(
+        "Excluir categoria?",
+        `Os lançamentos de "${c.nome}" passam para "Outros".`,
+        "Excluir",
+        true,
+      ))
+    )
+      return;
+    reassign(c.nome, "Outros");
+    if (S.lim[c.nome] != null) {
+      delete S.lim[c.nome];
+      S.limTs = Date.now();
+    }
+    S.del.push(id);
+    S.cats = S.cats.filter((x) => x.id !== id);
+    persist();
+  };
+
+  /* ---- editar gasto fixo ---- */
+  const MES = [
+      "jan",
+      "fev",
+      "mar",
+      "abr",
+      "mai",
+      "jun",
+      "jul",
+      "ago",
+      "set",
+      "out",
+      "nov",
+      "dez",
+    ],
+    mesFmt = (k) => MES[+k.slice(5) - 1] + "/" + k.slice(0, 4);
+  function recsUI() {
+    const cur = mk(today());
+    E("recs").innerHTML =
+      S.rec
+        .map((x) => {
+          const p = recPausada(x, cur);
+          return `<div class="item row${p ? " pz" : ""}"><div class="it"><b>${esc(x.desc)}</b><div class="mut">dia ${x.dia} · ${x.tipo === "receita" ? "+" : ""}${brl(x.valor)}</div>${p ? `<div class="pzt">⏸ ${x.ate ? "Pausado até " + mesFmt(x.ate) : "Pausado até você retomar"}</div>` : ""}</div><div class="amt"><button class="g" aria-label="${p ? "Retomar" : "Pausar"}" onclick="${p ? "resumeRec" : "pauseRec"}('${x.id}')">${p ? "▶" : "⏸"}</button><button class="g" aria-label="Editar" onclick="editRec('${x.id}')">✎</button><button class="g" aria-label="Excluir" onclick="delRec('${x.id}')">✕</button></div></div>`;
+        })
+        .join("") ||
+      '<div class="mut" style="padding:4px 0 8px">Nenhum gasto fixo ainda. Adicione aluguel, internet, salário…</div>';
+  }
+  window.pauseRec = (id) => {
+    const x = S.rec.find((q) => q.id === id);
+    if (!x) return;
+    openSheet(
+      `<h3>Pausar "${esc(x.desc)}"</h3><p class="mut" style="margin-bottom:6px">Enquanto estiver pausado, não é lançado nem entra na previsão do mês. Os meses pausados não são cobrados depois.</p><label class="lb">Por quanto tempo?</label><select id="pz1"><option value="">Até eu retomar</option><option value="1">1 mês</option><option value="2">2 meses</option><option value="3">3 meses</option><option value="6">6 meses</option><option value="12">12 meses</option></select><div class="row" style="margin-top:14px"><button onclick="pauseSave('${id}')">Pausar</button><button class="g" onclick="closeSheet()">Cancelar</button></div>`,
+    );
+  };
+  window.pauseSave = (id) => {
+    const x = S.rec.find((q) => q.id === id);
+    if (!x) return;
+    const n = +E("pz1").value,
+      cur = mk(today());
+    gen();
+    const feito = !!S.gen[x.id + cur],
+      ini = feito ? addM(cur + "-01", 1).slice(0, 7) : cur;
+    x.pausado = true;
+    x.ate = n ? addM(ini + "-01", n).slice(0, 7) : "";
+    x.ts = Date.now();
+    closeSheet();
+    gen();
+    persist();
+    say("Gasto fixo pausado ⏸");
+  };
+  window.resumeRec = (id) => {
+    const x = S.rec.find((q) => q.id === id);
+    if (!x) return;
+    gen();
+    x.pausado = false;
+    x.ate = "";
+    x.ts = Date.now();
+    gen();
+    persist();
+    say("Gasto fixo retomado ▶");
+  };
+  window.editRec = (id) => {
+    const x = S.rec.find((r) => r.id === id);
+    if (!x) return;
+    openSheet(
+      `<h3>Editar gasto fixo</h3><label class="lb">Descrição</label><input id="er1" maxlength="40" value="${esc(x.desc)}"><div class="grid"><div><label class="lb">Valor (R$)</label><input id="er2" type="number" inputmode="decimal" step="0.01" value="${x.valor}"></div><div><label class="lb">Dia do mês</label><input id="er3" type="number" min="1" max="28" value="${x.dia}"></div><div><label class="lb">Tipo</label><select id="er4"><option value="gasto">Gasto</option><option value="receita">Receita</option><option value="invest">Investimento</option></select></div><div><label class="lb">Categoria</label><select id="er5">${[...new Set([x.cat, ...CATS, ...RCATS, "Investimento"])].map((c) => `<option${c === x.cat ? " selected" : ""}>${esc(c)}</option>`).join("")}</select></div><div><label class="lb">Pagamento</label><select id="er6">${PAYS.map((p) => `<option${p === x.pay ? " selected" : ""}>${p}</option>`).join("")}</select></div></div><p class="mut" style="margin:10px 0">Vale para os próximos meses. O que já foi lançado não muda.</p><div class="row"><button onclick="saveRec('${id}')">Salvar</button><button class="g" onclick="closeSheet()">Cancelar</button></div>`,
+    );
+    E("er4").value = x.tipo;
+  };
+  window.saveRec = (id) => {
+    const x = S.rec.find((r) => r.id === id),
+      v = +E("er2").value,
+      d = +E("er3").value,
+      n = E("er1").value.trim();
+    if (!x || !n || !(v > 0) || !(d >= 1 && d <= 28))
+      return say("Confira descrição, valor e o dia (1 a 28).");
+    Object.assign(x, {
+      desc: n.slice(0, 40),
+      valor: v,
+      dia: d,
+      tipo: E("er4").value,
+      cat: E("er5").value,
+      pay: E("er6").value,
+      ts: Date.now(),
+    });
+    closeSheet();
+    gen();
+    persist();
+    say("Gasto fixo atualizado ✓");
+  };
+
+  /* ---- importar extrato CSV ---- */
+  const nrm = (s) =>
+    String(s || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+  function parseCSV(t) {
+    t = t.replace(/^\ufeff/, "");
+    const h = t.split(/\r?\n/).find((l) => l.trim()) || "",
+      cnt = (c) => h.split(c).length - 1;
+    const d =
+      cnt(";") >= cnt("\t") && cnt(";") >= cnt(",")
+        ? ";"
+        : cnt("\t") > cnt(",")
+          ? "\t"
+          : ",";
+    const rows = [];
+    let r = [],
+      c = "",
+      q = false;
+    for (let i = 0; i < t.length; i++) {
+      const ch = t[i];
+      if (q) {
+        if (ch === '"') {
+          if (t[i + 1] === '"') {
+            c += '"';
+            i++;
+          } else q = false;
+        } else c += ch;
+      } else if (ch === '"') q = true;
+      else if (ch === d) {
+        r.push(c);
+        c = "";
+      } else if (ch === "\n") {
+        r.push(c);
+        rows.push(r);
+        r = [];
+        c = "";
+      } else if (ch !== "\r") c += ch;
+    }
+    if (c !== "" || r.length) {
+      r.push(c);
+      rows.push(r);
+    }
+    return rows.filter((x) => x.some((y) => y.trim()));
+  }
+  function pVal(s) {
+    s = String(s || "").trim();
+    if (!s) return NaN;
+    const neg = /^\(.*\)$/.test(s) || /-/.test(s) || /\bD$/i.test(s);
+    s = s.replace(/[^\d.,]/g, "");
+    if (!s) return NaN;
+    const lc = s.lastIndexOf(","),
+      ld = s.lastIndexOf(".");
+    if (lc >= 0 && ld >= 0)
+      s =
+        lc > ld ? s.replace(/\./g, "").replace(",", ".") : s.replace(/,/g, "");
+    else if (lc >= 0) s = s.replace(",", ".");
+    else if (ld >= 0 && /^\d{1,3}(\.\d{3})+$/.test(s)) s = s.replace(/\./g, "");
+    const v = parseFloat(s);
+    return isNaN(v) ? NaN : neg ? -v : v;
+  }
+  function pDate(s) {
+    s = String(s || "").trim();
+    let m;
+    if ((m = s.match(/^(\d{4})-(\d{2})-(\d{2})/))) return m[0];
+    if ((m = s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{2,4})/))) {
+      let y = +m[3];
+      if (y < 100) y += 2000;
+      return y + "-" + pad(+m[2]) + "-" + pad(+m[1]);
+    }
+    return "";
+  }
+  const KW = [
+    [
+      "Alimentação",
+      /ifood|restaur|lanche|padaria|pizza|burger|mc ?donald|cafe|bar /,
+    ],
+    [
+      "Mercado",
+      /mercado|supermerc|atacad|carrefour|assai|extra|pao de acucar|hortifruti|sacolao/,
+    ],
+    [
+      "Transporte",
+      /uber|99 ?pop|posto|combust|ipva|estacion|metro|onibus|pedagio|sem parar|shell|ipiranga/,
+    ],
+    [
+      "Assinaturas",
+      /netflix|spotify|disney|prime video|youtube|hbo|globoplay|icloud|google one|deezer|apple\.com/,
+    ],
+    ["Saúde", /farmac|drog|hospital|clinica|unimed|dentist|exame|laborat/],
+    ["Educação", /escola|faculdade|curso|udemy|alura|colegio|mensalidade/],
+    [
+      "Moradia",
+      /alug|condomin|energia|enel|cpfl|sabesp|agua|internet|vivo|claro|iptu|fibra/,
+    ],
+    [
+      "Lazer",
+      /cinema|ingresso|show|steam|playstation|viagem|hotel|airbnb|xbox/,
+    ],
+    [
+      "Compras",
+      /amazon|mercado ?livre|shopee|magalu|americanas|shein|aliexpress|zara|renner/,
+    ],
+  ];
+  function guess(desc, tipo, given) {
+    const all = [...CATS, ...RCATS, "Investimento"],
+      g = all.find(
+        (c) => c.toLowerCase() === nrm(given) || nrm(c) === nrm(given),
+      );
+    if (g) return g;
+    const n = nrm(desc);
+    if (tipo === "invest") return "Investimento";
+    if (tipo === "receita")
+      return /salario|folha|pagto sal/.test(n) ? "Salário" : "Renda extra";
+    const own = (S.cats || []).find((c) => n.includes(nrm(c.nome)));
+    if (own) return own.nome;
+    const k = KW.find((x) => x[1].test(n));
+    return k ? k[0] : "Outros";
+  }
+  const colmap = (h) => {
+    const n = h.map(nrm),
+      f = (re) => n.findIndex((x) => re.test(x)),
+      m = {
+        data: f(/^(data|date|dt)/),
+        valor: f(/^(valor|amount|quantia|montante|vlr)/),
+        desc: f(/descri|historico|lancamento|estabelec|memo|detalhe|nome/),
+        tipo: f(/^(tipo|natureza|d\/c)/),
+        cat: f(/^categoria/),
+        pay: f(/pagamento|forma/),
+      };
+    return m.data >= 0 && m.valor >= 0 ? m : null;
+  };
+  function buildImp(rows) {
+    let m = colmap(rows[0]),
+      st = 1;
+    if (!m) {
+      if (pDate(rows[0][0])) {
+        m = {
+          data: 0,
+          desc: 1,
+          valor: rows[0].length > 2 ? 2 : 1,
+          tipo: -1,
+          cat: -1,
+          pay: -1,
+        };
+        st = 0;
+      } else return null;
+    }
+    const out = [],
+      stat = { lidos: 0, dup: 0, ign: 0 },
+      ex = new Set(S.tx.map((x) => x.data + "|" + x.valor + "|" + nk(x.desc))),
+      t = today();
+    rows.slice(st).forEach((r) => {
+      stat.lidos++;
+      const d = pDate(r[m.data]);
+      let v = pVal(r[m.valor]);
+      if (!d || d > t || isNaN(v) || v === 0) {
+        stat.ign++;
+        return;
+      }
+      let tipo = v < 0 ? "gasto" : "receita";
+      if (m.tipo >= 0) {
+        const tp = nrm(r[m.tipo]);
+        if (/transf|pagfat|fatura/.test(tp)) {
+          stat.ign++;
+          return;
+        }
+        if (/invest/.test(tp)) tipo = "invest";
+        else if (/receita|entrada|credito|^c$/.test(tp)) tipo = "receita";
+        else if (/gasto|despesa|saida|debito|^d$/.test(tp)) tipo = "gasto";
+      }
+      v = Math.abs(v);
+      const desc =
+          String(r[m.desc >= 0 ? m.desc : 0] || "")
+            .trim()
+            .slice(0, 60) || "Lançamento",
+        k = d + "|" + v + "|" + nk(desc);
+      if (ex.has(k)) {
+        stat.dup++;
+        return;
+      }
+      ex.add(k);
+      const p = m.pay >= 0 ? String(r[m.pay] || "").trim() : "";
+      out.push({
+        data: d,
+        tipo,
+        valor: v,
+        desc,
+        cat: guess(desc, tipo, m.cat >= 0 ? r[m.cat] : ""),
+        pay: PAYS.includes(p) ? p : "",
+      });
+    });
+    return { out, stat };
+  }
+  let IMP = null;
+  window.csvImport = () => {
+    hold(90000);
+    E("impf").click();
+  };
+  E("impf").addEventListener("change", async (e) => {
+    const f = e.target.files[0];
+    e.target.value = "";
+    if (!f) return;
+    if (f.size > 3e6) return say("Arquivo grande demais (máx. 3 MB).");
+    try {
+      const rows = parseCSV(await f.text()),
+        r = rows.length ? buildImp(rows) : null;
+      if (!r)
+        return say(
+          "Não reconheci as colunas. O arquivo precisa ter data, descrição e valor.",
+        );
+      if (!r.out.length)
+        return say(
+          `Nada novo para importar (${r.stat.dup} repetidos, ${r.stat.ign} linhas ignoradas).`,
+        );
+      IMP = r.out.slice(0, 2000);
+      openSheet(
+        `<h3>Importar extrato</h3><p class="mut">${IMP.length} lançamentos novos · ${r.stat.dup} já existiam · ${r.stat.ign} linhas ignoradas</p><div class="imp">${IMP.slice(
+          0,
+          5,
+        )
+          .map(
+            (x) =>
+              `<div><span>${esc(x.data.split("-").reverse().join("/"))} · ${esc(x.desc)}</span><b class="${x.tipo === "receita" ? "pos" : ""}">${x.tipo === "receita" ? "+" : "−"}${brl(x.valor)}</b></div>`,
+          )
+          .join(
+            "",
+          )}${IMP.length > 5 ? `<div><span class="mut">… e mais ${IMP.length - 5}</span></div>` : ""}</div><label class="lb">Conta</label><select id="impc"><option value="">Sem conta</option>${(S.contas || []).map((c) => `<option value="${c.id}">${esc(c.nome)}</option>`).join("")}</select><label class="lb">Pagamento (quando o arquivo não informar)</label><select id="impp">${PAYS.map((p) => `<option>${p}</option>`).join("")}</select><div class="row" style="margin-top:14px"><button onclick="csvGo()">Importar ${IMP.length}</button><button class="g" onclick="closeSheet()">Cancelar</button></div>`,
+      );
+    } catch (x) {
+      say("⚠ Não consegui ler o arquivo.");
+    }
+  });
+  window.csvGo = () => {
+    const cid = E("impc").value,
+      pp = E("impp").value,
+      ids = [];
+    IMP.forEach((x) => {
+      const id = uid();
+      ids.push(id);
+      S.tx.push({
+        id,
+        ts: Date.now(),
+        data: x.data,
+        tipo: x.tipo,
+        valor: x.valor,
+        cat: x.cat,
+        pay: x.pay || pp,
+        desc: x.desc,
+        conta: cid,
+        cartao: "",
+        ativo: "",
+      });
+    });
+    closeSheet();
+    ids.forEach((i) => FLASH.add(i));
+    setTimeout(() => FLASH.clear(), 2500);
+    persist();
+    sayU(`${ids.length} lançamentos importados`, () => {
+      ids.forEach((i) => S.del.push(i));
+      S.tx = S.tx.filter((x) => !ids.includes(x.id));
+      persist();
+    });
+  };
+
+  /* ---- backup completo ---- */
+  window.bkExport = () => {
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(
+      new Blob(
+        [
+          JSON.stringify(
+            {
+              app: "cifra",
+              v: 1,
+              exportado: new Date().toISOString(),
+              perfil: { nome: U.nome || "", email: ST.email || "" },
+              dados: S,
+            },
+            null,
+            1,
+          ),
+        ],
+        { type: "application/json" },
+      ),
+    );
+    a.download = `cifra-backup-${today()}.json`;
+    a.click();
+    say("Backup baixado.");
+  };
+  window.bkImport = () => {
+    hold(90000);
+    E("bkf").click();
+  };
+  E("bkf").addEventListener("change", async (e) => {
+    const f = e.target.files[0];
+    e.target.value = "";
+    if (!f) return;
+    try {
+      const j = JSON.parse(await f.text()),
+        d = j && j.dados ? j.dados : j;
+      if (!d || !Array.isArray(d.tx)) throw 0;
+      if (
+        !(await askModal(
+          "Restaurar backup?",
+          `Vou mesclar ${d.tx.length} lançamentos e as configurações do arquivo com os seus dados atuais.`,
+          "Restaurar",
+        ))
+      )
+        return;
+      merge({
+        tx: [],
+        rec: [],
+        metas: [],
+        contas: [],
+        cartoes: [],
+        parc: [],
+        rep: [],
+        cv: [],
+        cats: [],
+        gen: {},
+        lim: {},
+        del: [],
+        ...d,
+      });
+      gen();
+      persist();
+      say("Backup restaurado ✓");
+    } catch (x) {
+      say("⚠ Arquivo de backup inválido.");
+    }
+  });
+  const _mgc = merge;
+  merge = function (Rm) {
+    _mgc(Rm);
+    const dl = new Set(S.del || []),
+      m = {};
+    [...(Rm.cats || []), ...(S.cats || [])].forEach((x) => {
+      if (!m[x.id] || (x.ts || 0) >= (m[x.id].ts || 0)) m[x.id] = x;
+    });
+    S.cats = Object.values(m).filter((x) => !dl.has(x.id));
+  };
+
+  /* ---- armazenamento ---- */
+  function storUI() {
+    if (CUR !== 5 && storUI.t && Date.now() - storUI.t < 30000) return;
+    storUI.t = Date.now();
+    const n = JSON.stringify(S).length,
+      p = Math.min(100, n / 15000),
+      e = E("stor");
+    if (e)
+      e.innerHTML = `<div class="row"><b style="font-size:14px">Armazenamento</b><span class="mut">${(n / 1024).toFixed(0)} KB de 1.465 KB</span></div><div class="meter"><i style="width:${p}%;background:${p >= 85 ? "var(--red)" : p >= 70 ? "var(--warn)" : "var(--grn)"}"></i></div>${p >= 70 ? '<div class="mut">Está ficando cheio. Exporte um backup e apague lançamentos muito antigos.</div>' : ""}`;
+    if (p >= 70 && !storUI.w) {
+      storUI.w = 1;
+      say("⚠ Seus dados estão ocupando " + Math.round(p) + "% do espaço.");
+    }
+  }
+
+  /* ---- modo privacidade ---- */
+  const pv = () =>
+    document.body.classList.toggle("priv", localStorage.priv === "1");
+  window.togglePriv = () => {
+    localStorage.priv = localStorage.priv === "1" ? "0" : "1";
+    pv();
+    say(localStorage.priv === "1" ? "Valores ocultos." : "Valores visíveis.");
+  };
+  document
+    .querySelector("#t0>.card:first-child")
+    .insertAdjacentHTML(
+      "afterbegin",
+      '<button class="pvt" aria-label="Ocultar ou mostrar valores" onclick="togglePriv()"><svg viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/><path class="sl" d="M4 4l16 16"/></svg></button>',
+    );
+  pv();
+
+  /* ---- bloqueio do app: biometria e PIN ---- */
+  let LK = null,
+    PINV = "",
+    busyU = 0,
+    hidAt = 0;
+  const LKK = () => "lk_" + (U ? U.uid : ""),
+    LAK = () => "lka_" + (U ? U.uid : ""),
+    lkSave = () => {
+      localStorage[LKK()] = JSON.stringify(LK);
+    },
+    lkOn = () => !!(LK && (LK.bio || LK.pin)),
+    b64 = (b) =>
+      btoa(String.fromCharCode(...new Uint8Array(b)))
+        .replace(/\+/g, "-")
+        .replace(/\//g, "_")
+        .replace(/=+$/, ""),
+    unb64 = (s) =>
+      Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/")), (c) =>
+        c.charCodeAt(0),
+      );
+  function lkLoad() {
+    let o = null;
+    try {
+      o = JSON.parse(localStorage[LKK()] || "null");
+    } catch (e) {}
+    LK = Object.assign(
+      { bio: "", pin: null, delay: 60, fails: 0, until: 0 },
+      o || {},
+    );
+  }
+  async function pinHash(pin, salt) {
+    const k = await crypto.subtle.importKey(
+      "raw",
+      new TextEncoder().encode(pin),
+      "PBKDF2",
+      false,
+      ["deriveBits"],
+    );
+    return b64(
+      await crypto.subtle.deriveBits(
+        {
+          name: "PBKDF2",
+          hash: "SHA-256",
+          salt: unb64(salt),
+          iterations: 150000,
+        },
+        k,
+        256,
+      ),
+    );
+  }
+  const bioOk = async () => {
+    try {
+      return !!(
+        window.PublicKeyCredential &&
+        (await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable())
+      );
+    } catch (e) {
+      return false;
+    }
+  };
+  function dots() {
+    const n = LK && LK.pin ? LK.pin.n : 4;
+    E("lkd").innerHTML = Array.from(
+      { length: n },
+      (_, i) => `<i class="${i < PINV.length ? "f" : ""}"></i>`,
+    ).join("");
+  }
+  E("lkp").innerHTML = [
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "",
+    "0",
+    "⌫",
+  ]
+    .map(
+      (k) =>
+        `<button type="button" onclick="pinKey('${k === "⌫" ? "b" : k}')">${k}</button>`,
+    )
+    .join("");
+  function unlock() {
+    delete R.dataset.lk;
+    PINV = "";
+    LK.fails = 0;
+    LK.until = 0;
+    lkSave();
+    localStorage[LAK()] = Date.now();
+    hold(2000);
+  }
+  window.lockShow = (auto) => {
+    if (!U || !lkOn()) return;
+    R.dataset.lk = "1";
+    PINV = "";
+    E("lkb").style.display = LK.bio ? "" : "none";
+    E("lkp").style.display = E("lkd").style.display = LK.pin ? "" : "none";
+    E("lkm").textContent =
+      LK.pin && LK.bio
+        ? "Use a biometria ou digite o PIN."
+        : LK.bio
+          ? "Use a biometria para entrar."
+          : "Digite seu PIN.";
+    dots();
+    if (LK.bio && auto !== false) setTimeout(lkBioGo, 350);
+  };
+  window.lkBioGo = async () => {
+    if (!LK || !LK.bio || busyU) return;
+    busyU = 1;
+    hold(60000);
+    try {
+      await navigator.credentials.get({
+        publicKey: {
+          challenge: crypto.getRandomValues(new Uint8Array(32)),
+          rpId: location.hostname,
+          allowCredentials: [
+            { type: "public-key", id: unb64(LK.bio), transports: ["internal"] },
+          ],
+          userVerification: "required",
+          timeout: 60000,
+        },
+      });
+      unlock();
+    } catch (e) {
+      E("lkm").textContent =
+        e.name === "NotAllowedError" || e.name === "AbortError"
+          ? "Toque no botão para tentar de novo."
+          : "Biometria indisponível agora." + (LK.pin ? " Use o PIN." : "");
+    }
+    busyU = 0;
+    hold(1500);
+  };
+  window.pinKey = async (k) => {
+    if (!LK || !LK.pin) return;
+    if (LK.until > Date.now()) {
+      E("lkm").textContent =
+        "Aguarde " + Math.ceil((LK.until - Date.now()) / 1000) + "s.";
+      return;
+    }
+    if (k === "b") {
+      PINV = PINV.slice(0, -1);
+      dots();
+      return;
+    }
+    if (PINV.length >= LK.pin.n) return;
+    PINV += k;
+    dots();
+    if (PINV.length < LK.pin.n) return;
+    const h = await pinHash(PINV, LK.pin.s);
+    if (h === LK.pin.h) return unlock();
+    LK.fails = (LK.fails || 0) + 1;
+    PINV = "";
+    const dd = E("lkd");
+    dd.classList.remove("shk");
+    void dd.offsetWidth;
+    dd.classList.add("shk");
+    navigator.vibrate && navigator.vibrate(60);
+    if (LK.fails >= 5) {
+      LK.until = Date.now() + 30000 * Math.min(8, LK.fails - 4);
+      E("lkm").textContent =
+        "Muitas tentativas. Aguarde " +
+        Math.round((LK.until - Date.now()) / 1000) +
+        "s ou saia da conta.";
+    } else
+      E("lkm").textContent = "PIN incorreto. Tentativa " + LK.fails + " de 5.";
+    lkSave();
+    setTimeout(dots, 0);
+  };
+  function lkUI() {
+    if (!LK) return;
+    const on = lkOn();
+    E("lks").textContent = on
+      ? "Bloqueio ativo: " +
+        [LK.bio && "biometria", LK.pin && "PIN"].filter(Boolean).join(" e ") +
+        "."
+      : "Bloqueio do app desativado. Ative para proteger seus dados neste aparelho.";
+    E("lkpt").textContent = LK.pin ? "Alterar PIN" : "Definir PIN";
+    E("lkdel").value = String(LK.delay);
+    E("lkoff").style.display = on ? "" : "none";
+    bioOk().then((ok) => {
+      E("lkbio").style.display = ok ? "" : "none";
+    });
+  }
+  window.lkBio = async () => {
+    if (!(await bioOk()))
+      return say("Este aparelho não oferece biometria no navegador.");
+    hold(90000);
+    try {
+      const c = await navigator.credentials.create({
+        publicKey: {
+          challenge: crypto.getRandomValues(new Uint8Array(32)),
+          rp: { name: "Cifra", id: location.hostname },
+          user: {
+            id: new TextEncoder().encode(U.uid),
+            name: "cifra-" + U.uid.slice(0, 8),
+            displayName: U.nome || "Cifra",
+          },
+          pubKeyCredParams: [
+            { type: "public-key", alg: -7 },
+            { type: "public-key", alg: -257 },
+          ],
+          authenticatorSelection: {
+            authenticatorAttachment: "platform",
+            userVerification: "required",
+            residentKey: "discouraged",
+          },
+          timeout: 60000,
+          attestation: "none",
+        },
+      });
+      LK.bio = b64(c.rawId);
+      lkSave();
+      lkUI();
+      say(
+        LK.pin
+          ? "Biometria ativada ✓"
+          : "Biometria ativada ✓ Defina também um PIN de reserva.",
+      );
+    } catch (e) {
+      say(
+        e.name === "NotAllowedError"
+          ? "Cancelado."
+          : "⚠ Não foi possível ativar a biometria.",
+      );
+    }
+    hold(2000);
+  };
+  window.lkPin = () =>
+    openSheet(
+      `<h3>${LK.pin ? "Alterar PIN" : "Definir PIN"}</h3><p class="mut" style="margin-bottom:6px">De 4 a 6 números. Fica só neste aparelho.</p><label class="lb">PIN</label><input id="lp1" type="password" inputmode="numeric" maxlength="6" autocomplete="off"><label class="lb">Repita o PIN</label><input id="lp2" type="password" inputmode="numeric" maxlength="6" autocomplete="off"><div class="row" style="margin-top:14px"><button onclick="lkPinSave()">Salvar</button><button class="g" onclick="closeSheet()">Cancelar</button></div>`,
+    );
+  window.lkPinSave = async () => {
+    const a = E("lp1").value,
+      b = E("lp2").value;
+    if (!/^\d{4,6}$/.test(a)) return say("O PIN precisa ter de 4 a 6 números.");
+    if (a !== b) return say("Os PINs não coincidem.");
+    const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
+    LK.pin = { s: salt, h: await pinHash(a, salt), n: a.length };
+    LK.fails = 0;
+    LK.until = 0;
+    lkSave();
+    closeSheet();
+    lkUI();
+    say("PIN salvo ✓");
+  };
+  window.lkDelay = (v) => {
+    LK.delay = +v;
+    lkSave();
+  };
+  window.lkNow = () =>
+    lkOn() ? lockShow() : say("Ative a biometria ou um PIN primeiro.");
+  window.lkOff = async () => {
+    if (
+      !(await askModal(
+        "Desativar o bloqueio?",
+        "O app volta a abrir sem biometria nem PIN.",
+        "Desativar",
+        true,
+      ))
+    )
+      return;
+    LK.bio = "";
+    LK.pin = null;
+    lkSave();
+    localStorage.removeItem(LAK());
+    lkUI();
+    say("Bloqueio desativado.");
+  };
+  document.addEventListener("visibilitychange", () => {
+    if (!U || !lkOn()) return;
+    if (document.hidden) {
+      hidAt = Date.now();
+      localStorage[LAK()] = hidAt;
+      return;
+    }
+    if (Date.now() < HOLDU) return;
+    if (
+      R.dataset.lk !== "1" &&
+      (LK.delay === 0 || Date.now() - hidAt >= LK.delay * 1000)
+    )
+      lockShow();
+  });
+  addEventListener("pagehide", () => {
+    if (U && lkOn()) localStorage[LAK()] = Date.now();
+  });
+  setInterval(() => {
+    if (U && lkOn() && !document.hidden && R.dataset.lk !== "1")
+      localStorage[LAK()] = Date.now();
+  }, 10000);
+  ["clip", "mic", "mic2"].forEach(
+    (i) => E(i) && E(i).addEventListener("click", () => hold(90000)),
+  );
+
+  /* ---- conta: senha e exclusão ---- */
+  window.trocarSenha = () =>
+    openSheet(
+      `<h3>Alterar senha</h3><label class="lb">Senha atual</label><input id="ps0" type="password" autocomplete="current-password"><label class="lb">Nova senha (mín. 8 caracteres)</label><input id="ps1" type="password" autocomplete="new-password"><label class="lb">Repita a nova senha</label><input id="ps2" type="password" autocomplete="new-password"><p class="mut" style="margin:10px 0">Seus outros aparelhos serão desconectados.</p><div class="row"><button onclick="senhaSave()">Alterar</button><button class="g" onclick="closeSheet()">Cancelar</button></div>`,
+    );
+  window.senhaSave = async () => {
+    const a = E("ps0").value,
+      n = E("ps1").value;
+    if (n.length < 8)
+      return say("A nova senha precisa de 8 caracteres ou mais.");
+    if (n !== E("ps2").value) return say("As senhas novas não coincidem.");
+    try {
+      await api({ action: "trocarsenha", atual: a, nova: n });
+      closeSheet();
+      say("Senha alterada ✓");
+    } catch (e) {
+      say("⚠ " + e.message);
+    }
+  };
+  window.excluirConta = async () => {
+    if (
+      !(await askModal(
+        "Excluir sua conta?",
+        "Seus lançamentos, contas, cartões e metas serão apagados da planilha e deste aparelho. Isso não pode ser desfeito. Baixe um backup antes.",
+        "Continuar",
+        true,
+      ))
+    )
+      return;
+    const s = await askValue(
+      "Confirme sua senha",
+      "Digite a senha para excluir a conta de vez.",
+      "Excluir para sempre",
+      "Senha",
+      "password",
+    );
+    if (s == null) return;
+    try {
+      await api({ action: "excluirconta", senha: s });
+      Object.keys(localStorage)
+        .filter((k) => /^(g_|lk_|lka_)/.test(k) || k === "u")
+        .forEach((k) => localStorage.removeItem(k));
+      location.reload();
+    } catch (e) {
+      say("⚠ " + e.message);
+    }
+  };
+
+  /* ---- IA: o servidor monta as instruções ---- */
+  window.buildCtx = () => ({
+    hoje: today(),
+    mes: M,
+    cats: CATS,
+    rcats: RCATS,
+    pays: PAYS,
+    contas: (S.contas || []).map((c) => c.nome),
+    cartoes: (S.cartoes || []).map((c) => c.nome),
+    receitas: sum(S.tx.filter((x) => x.tipo === "receita" && mk(x.data) === M)),
+    gastos: grp(
+      S.tx.filter((x) => x.tipo === "gasto" && mk(x.data) === M),
+      (x) => x.cat,
+    ),
+    limites: window.effLims ? effLims() : S.lim,
+    recentes: [...S.tx]
+      .sort((a, b) => (b.ts || 0) - (a.ts || 0))
+      .slice(0, 25)
+      .map((x) => [x.id, x.data, x.tipo, x.valor, x.cat, x.desc]),
+  });
+  aiCall = function (sys, t) {
+    const p = PEND;
+    clearPend();
+    const ctx = buildCtx();
+    if (p && p.img)
+      return api({
+        action: "vision",
+        ctx,
+        user: t || "Registre os lançamentos desta imagem.",
+        image: p.img,
+      });
+    return api({
+      action: "ai",
+      ctx,
+      user: p
+        ? (t || "Registre os lançamentos deste arquivo.") +
+          "\n\nARQUIVO " +
+          p.name +
+          ":\n" +
+          p.txt
+        : t,
+    });
+  };
+
+  /* ---- liga tudo ---- */
+  const _r = render;
+  render = function () {
+    S.cats = S.cats || [];
+    applyCats();
+    _r();
+    catsUI();
+    recsUI();
+    storUI();
+  };
+  const _s = start;
+  start = function () {
+    _s();
+    lkLoad();
+    lkUI();
+  };
+  if (U) {
+    lkLoad();
+    if (lkOn() && R.dataset.lk === "1") lockShow(true);
+    else delete R.dataset.lk;
+  }
+})();
+
+/* ===== v30: sobra do orçamento para o mês seguinte (com histórico de limites) ===== */
+(function () {
+  const E = (id) => document.getElementById(id),
+    MES = [
+      "jan",
+      "fev",
+      "mar",
+      "abr",
+      "mai",
+      "jun",
+      "jul",
+      "ago",
+      "set",
+      "out",
+      "nov",
+      "dez",
+    ],
+    mesFmt = (k) => MES[+k.slice(5) - 1] + "/" + k.slice(0, 4);
+  const spentMap = () => {
+    const m = {};
+    S.tx.forEach((x) => {
+      if (x.tipo !== "gasto") return;
+      const k = mk(x.data);
+      (m[k] = m[k] || {})[x.cat] = ((m[k] || {})[x.cat] || 0) + x.valor;
+    });
+    return m;
+  };
+  /* ---- histórico de limites: cada mudança vale a partir do mês em que foi feita ---- */
+  function limIdx() {
+    const ix = {};
+    (S.limH || []).forEach((e) => {
+      (ix[e.c] = ix[e.c] || []).push(e);
+    });
+    Object.values(ix).forEach((a) =>
+      a.sort((x, y) =>
+        x.m < y.m ? -1 : x.m > y.m ? 1 : (x.ts || 0) - (y.ts || 0),
+      ),
+    );
+    return ix;
+  }
+  function atIdx(ix, c, mm) {
+    let v = 0;
+    for (const e of ix[c] || []) {
+      if (e.m <= mm) v = +e.v || 0;
+      else break;
+    }
+    return v;
+  }
+  window.limAt = (c, mm) => atIdx(limIdx(), c, mm);
+  /* compara os limites de agora com o histórico e registra o que mudou (idempotente) */
+  window.limSync = () => {
+    const cm = mk(today());
+    let ch = false;
+    if (!Array.isArray(S.limH)) {
+      S.limH = Object.keys(S.lim)
+        .filter((k) => +S.lim[k] > 0)
+        .map((k) => ({ m: "0000-00", c: k, v: +S.lim[k], ts: 1 }));
+      ch = true;
+    } else {
+      const ix = limIdx();
+      new Set([...Object.keys(S.lim), ...Object.keys(ix)]).forEach((c) => {
+        const now = +S.lim[c] > 0 ? +S.lim[c] : 0,
+          was = atIdx(ix, c, cm);
+        if (now !== was) {
+          S.limH = S.limH.filter((e) => !(e.c === c && e.m === cm));
+          S.limH.push({ m: cm, c, v: now, ts: Date.now() });
+          ch = true;
+        }
+      });
+    }
+    if (ch) {
+      if (S.limH.length > 1500)
+        S.limH = S.limH.sort((a, b) => (a.m < b.m ? 1 : -1)).slice(0, 1500);
+      store();
+      clearTimeout(T);
+      T = setTimeout(sync, 800);
+    }
+    return ch;
+  };
+  /* ---- sobra: acumulada mês a mês, sempre com o limite que valia em cada mês ---- */
+  window.carryMap = (mm, ix) => {
+    const o = {},
+      R = S.roll;
+    if (!R || !R.on || !R.ini || mm <= R.ini) return o;
+    ix = ix || limIdx();
+    const sp = spentMap(),
+      w = addM(mm + "-01", -24).slice(0, 7),
+      ini = R.ini > w ? R.ini : w;
+    new Set([...Object.keys(S.lim), ...Object.keys(ix)]).forEach((c) => {
+      let k = ini,
+        carry = 0,
+        g = 0;
+      while (k < mm && g++ < 30) {
+        const lim = atIdx(ix, c, k);
+        carry =
+          lim > 0 ? Math.max(0, r2(lim + carry - ((sp[k] || {})[c] || 0))) : 0;
+        k = addM(k + "-01", 1).slice(0, 7);
+      }
+      if (carry > 0) o[c] = carry;
+    });
+    return o;
+  };
+  /* limite do mês = limite que valia naquele mês + sobra acumulada */
+  window.effLims = (mm) => {
+    mm = mm || M;
+    limSync();
+    const ix = limIdx(),
+      cm = carryMap(mm, ix),
+      o = {};
+    new Set([...Object.keys(S.lim), ...Object.keys(ix)]).forEach((c) => {
+      const b = atIdx(ix, c, mm);
+      if (b > 0) o[c] = r2(b + (cm[c] || 0));
+    });
+    return o;
+  };
+  window.setRoll = (on) => {
+    S.roll = {
+      on: !!on,
+      ini: on ? mk(today()) : (S.roll && S.roll.ini) || "",
+      ts: Date.now(),
+    };
+    persist();
+    say(
+      on ? "Sobra ativada. Vale a partir do mês que vem." : "Sobra desativada.",
+    );
+  };
+  /* sincronização entre aparelhos */
+  const _mg = merge;
+  merge = function (Rm) {
+    const mine = S.roll,
+      mh = S.limH;
+    _mg(Rm);
+    const rr = Rm.roll;
+    S.roll = rr && (rr.ts || 0) > ((mine && mine.ts) || 0) ? rr : mine;
+    if (Array.isArray(Rm.limH) || Array.isArray(mh)) {
+      const m = {};
+      [...(Rm.limH || []), ...(mh || [])].forEach((e) => {
+        const k = e.m + "|" + e.c;
+        if (!m[k] || (e.ts || 0) >= (m[k].ts || 0)) m[k] = e;
+      });
+      S.limH = Object.values(m);
+    }
+    /* o outro lado é de uma versão sem histórico: refaz a base a partir dos limites mesclados */
+    if (!Array.isArray(Rm.limH) && Array.isArray(S.limH) && !S.limH.length)
+      S.limH = undefined;
+  };
+  /* card "Limites" do Início */
+  function limsUI() {
+    const g = S.tx.filter((x) => x.tipo === "gasto" && mk(x.data) === M),
+      bc = grp(g, (x) => x.cat),
+      lm = effLims(M),
+      cm = carryMap(M);
+    E("lims").innerHTML =
+      Object.keys(lm)
+        .map((k) => {
+          const L = lm[k],
+            p = ((bc[k] || 0) / L) * 100;
+          return `<div class="row"><span>${esc(k)}</span><span class="mut">${brl(bc[k] || 0)} / ${brl(L)}</span></div><div class="bar"><i style="width:${Math.min(p, 100)}%;background:${p >= 100 ? "var(--red)" : p >= 80 ? "#f2b84b" : "var(--grn)"}"></i></div>${cm[k] ? `<div class="mut roll1">inclui ${brl(cm[k])} que sobrou do mês anterior</div>` : ""}`;
+        })
+        .join("") || '<span class="mut">Defina limites em Ajustes.</span>';
+  }
+  /* controle em Ajustes */
+  function rollUI() {
+    const R = S.roll,
+      on = !!(R && R.on),
+      cm = on ? carryMap(M) : {},
+      ks = Object.keys(cm);
+    E("rollb").innerHTML =
+      `<div class="rollr"><div class="tx"><b>Levar a sobra para o mês seguinte</b><span class="mut">O que não for gasto do limite de cada categoria soma ao limite do mês que vem. Estourar não desconta do mês seguinte. Se você mudar um limite, a mudança vale a partir do mês atual; os meses anteriores mantêm o limite que tinham.</span></div><button type="button" class="tgl${on ? " on" : ""}" role="switch" aria-checked="${on}" aria-label="Levar a sobra para o mês seguinte" onclick="setRoll(${!on})"></button></div>${on ? `<div class="mut" style="margin-top:10px">Ativo desde ${mesFmt(R.ini)}. A sobra conta a partir do mês seguinte.</div>` : ""}${ks.length ? `<div class="rollv">${ks.map((k) => `<div class="row"><span>${esc(k)}</span><b class="pos">+${brl(cm[k])}</b></div>`).join("")}<div class="mut" style="margin-top:6px">Sobras que entraram em ${mesFmt(M)}.</div></div>` : ""}`;
+  }
+  const _r = render;
+  render = function () {
+    limSync();
+    _r();
+    limsUI();
+    rollUI();
+  };
+  if (ON) render();
 })();
