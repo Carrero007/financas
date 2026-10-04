@@ -8,14 +8,15 @@
       content="width=device-width,initial-scale=1,viewport-fit=cover"
     />
     <link rel="manifest" href="manifest.json" />
+    <script>try{var c=localStorage.cor;if(/^(lima|violeta|coral|rosa|turquesa)$/.test(c))document.querySelector("link[rel=manifest]").href="manifest-"+c+".json"}catch(e){}</script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       href="https://fonts.googleapis.com/css2?family=Instrument+Serif&family=Inter:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
-    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
-    <link rel="icon" href="icons/icon-192x192.png" />
+    <link rel="apple-touch-icon" href="icons/lima/apple-touch-icon.png" />
+    <link rel="icon" href="icons/lima/icon-192x192.png" />
     <meta name="theme-color" content="#f6f5f1" />
     <title>Cifra</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
@@ -27,7 +28,7 @@
   </head>
   <body>
     <header class="top">
-      <img class="logo" src="icons/icon-192x192.png" alt="Cifra" />
+      <img class="logo" data-logo src="icons/lima/icon-192x192.png" alt="Cifra" />
       <div class="mo">
         <button class="g" onclick="mv(-1)" aria-label="Mês anterior">‹</button
         ><b id="mes"></b
@@ -57,7 +58,7 @@
         <div class="hero">
           <div class="ring"></div>
           <div class="htop">
-            <img class="mk" src="icons/icon-192x192.png" alt="" /><span
+            <img class="mk" data-logo src="icons/lima/icon-192x192.png" alt="" /><span
               class="wm2"
               >Cifra</span
             ><button
@@ -338,7 +339,7 @@
     <input id="impf" type="file" accept=".csv,text/csv,text/plain" hidden />
     <input id="bkf" type="file" accept="application/json,.json" hidden />
     <div id="shm" class="auth" style="z-index:55"><div style="max-width:420px;margin:6vh auto 0"><div class="card" id="shc"></div></div></div>
-    <div id="lock" class="lock"><div class="lkw"><img src="icons/icon-192x192.png" alt="" /><h2>Cifra bloqueada</h2><p class="mut" id="lkm">Confirme que é você.</p><div class="lkd" id="lkd"></div><div class="lkp" id="lkp"></div><button class="go" id="lkb" onclick="lkBioGo()"><span>Desbloquear com biometria</span></button><p class="lk c"><a href="#" onclick="logout();return false">Sair da conta</a></p></div></div>
+    <div id="lock" class="lock"><div class="lkw"><img data-logo src="icons/lima/icon-192x192.png" alt="" /><h2>Cifra bloqueada</h2><p class="mut" id="lkm">Confirme que é você.</p><div class="lkd" id="lkd"></div><div class="lkp" id="lkp"></div><button class="go" id="lkb" onclick="lkBioGo()"><span>Desbloquear com biometria</span></button><p class="lk c"><a href="#" onclick="logout();return false">Sair da conta</a></p></div></div>
     <div id="hi"></div>
     <div id="setup"></div>
     <div class="card sup" id="instb" hidden>

@@ -1,11 +1,18 @@
-const V = "cifra-v30",
+const V = "cifra-v33",
   A = [
     "./",
     "index.html",
     "style.css",
     "app.js",
     "manifest.json",
+    ...["lima", "violeta", "coral", "rosa", "turquesa"].map(
+      (c) => "manifest-" + c + ".json",
+    ),
     "icons/icon-192x192.png",
+    ...["lima", "violeta", "coral", "rosa", "turquesa"].flatMap((c) => [
+      "icons/" + c + "/icon-192x192.png",
+      "icons/" + c + "/apple-touch-icon.png",
+    ]),
     "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js",
   ];
 self.addEventListener("install", (e) => {

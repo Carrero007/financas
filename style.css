@@ -927,7 +927,11 @@ ul.md li {
   display: block;
   width: clamp(30px, 9.5vw, 48px);
   border-radius: 14px 14px 0 0;
-  background: linear-gradient(90deg, #10110d, #262a1b);
+  background: linear-gradient(
+    90deg,
+    #10110d,
+    color-mix(in srgb, var(--ac) 12%, #10110d)
+  );
   transform-origin: bottom;
   animation: gr 1s cubic-bezier(0.3, 1.4, 0.5, 1) both;
 }
@@ -2546,7 +2550,7 @@ body.appin .dock {
 [data-c="turquesa"] {
   --ac: #4fd9c4;
 }
-.sw {
+#sws {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   gap: 6px;
@@ -2924,7 +2928,7 @@ body.priv #cmpb b,
 body.priv #mts .mut,
 body.priv #lims .mut,
 body.priv .cc div,
-body.priv canvas,
+body.priv .cw canvas,
 body.priv .cd em,
 body.priv .al > div > div:first-child,
 body.priv #pars .mut {

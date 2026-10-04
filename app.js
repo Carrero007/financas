@@ -150,7 +150,8 @@ const sigS = () =>
     S.rep.length,
     Math.round(sum(S.tx) * 100),
   ].join();
-let AGAIN = 0;
+let AGAIN = 0,
+  SYNCSIG = null;
 async function sync() {
   if (!U || !API) {
     ST.sheet = ST.ia = "off";
@@ -197,7 +198,9 @@ async function sync() {
     if (!S.onb && !S.tx.length && !S.contas.length && !S.rec.length) obShow();
     store();
     render();
+    const snap = JSON.stringify(S);
     await api({ action: "save", data: S });
+    SYNCSIG = snap;
     ST.sheet = "ok";
   } catch (e) {
     ST.sheet = "err";
@@ -2664,7 +2667,9 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
     const W = 0.62,
       GAP = 0.34,
       HS = [2.2, 3.6, 5.2],
-      CL = [0x0f100b, 0x171a0f, 0x20260f],
+      TN = [0, 0.04, 0.09],
+      BASE = new THREE.Color(0x10110d),
+      tintCol = (i, h) => BASE.clone().lerp(new THREE.Color(h), TN[i]),
       bars = [];
     HS.forEach((h, i) => {
       const r = 0.3,
@@ -2688,7 +2693,7 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
       const m = new THREE.Mesh(
         g,
         new THREE.MeshStandardMaterial({
-          color: CL[i],
+          color: tintCol(i, PAL[0]),
           roughness: 0.32,
           metalness: 0.3,
         }),
@@ -2798,6 +2803,27 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
     let exited = false;
     return {
       start,
+      /* barras e luz acompanham a cor de destaque */
+      tint(h) {
+        const to = bars.map((_, i) => tintCol(i, h)),
+          from = bars.map((m) => m.material.color.clone()),
+          r0 = rim.color.clone(),
+          r1 = new THREE.Color(h),
+          set = (t) => {
+            bars.forEach((m, i) =>
+              m.material.color.copy(from[i]).lerp(to[i], t),
+            );
+            rim.color.copy(r0).lerp(r1, t);
+          };
+        if (!window.gsap || reduce) return set(1);
+        const o = { t: 0 };
+        gsap.to(o, {
+          t: 1,
+          duration: 0.5,
+          ease: "power2.out",
+          onUpdate: () => set(o.t),
+        });
+      },
       pulse() {
         if (!window.gsap || reduce) return;
         ks.forEach((u, i) =>
@@ -2931,6 +2957,9 @@ if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js");
     },
     pulse() {
       S3 && S3.pulse();
+    },
+    tint(h) {
+      S3 && S3.tint(h);
     },
     exit(f) {
       return S3 ? S3.exit(f) : Promise.resolve();
@@ -3331,9 +3360,18 @@ logout = async function () {
     ))
   )
     return;
-  if (U && API && navigator.onLine) await sync().catch(() => {});
+  const dirty = () => JSON.stringify(S) !== SYNCSIG;
+  /* só sincroniza se houver algo pendente; o que já está salvo não precisa esperar */
+  if (U && API && navigator.onLine) {
+    for (let w = 0; busy && w < 80; w++)
+      await new Promise((r) => setTimeout(r, 100));
+    if (dirty()) {
+      say("Salvando…");
+      await sync().catch(() => {});
+    }
+  }
   if (
-    ST.sheet !== "ok" &&
+    dirty() &&
     !(await askModal(
       "Sincronização pendente",
       "A última sincronização falhou; o que não foi sincronizado será perdido. Sair mesmo?",
@@ -3342,9 +3380,16 @@ logout = async function () {
     ))
   )
     return;
-  const KEY = U ? SK() : "";
+  /* revoga a sessão em segundo plano e sai na hora */
   if (U && API && navigator.onLine)
-    await api({ action: "logout" }).catch(() => {});
+    try {
+      fetch(API, {
+        method: "POST",
+        keepalive: true,
+        body: JSON.stringify({ action: "logout", uid: U.uid, tok: U.tok }),
+      }).catch(() => {});
+    } catch (e) {}
+  const KEY = U ? SK() : "";
   if (KEY) localStorage.removeItem(KEY);
   localStorage.removeItem("u");
   location.reload();
@@ -3739,6 +3784,25 @@ if (ON) render();
     hex = (k) => (COR.find((c) => c[0] === k) || COR[0])[2],
     ok = (k) => COR.some((c) => c[0] === k);
   let tm = 0;
+  /* logo e ícones acompanham a cor de destaque (icons/<cor>/) */
+  function setLogo(k) {
+    const b = "icons/" + k + "/";
+    document.querySelectorAll("img[data-logo]").forEach((i) => {
+      if (i.getAttribute("src") !== b + "icon-192x192.png")
+        i.src = b + "icon-192x192.png";
+    });
+    const f = document.querySelector('link[rel="icon"]'),
+      p = document.querySelector('link[rel="apple-touch-icon"]');
+    const mf = document.querySelector('link[rel="manifest"]');
+    mf && mf.setAttribute("href", "manifest-" + k + ".json");
+    f && f.setAttribute("href", b + "icon-192x192.png");
+    p && p.setAttribute("href", b + "apple-touch-icon.png");
+  }
+  (window.requestIdleCallback || setTimeout)(() =>
+    COR.forEach((c) => {
+      new Image().src = "icons/" + c[0] + "/icon-192x192.png";
+    }),
+  );
   window.corAtual = () => (ok(R.dataset.c) ? R.dataset.c : "lima");
   function ui() {
     const k = corAtual();
@@ -3755,6 +3819,8 @@ if (ON) render();
       localStorage.cor = k;
     } catch (e) {}
     PAL[0] = hex(k);
+    setLogo(k);
+    window.cifraFx && cifraFx.tint(PAL[0]);
     ui();
     clearTimeout(tm);
     tm = setTimeout(() => {
