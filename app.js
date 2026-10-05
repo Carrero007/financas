@@ -2040,6 +2040,36 @@ const OB = [
     skip: () => !!ST.email,
   },
   {
+    q: "Qual visual você prefere?",
+    h: "Cor de destaque e tema. Dá para mudar depois.",
+    f: [
+      [
+        "cor",
+        "select",
+        "Cor de destaque",
+        [
+          ["lima", "Lima"],
+          ["violeta", "Violeta"],
+          ["coral", "Coral"],
+          ["rosa", "Rosa"],
+          ["turquesa", "Turquesa"],
+        ],
+        () => (window.corAtual ? corAtual() : "lima"),
+      ],
+      [
+        "tema",
+        "select",
+        "Tema",
+        [
+          ["light", "Claro"],
+          ["dark", "Escuro"],
+          ["auto", "Automático"],
+        ],
+        () => localStorage.thp || "dark",
+      ],
+    ],
+  },
+  {
     q: "Quanto você recebe por mês?",
     h: "E em que dia cai na conta.",
     f: [
@@ -2096,12 +2126,56 @@ const OB = [
     f: [["teto", "number", "Teto mensal (R$)"]],
   },
   {
+    q: "Levar a sobra para o mês seguinte?",
+    h: "O que você não gastar do limite de cada categoria soma ao limite do mês que vem.",
+    f: [
+      [
+        "roll",
+        "select",
+        "Sobra do orçamento",
+        [
+          ["0", "Não levar"],
+          ["1", "Levar a sobra"],
+        ],
+        () => "0",
+      ],
+    ],
+  },
+  {
+    q: "Quer criar categorias suas?",
+    h: "Pets, academia, presentes… Elas aparecem nos lançamentos, limites e gráficos.",
+    f: [
+      ["cat1", "text", "Categoria 1"],
+      ["cat2", "text", "Categoria 2"],
+      ["cat3", "text", "Categoria 3"],
+    ],
+  },
+  {
     q: "Tem uma meta em mente?",
     h: "Reserva de emergência, viagem, carro…",
     f: [
       ["meta", "text", "Nome da meta"],
       ["alvo", "number", "Valor alvo (R$)"],
       ["guard", "number", "Já guardado (R$)"],
+    ],
+  },
+  {
+    q: "Quer proteger o app neste aparelho?",
+    h: "PIN de 4 a 6 números e, se o aparelho tiver, biometria.",
+    f: [
+      ["pin", "password", "PIN (4 a 6 números)"],
+      ["pin2", "password", "Repita o PIN"],
+      [
+        "bio",
+        "select",
+        "Biometria ou Face ID",
+        [
+          ["0", "Não usar"],
+          ["1", "Ativar biometria"],
+        ],
+        () => "0",
+        () => !!window.bioAvail,
+      ],
     ],
   },
 ];
@@ -2133,22 +2207,57 @@ function obSave() {
 }
 const obSeg = () =>
   `<div class="obp">${OBL.map((_, k) => `<button aria-label="Ir para a pergunta ${k + 1}" onclick="obJump(${k})" class="${k < OBI || OBI >= OBL.length ? "d" : k === OBI ? "d c" : ""}"><i></i></button>`).join("")}</div>`;
+const obVis = (f) => !f[5] || f[5]();
+function obFields(s) {
+  return (
+    s.f
+      .filter(obVis)
+      .map((f, k) => {
+        const v = OBD[f[0]] ?? (f[4] ? f[4]() : ""),
+          inner =
+            f[1] === "select"
+              ? `<select id="ob_${f[0]}" onchange="obPrev('${f[0]}',this.value)">${f[3].map((o) => `<option value="${o[0]}"${o[0] === v ? " selected" : ""}>${esc(o[1])}</option>`).join("")}</select>`
+              : `<input id="ob_${f[0]}" type="${f[1]}" ${f[1] === "number" ? 'inputmode="decimal"' : f[1] === "password" ? 'inputmode="numeric" maxlength="6" autocomplete="off"' : ""} value="${esc(v)}" onkeydown="if(event.key==='Enter')obNext()">`;
+        return `<div class="f ni fld" style="--d:${0.08 + k * 0.06}s"><label class="obl">${f[2]}</label>${inner}</div>`;
+      })
+      .join("") + '<div class="aerr" id="oberr"></div>'
+  );
+}
+window.obPrev = (k, v) => {
+  if (k === "cor" && window.setCor) setCor(v);
+  else if (k === "tema") theme(v);
+};
+function obCheck() {
+  const s = OBL[OBI];
+  if (!s || !s.f.some((f) => f[0] === "pin")) return "";
+  const p = OBD.pin || "",
+    p2 = OBD.pin2 || "";
+  return (p || p2) && (!/^\d{4,6}$/.test(p) || p !== p2)
+    ? "O PIN precisa ter de 4 a 6 números, iguais nos dois campos."
+    : "";
+}
 function obStep() {
   if (OBI >= OBL.length) return obReview();
   const s = OBL[OBI];
   $("#ob").innerHTML =
-    `<div class="obw"><div class="obt"><button class="obfb" onclick="obBack()" ${OBI ? "" : "disabled"}>‹ Voltar</button><button class="obfb" onclick="obClose()">Fechar</button></div>${obSeg()}<div class="obn">Pergunta ${OBI + 1} de ${OBL.length}</div><h2 class="obq">${s.q}</h2><p class="obh">${s.h || "&nbsp;"}</p>${s.f.map((f, k) => `<div class="f ni fld" style="--d:${0.08 + k * 0.06}s"><label class="obl">${f[2]}</label><input id="ob_${f[0]}" type="${f[1]}" ${f[1] === "number" ? 'inputmode="decimal"' : ""} value="${esc(OBD[f[0]] || "")}" onkeydown="if(event.key==='Enter')obNext()"></div>`).join("")}<div class="obf"><button class="obfb" onclick="obSkip()">Pular</button><button class="go" onclick="obNext()"><span>${OBR ? "Salvar" : OBI === OBL.length - 1 ? "Revisar" : "Continuar"}</span></button></div></div>`;
+    `<div class="obw"><div class="obt"><button class="obfb" onclick="obBack()" ${OBI ? "" : "disabled"}>‹ Voltar</button><button class="obfb" onclick="obClose()">Fechar</button></div>${obSeg()}<div class="obn">Pergunta ${OBI + 1} de ${OBL.length}</div><h2 class="obq">${s.q}</h2><p class="obh">${s.h || "&nbsp;"}</p>${obFields(s)}<div class="obf"><button class="obfb" onclick="obSkip()">Pular</button><button class="go" onclick="obNext()"><span>${OBR ? "Salvar" : OBI === OBL.length - 1 ? "Revisar" : "Continuar"}</span></button></div></div>`;
   const i = $("#ob_" + s.f[0][0]);
   i && i.focus();
 }
 function obReview() {
   const rows = OBL.map((s, k) => {
-    const v = s.f
-      .map((f) =>
-        OBD[f[0]] ? `${f[2].replace(/\s*\(.*\)/, "")}: ${esc(OBD[f[0]])}` : "",
-      )
-      .filter(Boolean)
-      .join(" · ");
+    const sh = (f) => {
+        const x = OBD[f[0]];
+        if (!x) return "";
+        const t =
+          f[1] === "password"
+            ? "•".repeat(x.length)
+            : f[1] === "select"
+              ? (f[3].find((o) => o[0] === x) || [])[1] || x
+              : esc(x);
+        return `${f[2].replace(/\s*\(.*\)/, "")}: ${t}`;
+      },
+      v = s.f.filter(obVis).map(sh).filter(Boolean).join(" · ");
     return `<div class="item row"><div class="it"><b>${s.q}</b><div class="mut">${v || "Pulado"}</div></div><button class="g" onclick="OBR=1;OBI=${k};obStep()">Editar</button></div>`;
   }).join("");
   $("#ob").innerHTML =
@@ -2174,6 +2283,12 @@ function obSkip() {
 }
 function obNext() {
   obSave();
+  const er = obCheck();
+  if (er) {
+    const e = $("#oberr");
+    if (e) e.textContent = er;
+    return;
+  }
   OBR ? ((OBR = 0), (OBI = OBL.length)) : OBI++;
   obStep();
 }
@@ -2281,6 +2396,14 @@ function obEnd() {
       guardado: n("guard"),
       ts: Date.now(),
     });
+  if (d.cor && window.setCor) setCor(d.cor);
+  if (d.tema) theme(d.tema);
+  if (d.roll === "1") S.roll = { on: true, ini: mk(today()), ts: Date.now() };
+  else if (d.roll === "0" && S.roll && S.roll.on)
+    S.roll = { on: false, ini: S.roll.ini, ts: Date.now() };
+  window.obAddCats && obAddCats([d.cat1, d.cat2, d.cat3]);
+  window.obSecurity && obSecurity(d.pin, d.pin2, d.bio === "1");
+  OBD.pin = OBD.pin2 = "";
   S.onb = 1;
   gen();
   persist();
@@ -4797,6 +4920,9 @@ if (ON) render();
       return false;
     }
   };
+  bioOk().then((ok) => {
+    window.bioAvail = ok;
+  });
   function dots() {
     const n = LK && LK.pin ? LK.pin.n : 4;
     E("lkd").innerHTML = Array.from(
@@ -5033,6 +5159,40 @@ if (ON) render();
   ["clip", "mic", "mic2"].forEach(
     (i) => E(i) && E(i).addEventListener("click", () => hold(90000)),
   );
+
+  /* ---- usados pelo quiz inicial ---- */
+  window.obAddCats = (names) => {
+    S.cats = S.cats || [];
+    names.forEach((n) => {
+      n = String(n || "")
+        .trim()
+        .replace(/\s+/g, " ")
+        .slice(0, 24);
+      if (!n || catErr(n) || S.cats.length >= 30) return;
+      S.cats.push({
+        id: uid(),
+        nome: n,
+        emoji: EMJ[S.cats.length % EMJ.length],
+        ts: Date.now(),
+      });
+    });
+  };
+  window.obSecurity = async (pin, pin2, bio) => {
+    if (!LK) lkLoad();
+    if (pin) {
+      if (!/^\d{4,6}$/.test(pin) || pin !== pin2)
+        say("PIN não definido. Defina em Ajustes > Segurança.");
+      else {
+        const salt = b64(crypto.getRandomValues(new Uint8Array(16)));
+        LK.pin = { s: salt, h: await pinHash(pin, salt), n: pin.length };
+        LK.fails = 0;
+        LK.until = 0;
+        lkSave();
+        lkUI();
+      }
+    }
+    if (bio) await lkBio();
+  };
 
   /* ---- conta: senha e exclusão ---- */
   window.trocarSenha = () =>
@@ -5328,3 +5488,35 @@ if (ON) render();
   };
   if (ON) render();
 })();
+
+/* ===== atualizar o app manualmente ===== */
+window.atualizarApp = async () => {
+  if (!("serviceWorker" in navigator))
+    return say("Seu navegador não suporta atualização do app.");
+  if (!navigator.onLine) return say("Sem internet para verificar.");
+  say("Verificando atualização…");
+  try {
+    const reg = await navigator.serviceWorker.getRegistration();
+    let novo = false;
+    if (reg) {
+      await reg.update();
+      novo = !!(reg.installing || reg.waiting);
+    }
+    if (!novo) {
+      const [n, c] = await Promise.all([
+        fetch("app.js?_=" + Date.now(), { cache: "no-store" }).then((r) =>
+          r.text(),
+        ),
+        caches.match("app.js").then((r) => (r ? r.text() : "")),
+      ]);
+      novo = !!c && n !== c;
+    }
+    if (!novo) return say("Você já está na versão mais recente ✓");
+    say("Atualizando…");
+    store();
+    await Promise.all((await caches.keys()).map((k) => caches.delete(k)));
+    setTimeout(() => location.reload(), 400);
+  } catch (e) {
+    say("⚠ Não consegui verificar agora.");
+  }
+};

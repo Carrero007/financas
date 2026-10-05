@@ -1,4 +1,4 @@
-const V = "cifra-v33",
+const V = "cifra-v36",
   A = [
     "./",
     "index.html",
@@ -42,6 +42,7 @@ self.addEventListener("activate", (e) =>
 // Cache primeiro (abre na hora) e atualiza em segundo plano para a próxima abertura.
 self.addEventListener("fetch", (e) => {
   const r = e.request;
+  if (r.url.includes("?_=")) return;
   if (r.method !== "GET" || !r.url.startsWith("http")) return;
   e.respondWith(
     caches.match(r, { ignoreSearch: r.mode === "navigate" }).then((m) => {
