@@ -1,4 +1,4 @@
-// Cifra · Apps Script.
+// Cifra · CODE GS · Apps Script.
 // Propriedades do script: GROQ_KEY (obrigatória) · INVITE, GROQ_MODEL, GROQ_VISION_MODEL (opcionais).
 // Implante como App da Web (Executar como: Eu / Acesso: Qualquer pessoa).
 // A cada alteração: Implantar > Gerenciar implantações > Editar > Nova versão.
